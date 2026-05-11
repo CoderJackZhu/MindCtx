@@ -1,0 +1,181 @@
+import type { MindDocNode, MindDocTree, SerializeOptions } from './types.js';
+
+/**
+ * Serialize a MindDocTree back to Markdown text.
+ *
+ * Round-trip fidelity: for unmodified trees, serialize(parse(text)) === text.
+ * This is achieved by outputting rawText verbatim for clean nodes (dirty === false),
+ * and only regenerating content from structured data for dirty nodes.
+ */
+export function serialize(tree: MindDocTree, options?: SerializeOptions): string {
+  const headingDepth = options?.headingDepth ?? tree.headingDepth;
+  let output = '';
+
+  // 1. Output frontmatter (raw, for round-trip fidelity)
+  if (tree.rawFrontmatter) {
+    output += tree.rawFrontmatter;
+  }
+
+  // 2. Output root's own content (pre-heading content)
+  if (tree.root.dirty) {
+    if (tree.root.note) {
+      output += tree.root.note + '\n\n';
+    }
+    for (const block of tree.root.blocks) {
+      output += block.raw + '\n\n';
+    }
+  } else if (tree.root.rawText) {
+    output += tree.root.rawText;
+  }
+
+  // 3. Recursively serialize children
+  for (const child of tree.root.children) {
+    output += serializeNode(child, headingDepth, 1);
+  }
+
+  return output;
+}
+
+/**
+ * Serialize a single node and its subtree.
+ */
+function serializeNode(node: MindDocNode, headingDepth: number, absoluteDepth: number): string {
+  let output = '';
+
+  // Fast path: node and entire subtree are clean — skip dirty checks entirely
+  if (!node.dirty && !node.subtreeDirty) {
+    output += node.rawText;
+    for (const child of node.children) {
+      output += collectRawText(child);
+    }
+    return output;
+  }
+
+  // Node's own content
+  if (node.dirty) {
+    output += generateNodeContent(node, headingDepth, absoluteDepth);
+  } else {
+    output += node.rawText;
+  }
+
+  // Recurse into children (subtreeDirty means at least one descendant is dirty)
+  for (const child of node.children) {
+    output += serializeNode(child, headingDepth, absoluteDepth + 1);
+  }
+
+  return output;
+}
+
+/**
+ * Collect rawText from an entire clean subtree without checking dirty flags.
+ * Used as an optimization when subtreeDirty === false.
+ */
+function collectRawText(node: MindDocNode): string {
+  let output = node.rawText;
+  for (const child of node.children) {
+    output += collectRawText(child);
+  }
+  return output;
+}
+
+/**
+ * Regenerate node content from structured data when dirty.
+ * This is used after operations modify the tree (rename, create, etc.).
+ */
+function generateNodeContent(node: MindDocNode, headingDepth: number, absoluteDepth: number): string {
+  let output = '';
+
+  if (absoluteDepth <= headingDepth) {
+    // Output as heading
+    output += '#'.repeat(absoluteDepth) + ' ' + node.title + '\n\n';
+  } else {
+    // Output as list-item
+    const listDepth = absoluteDepth - headingDepth - 1;
+    const indent = '  '.repeat(listDepth);
+    if (node.checked !== null) {
+      const check = node.checked ? '[x]' : '[ ]';
+      output += indent + '- ' + check + ' ' + node.title + '\n';
+    } else if (node.ordered) {
+      output += indent + '1. ' + node.title + '\n';
+    } else {
+      output += indent + '- ' + node.title + '\n';
+    }
+  }
+
+  // Output note
+  if (node.note) {
+    if (absoluteDepth <= headingDepth) {
+      output += node.note + '\n\n';
+    } else {
+      // List item note needs indentation
+      const listDepth = absoluteDepth - headingDepth - 1;
+      const noteIndent = '  '.repeat(listDepth + 1);
+      const indentedNote = node.note.split('\n').map(line => noteIndent + line).join('\n');
+      output += indentedNote + '\n\n';
+    }
+  }
+
+  // Output blocks
+  for (const block of node.blocks) {
+    if (absoluteDepth <= headingDepth) {
+      output += block.raw + '\n\n';
+    } else {
+      const listDepth = absoluteDepth - headingDepth - 1;
+      const blockIndent = '  '.repeat(listDepth + 1);
+      const indentedBlock = block.raw.split('\n').map(line => blockIndent + line).join('\n');
+      output += indentedBlock + '\n\n';
+    }
+  }
+
+  return output;
+}
+
+/**
+ * Serialize a subtree as independent Markdown (for "copy as markdown" etc.).
+ * This always regenerates from structured data regardless of dirty state.
+ */
+export function serializeSubtree(node: MindDocNode, headingDepth: number, baseDepth = 1): string {
+  let output = '';
+
+  if (baseDepth <= headingDepth) {
+    output += '#'.repeat(baseDepth) + ' ' + node.title + '\n\n';
+  } else {
+    const indent = '  '.repeat(baseDepth - headingDepth - 1);
+    if (node.checked !== null) {
+      const check = node.checked ? '[x]' : '[ ]';
+      output += indent + '- ' + check + ' ' + node.title + '\n';
+    } else if (node.ordered) {
+      output += indent + '1. ' + node.title + '\n';
+    } else {
+      output += indent + '- ' + node.title + '\n';
+    }
+  }
+
+  if (node.note) {
+    if (baseDepth <= headingDepth) {
+      output += node.note + '\n\n';
+    } else {
+      const listDepth = baseDepth - headingDepth - 1;
+      const noteIndent = '  '.repeat(listDepth + 1);
+      const indentedNote = node.note.split('\n').map(line => noteIndent + line).join('\n');
+      output += indentedNote + '\n\n';
+    }
+  }
+
+  for (const block of node.blocks) {
+    if (baseDepth <= headingDepth) {
+      output += block.raw + '\n\n';
+    } else {
+      const listDepth = baseDepth - headingDepth - 1;
+      const blockIndent = '  '.repeat(listDepth + 1);
+      const indentedBlock = block.raw.split('\n').map(line => blockIndent + line).join('\n');
+      output += indentedBlock + '\n\n';
+    }
+  }
+
+  for (const child of node.children) {
+    output += serializeSubtree(child, headingDepth, baseDepth + 1);
+  }
+
+  return output;
+}
