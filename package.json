@@ -1,0 +1,23 @@
+{
+  "name": "minddoc-core",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4",
+    "vitest": "^2.0",
+    "@types/node": "^20"
+  },
+  "dependencies": {
+    "unified": "^11",
+    "remark-parse": "^11",
+    "remark-frontmatter": "^5",
+    "remark-gfm": "^4",
+    "remark-math": "^6",
+    "yaml": "^2"
+  }
+}
