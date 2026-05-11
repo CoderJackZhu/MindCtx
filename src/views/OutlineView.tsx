@@ -4,6 +4,7 @@ import type { Signal } from '@preact/signals';
 import type { MindDocTree, MindDocNode, PartialOperation } from '../core/types.js';
 import { findNode, findParent, findIndex } from '../core/operations.js';
 import { OutlineNode } from './components/OutlineNode.js';
+import { SearchBar } from './components/SearchBar.js';
 
 interface OutlineViewProps {
   treeSignal: Signal<MindDocTree | null>;
@@ -37,6 +38,44 @@ function getVisibleNodes(root: MindDocNode, collapsedIds: Set<string>): MindDocN
   return result;
 }
 
+function filterTree(root: MindDocNode, query: string): Set<string> {
+  const visibleIds = new Set<string>();
+  const lowerQuery = query.toLowerCase();
+
+  function walk(node: MindDocNode, ancestors: string[]): boolean {
+    const matches = node.title.toLowerCase().includes(lowerQuery);
+    let hasMatchingDescendant = false;
+
+    for (const child of node.children) {
+      if (walk(child, [...ancestors, node.id])) {
+        hasMatchingDescendant = true;
+      }
+    }
+
+    if (matches || hasMatchingDescendant) {
+      visibleIds.add(node.id);
+      ancestors.forEach(id => visibleIds.add(id));
+      return true;
+    }
+
+    return false;
+  }
+
+  walk(root, []);
+  return visibleIds;
+}
+
+function countMatches(root: MindDocNode, query: string): number {
+  const lowerQuery = query.toLowerCase();
+  let count = 0;
+  function walk(node: MindDocNode) {
+    if (node.title.toLowerCase().includes(lowerQuery)) count++;
+    node.children.forEach(walk);
+  }
+  walk(root);
+  return count;
+}
+
 function isDescendant(root: MindDocNode, ancestorId: string, nodeId: string): boolean {
   const ancestor = findNode(root, ancestorId);
   if (!ancestor) return false;
@@ -66,9 +105,21 @@ export function OutlineView({
   onRedo,
 }: OutlineViewProps) {
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
 
   const tree = treeSignal.value;
   if (!tree) return <div class="minddoc-outline">Loading...</div>;
+
+  const filterIds = useMemo(
+    () => searchQuery ? filterTree(tree.root, searchQuery) : null,
+    [tree, searchQuery]
+  );
+
+  const matchCount = useMemo(
+    () => searchQuery ? countMatches(tree.root, searchQuery) : 0,
+    [tree, searchQuery]
+  );
 
   const visibleNodes = useMemo(
     () => getVisibleNodes(tree.root, collapsedIds.value),
@@ -78,6 +129,12 @@ export function OutlineView({
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const meta = e.metaKey || e.ctrlKey;
     const nodeId = selectedNodeId.value;
+
+    if (meta && e.key === 'f') {
+      e.preventDefault();
+      setShowSearch(true);
+      return;
+    }
 
     if (meta && e.key === 'z' && !e.shiftKey) { e.preventDefault(); onUndo(); return; }
     if (meta && e.key === 'z' && e.shiftKey) { e.preventDefault(); onRedo(); return; }
@@ -123,7 +180,6 @@ export function OutlineView({
       if (parent) {
         const idx = findIndex(parent, nodeId);
         onOperation({ type: 'create', parentId: parent.id, index: idx + 1, title: '' });
-        // Select and edit the new node (will be at idx+1)
         const newNode = parent.children[idx + 1];
         if (newNode) {
           selectedNodeId.value = newNode.id;
@@ -184,6 +240,8 @@ export function OutlineView({
   }, [tree, onOperation]);
 
   function renderNode(node: MindDocNode, depth: number): any {
+    if (filterIds && !filterIds.has(node.id)) return null;
+
     const isCollapsed = collapsedIds.value.has(node.id);
     const elements: any[] = [];
 
@@ -198,6 +256,7 @@ export function OutlineView({
         indentSize={24}
         showNotePreview={true}
         dropPosition={dragState?.targetId === node.id ? dragState.position : null}
+        highlightQuery={searchQuery}
         onSelect={() => { selectedNodeId.value = node.id; }}
         onToggleCollapse={() => {
           const newSet = new Set(collapsedIds.value);
@@ -259,6 +318,14 @@ export function OutlineView({
       onDragEnd={() => setDragState(null)}
       tabIndex={-1}
     >
+      {showSearch && (
+        <SearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          onClose={() => { setShowSearch(false); setSearchQuery(''); }}
+          matchCount={matchCount}
+        />
+      )}
       {tree.root.children.map(child => renderNode(child, 0))}
     </div>
   );

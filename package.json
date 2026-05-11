@@ -1,6 +1,6 @@
 {
   "name": "minddoc-core",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "build": "node esbuild.config.mjs production",
@@ -24,6 +24,8 @@
     "remark-math": "^6",
     "yaml": "^2",
     "preact": "^10.19",
-    "@preact/signals": "^1.2"
+    "@preact/signals": "^1.2",
+    "mind-elixir": "^4.0",
+    "html-to-image": "^1.11"
   }
 }

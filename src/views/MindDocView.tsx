@@ -22,6 +22,7 @@ export class MindDocView extends ItemView {
   collapsedIds = signal<Set<string>>(new Set());
   selectedNodeId = signal<string | null>(null);
   editingNodeId = signal<string | null>(null);
+  currentViewSignal = signal<'outline' | 'mindmap'>('outline');
 
   private preactMounted = false;
   private debouncedWrite: ReturnType<typeof debounce> | null = null;
@@ -85,6 +86,10 @@ export class MindDocView extends ItemView {
     this.undoManager.clear();
   }
 
+  switchView(view: 'outline' | 'mindmap') {
+    this.currentViewSignal.value = view;
+  }
+
   scheduleWrite() {
     this.debouncedWrite?.();
   }
@@ -129,9 +134,12 @@ export class MindDocView extends ItemView {
           collapsedIds: this.collapsedIds,
           selectedNodeId: this.selectedNodeId,
           editingNodeId: this.editingNodeId,
+          currentView: this.currentViewSignal,
           onOperation: (op: PartialOperation) => this.executeOperation(op),
           onUndo: () => this.undo(),
           onRedo: () => this.redo(),
+          onSwitchView: (v: 'outline' | 'mindmap') => this.switchView(v),
+          onCollapsedChange: (ids: Set<string>) => { this.collapsedIds.value = ids; },
           onExpandAll: () => { this.collapsedIds.value = new Set(); },
           onCollapseAll: () => {
             if (!this.tree) return;

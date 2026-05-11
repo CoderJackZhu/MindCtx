@@ -12,6 +12,7 @@ interface OutlineNodeProps {
   indentSize: number;
   showNotePreview: boolean;
   dropPosition: 'before' | 'after' | 'child' | null;
+  highlightQuery?: string;
   onSelect: () => void;
   onToggleCollapse: () => void;
   onStartEdit: () => void;
@@ -24,6 +25,22 @@ interface OutlineNodeProps {
   onKeyDown: (e: KeyboardEvent) => void;
 }
 
+function HighlightedTitle({ title, query }: { title: string; query: string }) {
+  if (!query) return <span class="minddoc-title">{title}</span>;
+  const lowerTitle = title.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const idx = lowerTitle.indexOf(lowerQuery);
+  if (idx === -1) return <span class="minddoc-title">{title}</span>;
+
+  return (
+    <span class="minddoc-title">
+      {title.slice(0, idx)}
+      <mark class="minddoc-highlight">{title.slice(idx, idx + query.length)}</mark>
+      {title.slice(idx + query.length)}
+    </span>
+  );
+}
+
 export function OutlineNode({
   node,
   depth,
@@ -33,6 +50,7 @@ export function OutlineNode({
   indentSize,
   showNotePreview,
   dropPosition,
+  highlightQuery,
   onSelect,
   onToggleCollapse,
   onStartEdit,
@@ -67,15 +85,12 @@ export function OutlineNode({
     >
       {dropPosition === 'before' && <DragIndicator position="before" />}
 
-      {/* Collapse button */}
       <span class="minddoc-collapse-btn" onClick={(e) => { e.stopPropagation(); onToggleCollapse(); }}>
         {hasChildren ? (isCollapsed ? '▸' : '▾') : ' '}
       </span>
 
-      {/* Drag handle */}
       <span class="minddoc-drag-handle">⋮⋮</span>
 
-      {/* Checkbox or bullet */}
       {node.checked !== null ? (
         <input
           type="checkbox"
@@ -87,7 +102,6 @@ export function OutlineNode({
         <span class="minddoc-bullet" />
       )}
 
-      {/* Title or editor */}
       {isEditing ? (
         <InlineEditor
           value={node.title}
@@ -95,10 +109,9 @@ export function OutlineNode({
           onCancel={onCancelEdit}
         />
       ) : (
-        <span class="minddoc-title">{node.title}</span>
+        <HighlightedTitle title={node.title} query={highlightQuery || ''} />
       )}
 
-      {/* Note preview */}
       {!isEditing && showNotePreview && node.note && (
         <span class="minddoc-note-preview">{node.note.slice(0, 50)}</span>
       )}

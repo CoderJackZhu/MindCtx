@@ -1,9 +1,10 @@
 {
   "id": "minddoc",
   "name": "MindDoc",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "minAppVersion": "1.4.0",
-  "description": "Markdown-first structured outline editor with mind map view",
+  "description": "Markdown-first structured outline editor with mind map view. Write Markdown, see outlines, switch to mind maps.",
   "author": "MindDoc",
+  "authorUrl": "https://github.com/minddoc",
   "isDesktopOnly": false
 }

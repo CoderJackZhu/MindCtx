@@ -1,11 +1,14 @@
 import { h } from 'preact';
+import { ViewSwitcher } from './ViewSwitcher.js';
 
 interface OutlineToolbarProps {
   onExpandAll: () => void;
   onCollapseAll: () => void;
+  currentView?: 'outline' | 'mindmap';
+  onSwitchView?: (view: 'outline' | 'mindmap') => void;
 }
 
-export function OutlineToolbar({ onExpandAll, onCollapseAll }: OutlineToolbarProps) {
+export function OutlineToolbar({ onExpandAll, onCollapseAll, currentView, onSwitchView }: OutlineToolbarProps) {
   return (
     <div class="minddoc-toolbar">
       <button
@@ -22,6 +25,10 @@ export function OutlineToolbar({ onExpandAll, onCollapseAll }: OutlineToolbarPro
       >
         折叠全部
       </button>
+      <div style={{ flex: 1 }} />
+      {currentView && onSwitchView && (
+        <ViewSwitcher currentView={currentView} onSwitch={onSwitchView} />
+      )}
     </div>
   );
 }
