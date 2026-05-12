@@ -21,7 +21,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           body: |
-            # MindDoc v1.0.0 — 首个正式版本
+            # MindDoc v0.0.1 — 首个社区预览版
 
             MindDoc 是一个 Obsidian 插件，将 Markdown 文件转化为交互式大纲与思维导图，数据始终以 `.mind.md` 文件存储，完全兼容 Obsidian 生态。
 
