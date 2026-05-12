@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, TFile, Notice, Menu } from 'obsidian';
+import { Plugin, TFile, TAbstractFile, Notice, Menu } from 'obsidian';
 import { MINDDOC_VIEW_TYPE } from './constants.js';
 import { MindDocView } from './views/MindDocView.js';
 import { MindDocSettingTab, DEFAULT_SETTINGS } from './settings/settings.js';
@@ -27,25 +27,25 @@ export default class MindDocPlugin extends Plugin {
     this.registerEvent(
       this.app.workspace.on('file-open', (file) => {
         if (file && this.isMindDocFile(file)) {
-          this.activateMindDocView(file);
+          void this.activateMindDocView(file);
         }
       })
     );
 
     this.addCommand({
       id: 'create',
-      name: '创建 MindDoc 文件',
-      callback: () => this.createNewMindDoc(),
+      name: '创建文件',
+      callback: () => { void this.createNewMindDoc(); },
     });
 
     this.addCommand({
-      id: 'open-as-minddoc',
-      name: '以 MindDoc 打开当前文件',
+      id: 'open-current',
+      name: '以大纲打开当前文件',
       checkCallback: (checking) => {
         const file = this.app.workspace.getActiveFile();
         if (!file || !file.path.endsWith('.md')) return false;
         if (checking) return true;
-        this.activateMindDocView(file);
+        void this.activateMindDocView(file);
         return true;
       },
     });
@@ -95,19 +95,20 @@ export default class MindDocPlugin extends Plugin {
     this.addCommand({
       id: 'import-opml',
       name: '导入 OPML 文件',
-      callback: async () => {
+      callback: () => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.opml,.xml';
-        input.onchange = async () => {
+        input.onchange = () => {
           const file = input.files?.[0];
           if (!file) return;
-          const text = await file.text();
-          const fileName = file.name.replace(/\.(opml|xml)$/, '') + '.mind.md';
-          const markdown = importOPML(text, fileName);
-          const newFile = await this.app.vault.create(fileName, markdown);
-          await this.activateMindDocView(newFile);
-          new Notice(`已导入: ${fileName}`);
+          void file.text().then(async (text) => {
+            const fileName = file.name.replace(/\.(opml|xml)$/, '') + '.mind.md';
+            const markdown = importOPML(text, fileName);
+            const newFile = await this.app.vault.create(fileName, markdown);
+            await this.activateMindDocView(newFile);
+            new Notice(`已导入: ${fileName}`);
+          });
         };
         input.click();
       },
@@ -116,19 +117,20 @@ export default class MindDocPlugin extends Plugin {
     this.addCommand({
       id: 'import-freemind',
       name: '导入 FreeMind 文件',
-      callback: async () => {
+      callback: () => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.mm';
-        input.onchange = async () => {
+        input.onchange = () => {
           const file = input.files?.[0];
           if (!file) return;
-          const text = await file.text();
-          const fileName = file.name.replace(/\.mm$/, '') + '.mind.md';
-          const markdown = importFreeMind(text, fileName);
-          const newFile = await this.app.vault.create(fileName, markdown);
-          await this.activateMindDocView(newFile);
-          new Notice(`已导入: ${fileName}`);
+          void file.text().then(async (text) => {
+            const fileName = file.name.replace(/\.mm$/, '') + '.mind.md';
+            const markdown = importFreeMind(text, fileName);
+            const newFile = await this.app.vault.create(fileName, markdown);
+            await this.activateMindDocView(newFile);
+            new Notice(`已导入: ${fileName}`);
+          });
         };
         input.click();
       },
@@ -142,7 +144,7 @@ export default class MindDocPlugin extends Plugin {
         if (!view?.tree) return false;
         if (checking) return true;
         const opml = exportOPML(view.tree);
-        this.saveExportFile(opml, view.file!.basename + '.opml', view.file!);
+        void this.saveExportFile(opml, view.file!.basename + '.opml', view.file!);
         return true;
       },
     });
@@ -155,7 +157,7 @@ export default class MindDocPlugin extends Plugin {
         if (!view?.tree) return false;
         if (checking) return true;
         const json = exportJSON(view.tree);
-        this.saveExportFile(json, view.file!.basename + '.json', view.file!);
+        void this.saveExportFile(json, view.file!.basename + '.json', view.file!);
         return true;
       },
     });
@@ -169,7 +171,7 @@ export default class MindDocPlugin extends Plugin {
         if (checking) return true;
         const container = view.containerEl.querySelector('.minddoc-mindmap-container') as HTMLElement;
         if (!container) return false;
-        exportPNG(container).then((blob) => {
+        void exportPNG(container).then((blob) => {
           this.saveExportBlob(blob, view.file!.basename + '.png');
         });
         return true;
@@ -184,31 +186,32 @@ export default class MindDocPlugin extends Plugin {
         if (!view?.tree) return false;
         if (checking) return true;
         const text = copyAsAIContext(view.tree);
-        navigator.clipboard.writeText(text);
+        void navigator.clipboard.writeText(text);
         new Notice('已复制到剪贴板');
         return true;
       },
     });
 
     this.registerEvent(
-      this.app.workspace.on('file-menu', (menu: Menu, file: any) => {
+      this.app.workspace.on('file-menu', (menu: Menu, file: TAbstractFile) => {
         if (file instanceof TFile && file.path.endsWith('.md')) {
-          menu.addItem((item: any) => {
-            item.setTitle('以 MindDoc 打开')
+          menu.addItem((item) => {
+            item.setTitle('以大纲打开')
               .setIcon('list-tree')
-              .onClick(() => this.activateMindDocView(file));
+              .onClick(() => { void this.activateMindDocView(file); });
           });
         }
 
         if (file instanceof TFile && this.isMindDocFile(file)) {
-          menu.addItem((item: any) => {
+          menu.addItem((item) => {
             item.setTitle('导出为 OPML')
               .setIcon('download')
-              .onClick(async () => {
-                const content = await this.app.vault.read(file);
-                const tree = parse(content, { filePath: file.path });
-                const opml = exportOPML(tree);
-                await this.saveExportFile(opml, file.basename + '.opml', file);
+              .onClick(() => {
+                void this.app.vault.read(file).then(async (content) => {
+                  const tree = parse(content, { filePath: file.path });
+                  const opml = exportOPML(tree);
+                  await this.saveExportFile(opml, file.basename + '.opml', file);
+                });
               });
           });
         }
@@ -234,9 +237,12 @@ export default class MindDocPlugin extends Plugin {
 
   async activateMindDocView(file: TFile) {
     const existing = this.app.workspace.getLeavesOfType(MINDDOC_VIEW_TYPE)
-      .find(leaf => (leaf.view as MindDocView).file?.path === file.path);
+      .find(leaf => {
+        const view = leaf.view;
+        return view instanceof MindDocView && view.file?.path === file.path;
+      });
     if (existing) {
-      this.app.workspace.setActiveLeaf(existing);
+      this.app.workspace.revealLeaf(existing);
       return;
     }
     const leaf = this.app.workspace.getLeaf(false);
@@ -251,11 +257,8 @@ export default class MindDocPlugin extends Plugin {
   }
 
   getActiveMindDocView(): MindDocView | null {
-    const leaf = this.app.workspace.activeLeaf;
-    if (leaf?.view instanceof MindDocView) {
-      return leaf.view as MindDocView;
-    }
-    return null;
+    const view = this.app.workspace.getActiveViewOfType(MindDocView);
+    return view ?? null;
   }
 
   async saveExportFile(content: string, defaultName: string, sourceFile: TFile) {
@@ -265,7 +268,7 @@ export default class MindDocPlugin extends Plugin {
     new Notice(`已导出: ${exportPath}`);
   }
 
-  async saveExportBlob(blob: Blob, defaultName: string) {
+  saveExportBlob(blob: Blob, defaultName: string) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

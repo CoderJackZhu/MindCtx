@@ -15,6 +15,11 @@ interface MindMapViewProps {
   onCollapsedChange: (ids: Set<string>) => void;
 }
 
+interface NodeObj {
+  id: string;
+  parent?: NodeObj;
+}
+
 export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, onCollapsedChange }: MindMapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<MindElixirInstance | null>(null);
@@ -51,7 +56,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       contextMenu: false,
       toolBar: false,
       keypress: false,
-      locale: 'zh_CN' as any,
+      locale: 'zh_CN' as 'zh_CN',
     });
 
     applyTheme(containerRef.current, getObsidianTheme(containerRef.current));
@@ -102,7 +107,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       onRedo();
     } else if (e.key === 'Tab' && selectedNode) {
       e.preventDefault();
-      const nodeObj = (selectedNode as any).nodeObj;
+      const nodeObj = (selectedNode as unknown as { nodeObj?: NodeObj }).nodeObj;
       if (nodeObj) {
         onOperation({
           type: 'create',
@@ -113,7 +118,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       }
     } else if (e.key === 'Enter' && selectedNode) {
       e.preventDefault();
-      const nodeObj = (selectedNode as any).nodeObj;
+      const nodeObj = (selectedNode as unknown as { nodeObj?: NodeObj }).nodeObj;
       if (nodeObj?.parent) {
         onOperation({
           type: 'create',
@@ -124,7 +129,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       }
     } else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNode) {
       e.preventDefault();
-      const nodeObj = (selectedNode as any).nodeObj;
+      const nodeObj = (selectedNode as unknown as { nodeObj?: NodeObj }).nodeObj;
       if (nodeObj?.parent) {
         onOperation({ type: 'delete', nodeId: nodeObj.id });
       }
@@ -140,7 +145,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       class="minddoc-mindmap-container"
       style={{ width: '100%', height: '100%' }}
       tabIndex={0}
-      onKeyDown={handleKeyDown as any}
+      onKeyDown={handleKeyDown as unknown as h.JSX.EventHandler<h.JSX.TargetedKeyboardEvent<HTMLDivElement>>}
     />
   );
 }

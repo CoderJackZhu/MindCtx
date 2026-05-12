@@ -31,7 +31,7 @@ export interface MindDocNode {
 export interface MindDocTree {
   version: 1;
   filePath: string;
-  frontmatter: Record<string, any>;
+  frontmatter: Record<string, unknown>;
   rawFrontmatter: string;
   headingDepth: number;
   root: MindDocNode;

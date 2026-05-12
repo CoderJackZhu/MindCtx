@@ -40,7 +40,7 @@ export class MindDocView extends ItemView {
     return { file: this.file?.path ?? '' };
   }
 
-  async setState(state: { file?: string }, result: any) {
+  async setState(state: { file?: string }, result: { history: boolean }) {
     if (state.file) {
       const file = this.app.vault.getAbstractFileByPath(state.file);
       if (file instanceof TFile) {
@@ -53,18 +53,20 @@ export class MindDocView extends ItemView {
   }
 
   async onOpen() {
-    this.debouncedWrite = debounce(() => this.writeFile(), this.plugin.settings.autoSaveDelay, { maxWait: 2000 });
+    this.debouncedWrite = debounce(() => { void this.writeFile(); }, this.plugin.settings.autoSaveDelay, { maxWait: 2000 });
 
     this.registerEvent(
-      this.app.vault.on('modify', async (file) => {
+      this.app.vault.on('modify', (file) => {
         if (file !== this.file) return;
         const lastWrite = this.plugin.recentWrites.get(file.path);
         if (lastWrite && Date.now() - lastWrite < 200) return;
 
-        const content = await this.app.vault.read(file as TFile);
-        this.tree = parse(content, { filePath: file.path });
-        this.treeSignal.value = this.tree;
-        this.undoManager.clear();
+        if (!(file instanceof TFile)) return;
+        void this.app.vault.read(file).then((content) => {
+          this.tree = parse(content, { filePath: file.path });
+          this.treeSignal.value = this.tree;
+          this.undoManager.clear();
+        });
       })
     );
 

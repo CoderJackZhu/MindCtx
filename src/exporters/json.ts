@@ -1,8 +1,16 @@
 import type { MindDocTree, MindDocNode } from '../core/types.js';
 
+interface SimplifiedNode {
+  title: string;
+  note?: string;
+  tags?: string[];
+  checked?: boolean;
+  children?: SimplifiedNode[];
+}
+
 export function exportJSON(tree: MindDocTree): string {
-  function simplify(node: MindDocNode): any {
-    const obj: any = { title: node.title };
+  function simplify(node: MindDocNode): SimplifiedNode {
+    const obj: SimplifiedNode = { title: node.title };
     if (node.note) obj.note = node.note;
     if (node.tags.length > 0) obj.tags = node.tags;
     if (node.checked !== null) obj.checked = node.checked;

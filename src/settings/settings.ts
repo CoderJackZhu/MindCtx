@@ -37,7 +37,7 @@ export class MindDocSettingTab extends PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl('h2', { text: 'MindDoc 设置' });
+    new Setting(containerEl).setName('设置').setHeading();
 
     new Setting(containerEl)
       .setName('默认视图')

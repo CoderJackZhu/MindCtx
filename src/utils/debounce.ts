@@ -1,4 +1,4 @@
-export function debounce<T extends (...args: any[]) => void>(
+export function debounce<T extends (...args: unknown[]) => void>(
   fn: T,
   delay: number,
   options?: { maxWait?: number }
@@ -6,7 +6,7 @@ export function debounce<T extends (...args: any[]) => void>(
   let timer: number | null = null;
   let firstCallTime: number | null = null;
 
-  const debounced = (...args: any[]) => {
+  const debounced = (...args: unknown[]) => {
     const now = Date.now();
     if (timer) clearTimeout(timer);
 
@@ -33,5 +33,5 @@ export function debounce<T extends (...args: any[]) => void>(
     firstCallTime = null;
   };
 
-  return debounced as any;
+  return debounced as T & { cancel: () => void };
 }

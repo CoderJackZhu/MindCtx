@@ -1,4 +1,4 @@
-import type { MindDocTree, MindDocNode, Operation } from './types.js';
+import type { MindDocTree, Operation } from './types.js';
 import { findNode, findParent, findIndex, getAbsoluteDepth, recalculateNodeTypes } from './operations.js';
 
 export function invertOperation(op: Operation): Operation[] {

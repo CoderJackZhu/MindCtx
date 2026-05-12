@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import type { Signal } from '@preact/signals';
-import type { MindDocTree, MindDocNode, PartialOperation } from '../core/types.js';
+import type { MindDocTree, PartialOperation } from '../core/types.js';
 import { findNode } from '../core/operations.js';
 import { OutlineToolbar } from './components/OutlineToolbar.js';
 import { OutlineView } from './OutlineView.js';

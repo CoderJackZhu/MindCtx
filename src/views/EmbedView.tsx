@@ -1,6 +1,5 @@
 import { h, Fragment } from 'preact';
-import { useState, useMemo, useRef, useEffect } from 'preact/hooks';
-import { signal } from '@preact/signals';
+import { useState, useRef, useEffect } from 'preact/hooks';
 import { TFile } from 'obsidian';
 import MindElixir from 'mind-elixir';
 import type { MindElixirInstance } from 'mind-elixir';
@@ -25,13 +24,14 @@ export function EmbedView({ tree, config, file, plugin }: EmbedViewProps) {
 
   const handleOpen = () => {
     const leaf = plugin.app.workspace.getLeaf(true);
-    leaf.setViewState({ type: MINDDOC_VIEW_TYPE, state: { file: file.path } });
+    void leaf.setViewState({ type: MINDDOC_VIEW_TYPE, state: { file: file.path } });
   };
 
-  const handleRefresh = async () => {
-    const content = await plugin.app.vault.read(file);
-    const newTree = parse(content, { filePath: file.path });
-    setCurrentTree(newTree);
+  const handleRefresh = () => {
+    void plugin.app.vault.read(file).then((content) => {
+      const newTree = parse(content, { filePath: file.path });
+      setCurrentTree(newTree);
+    });
   };
 
   return (
@@ -91,7 +91,7 @@ function ReadOnlyOutline({ tree, maxDepth, collapsed }: ReadOnlyOutlineProps) {
     setCollapsedIds(newSet);
   }
 
-  function renderNode(node: MindDocNode, depth: number): any {
+  function renderNode(node: MindDocNode, depth: number): h.JSX.Element | null {
     if (depth >= maxDepth) return null;
     const hasChildren = node.children.length > 0;
     const isCollapsed = collapsedIds.has(node.id);

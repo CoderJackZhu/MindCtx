@@ -4,41 +4,48 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { parse as parseYaml } from 'yaml';
-import type { Root, Heading, List, ListItem, Paragraph, Code, Blockquote, Table, Image, Html, ThematicBreak, Content, PhrasingContent } from 'mdast';
+import type { Root, Heading, List, Paragraph, Code, Image, RootContent } from 'mdast';
 import type { MindDocNode, MindDocTree, ContentBlock, ParseOptions } from './types.js';
 import { generateNodeId } from './hash.js';
 
-/**
- * Recursively convert mdast inline/phrasing nodes back to Markdown text.
- */
-function extractInlineText(node: PhrasingContent | Content): string {
+interface InlineNode {
+  type: string;
+  value?: string;
+  children?: InlineNode[];
+  url?: string;
+  alt?: string | null;
+}
+
+function extractInlineText(node: InlineNode): string {
   switch (node.type) {
     case 'text':
-      return node.value;
+      return node.value ?? '';
     case 'inlineCode':
-      return '`' + node.value + '`';
+      return '`' + (node.value ?? '') + '`';
     case 'strong':
-      return '**' + node.children.map(extractInlineText).join('') + '**';
+      return '**' + (node.children ?? []).map(extractInlineText).join('') + '**';
     case 'emphasis':
-      return '*' + node.children.map(extractInlineText).join('') + '*';
+      return '*' + (node.children ?? []).map(extractInlineText).join('') + '*';
     case 'delete':
-      return '~~' + node.children.map(extractInlineText).join('') + '~~';
+      return '~~' + (node.children ?? []).map(extractInlineText).join('') + '~~';
     case 'link':
-      return '[' + node.children.map(extractInlineText).join('') + '](' + node.url + ')';
+      return '[' + (node.children ?? []).map(extractInlineText).join('') + '](' + (node.url ?? '') + ')';
     case 'image':
-      return '![' + (node.alt || '') + '](' + node.url + ')';
+      return '![' + (node.alt || '') + '](' + (node.url ?? '') + ')';
     case 'inlineMath':
-      return '$' + (node as any).value + '$';
+      return '$' + (node.value ?? '') + '$';
     case 'break':
       return '\n';
-    default:
-      if ('children' in node && Array.isArray((node as any).children)) {
-        return (node as any).children.map(extractInlineText).join('');
+    default: {
+      const n = node as InlineNode;
+      if (n.children && Array.isArray(n.children)) {
+        return n.children.map(extractInlineText).join('');
       }
-      if ('value' in node) {
-        return (node as any).value;
+      if (n.value !== undefined) {
+        return n.value;
       }
       return '';
+    }
   }
 }
 
@@ -96,7 +103,7 @@ function getEndLine(node: { position?: { end: { line: number } } }): number {
 /**
  * Convert an mdast block node into a ContentBlock.
  */
-function toContentBlock(node: Content, lines: string[]): ContentBlock {
+function toContentBlock(node: RootContent, lines: string[]): ContentBlock {
   const startLine = getStartLine(node);
   const endLine = getEndLine(node);
   const raw = lines.slice(startLine, endLine).join('\n');
@@ -124,7 +131,7 @@ function toContentBlock(node: Content, lines: string[]): ContentBlock {
 /**
  * Check if an mdast node is a "block" type (goes into node.blocks).
  */
-function isBlockNode(node: Content): boolean {
+function isBlockNode(node: RootContent): boolean {
   return ['code', 'blockquote', 'table', 'image', 'html', 'thematicBreak', 'math'].includes(node.type);
 }
 
@@ -158,12 +165,12 @@ function processList(
     for (const child of item.children) {
       if (child.type === 'paragraph' && !titleSet) {
         // First paragraph → title
-        node.title = child.children.map(extractInlineText).join('');
+        node.title = (child.children as unknown as InlineNode[]).map(extractInlineText).join('');
         node.tags = extractTags(node.title);
         titleSet = true;
       } else if (child.type === 'paragraph') {
         // Subsequent paragraphs → note
-        noteParagraphs.push(child.children.map(extractInlineText).join(''));
+        noteParagraphs.push((child.children as unknown as InlineNode[]).map(extractInlineText).join(''));
       } else if (child.type === 'list') {
         // Nested list → children
         const childNodes = processList(child, lines, listDepth + 1);
@@ -199,14 +206,14 @@ export function parse(markdown: string, options?: ParseOptions): MindDocTree {
   const mdast = processor.parse(markdown) as Root;
 
   // Step 2: Extract frontmatter
-  let frontmatter: Record<string, any> = {};
+  let frontmatter: Record<string, unknown> = {};
   let rawFrontmatter = '';
   let frontmatterEndLine = 0; // 0-indexed line AFTER frontmatter ends
 
   const fmNode = mdast.children.find(c => c.type === 'yaml');
   if (fmNode) {
     try {
-      frontmatter = parseYaml((fmNode as any).value) || {};
+      frontmatter = parseYaml((fmNode as { value: string }).value) || {};
     } catch {
       frontmatter = {};
     }
@@ -228,7 +235,7 @@ export function parse(markdown: string, options?: ParseOptions): MindDocTree {
 
   // Determine headingDepth
   const headingDepth: number =
-    frontmatter['heading-depth'] ??
+    (frontmatter['heading-depth'] as number | undefined) ??
     options?.defaultHeadingDepth ??
     3;
 
@@ -273,7 +280,7 @@ export function parse(markdown: string, options?: ParseOptions): MindDocTree {
       const newNode = createNode({
         nodeType: 'heading',
         headingLevel: level,
-        title: heading.children.map(extractInlineText).join(''),
+        title: (heading.children as unknown as InlineNode[]).map(extractInlineText).join(''),
         sourceRange: {
           startLine: getStartLine(heading),
           endLine: getEndLine(heading),
@@ -288,7 +295,7 @@ export function parse(markdown: string, options?: ParseOptions): MindDocTree {
       const listNodes = processList(child as List, lines, 1);
       currentNode().children.push(...listNodes);
     } else if (child.type === 'paragraph') {
-      const text = (child as Paragraph).children.map(extractInlineText).join('');
+      const text = ((child as Paragraph).children as unknown as InlineNode[]).map(extractInlineText).join('');
       if (currentNode().note) {
         currentNode().note += '\n\n' + text;
       } else {

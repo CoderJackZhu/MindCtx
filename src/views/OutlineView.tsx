@@ -1,4 +1,4 @@
-import { h } from 'preact';
+import { h, Fragment } from 'preact';
 import { useState, useCallback, useMemo } from 'preact/hooks';
 import type { Signal } from '@preact/signals';
 import type { MindDocTree, MindDocNode, PartialOperation } from '../core/types.js';
@@ -156,22 +156,22 @@ export function OutlineView({
     }
     if (meta && e.key === 'ArrowUp' && nodeId) {
       e.preventDefault();
-      try { onOperation({ type: 'moveUp', nodeId }); } catch {}
+      try { onOperation({ type: 'moveUp', nodeId }); } catch { /* operation may fail if at boundary */ }
       return;
     }
     if (meta && e.key === 'ArrowDown' && nodeId) {
       e.preventDefault();
-      try { onOperation({ type: 'moveDown', nodeId }); } catch {}
+      try { onOperation({ type: 'moveDown', nodeId }); } catch { /* operation may fail if at boundary */ }
       return;
     }
     if (e.key === 'Tab' && !e.shiftKey && nodeId) {
       e.preventDefault();
-      try { onOperation({ type: 'indent', nodeId }); } catch {}
+      try { onOperation({ type: 'indent', nodeId }); } catch { /* operation may fail if no valid target */ }
       return;
     }
     if (e.key === 'Tab' && e.shiftKey && nodeId) {
       e.preventDefault();
-      try { onOperation({ type: 'outdent', nodeId }); } catch {}
+      try { onOperation({ type: 'outdent', nodeId }); } catch { /* operation may fail if already at root */ }
       return;
     }
     if (e.key === 'Enter' && nodeId) {
@@ -239,76 +239,70 @@ export function OutlineView({
     }
   }, [tree, onOperation]);
 
-  function renderNode(node: MindDocNode, depth: number): any {
+  function renderNode(node: MindDocNode, depth: number): h.JSX.Element | null {
     if (filterIds && !filterIds.has(node.id)) return null;
 
     const isCollapsed = collapsedIds.value.has(node.id);
-    const elements: any[] = [];
 
-    elements.push(
-      <OutlineNode
-        key={node.id}
-        node={node}
-        depth={depth}
-        isSelected={selectedNodeId.value === node.id}
-        isEditing={editingNodeId.value === node.id}
-        isCollapsed={isCollapsed}
-        indentSize={24}
-        showNotePreview={true}
-        dropPosition={dragState?.targetId === node.id ? dragState.position : null}
-        highlightQuery={searchQuery}
-        onSelect={() => { selectedNodeId.value = node.id; }}
-        onToggleCollapse={() => {
-          const newSet = new Set(collapsedIds.value);
-          if (newSet.has(node.id)) newSet.delete(node.id);
-          else newSet.add(node.id);
-          collapsedIds.value = newSet;
-        }}
-        onStartEdit={() => { editingNodeId.value = node.id; }}
-        onEndEdit={(newTitle) => {
-          if (newTitle !== node.title) {
-            onOperation({ type: 'rename', nodeId: node.id, newTitle });
-          }
-          editingNodeId.value = null;
-        }}
-        onCancelEdit={() => { editingNodeId.value = null; }}
-        onDragStart={(e) => {
-          e.dataTransfer!.setData('text/plain', node.id);
-          e.dataTransfer!.effectAllowed = 'move';
-          setDragState({ draggedId: node.id, targetId: null, position: null });
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          e.dataTransfer!.dropEffect = 'move';
-          if (!dragState) return;
-          const pos = getDropPosition(e, e.currentTarget as HTMLElement);
-          if (dragState.targetId !== node.id || dragState.position !== pos) {
-            setDragState({ ...dragState, targetId: node.id, position: pos });
-          }
-        }}
-        onDragLeave={() => {
-          if (dragState?.targetId === node.id) {
-            setDragState({ ...dragState!, targetId: null, position: null });
-          }
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          if (dragState && dragState.targetId && dragState.position) {
-            handleDrop(dragState.draggedId, dragState.targetId, dragState.position);
-          }
-          setDragState(null);
-        }}
-        onKeyDown={handleKeyDown}
-      />
+    return (
+      <Fragment>
+        <OutlineNode
+          key={node.id}
+          node={node}
+          depth={depth}
+          isSelected={selectedNodeId.value === node.id}
+          isEditing={editingNodeId.value === node.id}
+          isCollapsed={isCollapsed}
+          indentSize={24}
+          showNotePreview={true}
+          dropPosition={dragState?.targetId === node.id ? dragState.position : null}
+          highlightQuery={searchQuery}
+          onSelect={() => { selectedNodeId.value = node.id; }}
+          onToggleCollapse={() => {
+            const newSet = new Set(collapsedIds.value);
+            if (newSet.has(node.id)) newSet.delete(node.id);
+            else newSet.add(node.id);
+            collapsedIds.value = newSet;
+          }}
+          onStartEdit={() => { editingNodeId.value = node.id; }}
+          onEndEdit={(newTitle) => {
+            if (newTitle !== node.title) {
+              onOperation({ type: 'rename', nodeId: node.id, newTitle });
+            }
+            editingNodeId.value = null;
+          }}
+          onCancelEdit={() => { editingNodeId.value = null; }}
+          onDragStart={(e) => {
+            e.dataTransfer!.setData('text/plain', node.id);
+            e.dataTransfer!.effectAllowed = 'move';
+            setDragState({ draggedId: node.id, targetId: null, position: null });
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.dataTransfer!.dropEffect = 'move';
+            if (!dragState) return;
+            const pos = getDropPosition(e, e.currentTarget as HTMLElement);
+            if (dragState.targetId !== node.id || dragState.position !== pos) {
+              setDragState({ ...dragState, targetId: node.id, position: pos });
+            }
+          }}
+          onDragLeave={() => {
+            if (dragState?.targetId === node.id) {
+              setDragState({ ...dragState, targetId: null, position: null });
+            }
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            if (dragState && dragState.targetId && dragState.position) {
+              handleDrop(dragState.draggedId, dragState.targetId, dragState.position);
+            }
+            setDragState(null);
+          }}
+          onKeyDown={handleKeyDown}
+        />
+        {!isCollapsed && node.children.map(child => renderNode(child, depth + 1))}
+      </Fragment>
     );
-
-    if (!isCollapsed) {
-      for (const child of node.children) {
-        elements.push(renderNode(child, depth + 1));
-      }
-    }
-
-    return elements;
   }
 
   return (

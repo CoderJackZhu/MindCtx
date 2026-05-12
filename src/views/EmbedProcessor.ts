@@ -1,6 +1,5 @@
 import { h } from 'preact';
 import { render } from 'preact';
-import { TFile } from 'obsidian';
 import { parse } from '../core/parser.js';
 import { EmbedView } from './EmbedView.js';
 import type MindDocPlugin from '../main.js';
@@ -89,8 +88,9 @@ export function registerEmbedProcessor(plugin: MindDocPlugin) {
         h(EmbedView, { tree, config, file, plugin }),
         el
       );
-    } catch (e: any) {
-      renderError(el, `解析错误: ${e.message}`);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      renderError(el, `解析错误: ${message}`);
     }
   });
 }
@@ -104,8 +104,8 @@ function renderFileNotFound(el: HTMLElement, fileName: string, plugin: MindDocPl
   const div = el.createDiv({ cls: 'minddoc-embed-error' });
   div.createSpan({ text: `文件未找到: ${fileName}` });
   const btn = div.createEl('button', { text: '创建文件' });
-  btn.addEventListener('click', async () => {
+  btn.addEventListener('click', () => {
     const content = `---\nminddoc: true\n---\n\n# ${fileName.replace(/\.mind\.md$/, '').replace(/\.md$/, '')}\n`;
-    await plugin.app.vault.create(fileName.endsWith('.md') ? fileName : fileName + '.mind.md', content);
+    void plugin.app.vault.create(fileName.endsWith('.md') ? fileName : fileName + '.mind.md', content);
   });
 }
