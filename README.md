@@ -1,81 +1,81 @@
 # MindDoc
 
-Markdown-first structured outline editor for Obsidian with mind map view.
+Markdown 优先的结构化大纲编辑器，支持思维导图视图，为 Obsidian 打造。
 
-Write standard Markdown, see interactive outlines, switch to mind maps — all backed by the same `.md` file.
+写标准 Markdown，看交互式大纲，切换思维导图——所有数据始终存储在同一个 `.md` 文件中。
 
-## Features
+## 特性
 
-**Dual View**
-- Outline view with drag-and-drop, keyboard shortcuts, inline editing
-- Mind map view powered by Mind Elixir, with drag-and-drop node reorganization
-- One-click switching between views (data stays in sync)
+**双视图**
+- 大纲视图：拖拽排序、键盘快捷键、行内编辑
+- 思维导图视图：基于 Mind Elixir，支持拖拽重组节点
+- 一键切换，数据实时同步
 
-**Round-trip Fidelity**
-- Your Markdown file is the source of truth
-- Unmodified content preserves exact formatting (`serialize(parse(text)) === text`)
-- Edits only touch the changed nodes
+**往返保真**
+- Markdown 文件就是唯一的数据源
+- 未修改的内容保持原样格式（`serialize(parse(text)) === text`）
+- 编辑只影响变化的节点
 
-**Editing**
-- Drag-and-drop reordering (outline & mind map)
-- Inline title editing (double-click or F2)
-- Keyboard shortcuts: Tab/Shift+Tab (indent/outdent), Enter (new sibling), Delete, Ctrl+Z/Y (undo/redo)
-- Task checkbox toggle (null → unchecked → checked → null)
-- Node detail panel for editing notes and viewing content blocks
+**编辑能力**
+- 拖拽排序（大纲和脑图均支持）
+- 行内标题编辑（双击或 F2）
+- 快捷键：Tab/Shift+Tab（缩进/提升）、Enter（新建兄弟节点）、Delete（删除）、Ctrl+Z/Y（撤销/重做）
+- 任务复选框切换（null → 未选 → 已选 → null）
+- 节点详情面板：编辑备注，查看代码块/引用等附属内容
 
-**Search & Filter**
-- Ctrl+F to search nodes by title
-- Real-time filtering with match highlighting
-- Ancestor nodes stay visible for context
+**搜索筛选**
+- Ctrl+F 按标题搜索节点
+- 实时筛选，匹配关键词高亮
+- 祖先节点保持可见，不丢失上下文
 
-**Embed Blocks**
-- Embed MindDoc views in any Obsidian note via code blocks
-- Configurable: view mode, height, max depth, initial collapse state
-- Read-only with view switching and refresh
+**嵌入块**
+- 在任意 Obsidian 笔记中通过代码块嵌入 MindDoc 视图
+- 可配置：视图模式、高度、最大深度、初始折叠状态
+- 只读展示，支持视图切换和刷新
 
 ````markdown
 ```minddoc
-file: [[my-outline.mind.md]]
+file: [[我的大纲.mind.md]]
 mode: switchable
 height: 450
 default: outline
 ```
 ````
 
-**Import & Export**
-- Import: OPML (幕布/WorkFlowy), FreeMind (.mm)
-- Export: OPML, JSON, PNG (mind map view)
-- Copy as AI Context (structured prompt for LLMs)
+**导入导出**
+- 导入：OPML（幕布/WorkFlowy）、FreeMind（.mm）
+- 导出：OPML、JSON、PNG（脑图视图下）
+- 复制为 AI 上下文（结构化提示词，适合粘贴给 ChatGPT/Claude）
 
-**Theme Adaptive**
-- Automatically follows Obsidian light/dark theme
-- Mind map colors derived from Obsidian CSS variables
+**主题适配**
+- 自动跟随 Obsidian 亮色/暗色主题
+- 脑图配色从 Obsidian CSS 变量派生
 
-## Installation
+## 安装
 
-### From Obsidian Community Plugins
+### 从 Obsidian 社区插件安装
 
-Search for "MindDoc" in Settings → Community Plugins → Browse.
+设置 → 第三方插件 → 浏览 → 搜索 "MindDoc"。
 
-### Manual Installation
+### 手动安装
 
-1. Download `main.js`, `manifest.json`, and `styles.css` from the latest release
-2. Create folder `<vault>/.obsidian/plugins/minddoc/`
-3. Copy the three files into that folder
-4. Enable "MindDoc" in Settings → Community Plugins
+1. 从 Release 页面下载 `main.js`、`manifest.json`、`styles.css`
+2. 创建文件夹 `<仓库>/.obsidian/plugins/minddoc/`
+3. 将三个文件复制进去
+4. 在设置 → 第三方插件中启用 "MindDoc"
 
-## Usage
+## 使用方法
 
-### Creating a MindDoc File
+### 创建 MindDoc 文件
 
-Either:
-- Use command palette: "MindDoc: 创建 MindDoc 文件"
-- Create any `.mind.md` file
-- Add `minddoc: true` to any Markdown file's frontmatter
+以下任一方式：
+- 命令面板：「MindDoc: 创建 MindDoc 文件」
+- 直接创建 `.mind.md` 后缀的文件
+- 在任意 Markdown 文件的 frontmatter 中添加 `minddoc: true`
 
-### File Format
+### 文件格式
 
-MindDoc works with standard Markdown. Headings become tree branches, lists become leaf nodes:
+MindDoc 使用标准 Markdown。标题成为树的分支，列表成为叶节点：
 
 ```markdown
 ---
@@ -83,101 +83,101 @@ minddoc: true
 heading-depth: 3
 ---
 
-# Project Plan
+# 项目规划
 
-## Phase 1
+## 第一阶段
 
-- Research
-  - User interviews
-  - Competitor analysis
+- 需求调研
+  - 用户访谈
+  - 竞品分析
 
-## Phase 2
+## 第二阶段
 
-- Implementation
-- Testing
+- 开发实现
+- 测试验证
 ```
 
-The `heading-depth` setting (default 3) controls when headings become list items. Depth 1–N are headings, deeper nodes are list items.
+`heading-depth`（默认 3）控制标题转列表的分界线。深度 1–N 输出为标题，更深的节点输出为列表项。
 
-### Keyboard Shortcuts
+### 快捷键
 
-| Key | Action |
-|-----|--------|
-| ↑/↓ | Navigate between nodes |
-| Enter | Create sibling node |
-| Tab | Indent node |
-| Shift+Tab | Outdent node |
-| Ctrl+↑/↓ | Move node up/down |
-| F2 | Edit node title |
-| Delete | Delete node |
-| Ctrl+Z | Undo |
-| Ctrl+Shift+Z | Redo |
-| Ctrl+F | Search |
+| 按键 | 功能 |
+|------|------|
+| ↑/↓ | 在节点间导航 |
+| Enter | 创建兄弟节点 |
+| Tab | 缩进节点 |
+| Shift+Tab | 提升节点 |
+| Ctrl+↑/↓ | 上移/下移节点 |
+| F2 | 编辑节点标题 |
+| Delete | 删除节点 |
+| Ctrl+Z | 撤销 |
+| Ctrl+Shift+Z | 重做 |
+| Ctrl+F | 搜索 |
 
-### Commands
+### 命令列表
 
-| Command | Description |
-|---------|-------------|
-| 创建 MindDoc 文件 | Create a new .mind.md file |
-| 以 MindDoc 打开当前文件 | Open current file in MindDoc view |
-| 切换视图（大纲 ↔ 脑图） | Toggle between outline and mind map |
-| 展开全部节点 | Expand all nodes |
-| 折叠全部节点 | Collapse all nodes |
-| 导入 OPML 文件 | Import from OPML |
-| 导入 FreeMind 文件 | Import from .mm |
-| 导出为 OPML | Export to OPML |
-| 导出为 JSON | Export tree as JSON |
-| 导出为 PNG | Export mind map as PNG |
-| 复制为 AI 上下文 | Copy structured content for LLM prompts |
+| 命令 | 说明 |
+|------|------|
+| 创建 MindDoc 文件 | 新建 .mind.md 文件 |
+| 以 MindDoc 打开当前文件 | 将当前文件以 MindDoc 视图打开 |
+| 切换视图（大纲 ↔ 脑图） | 在大纲和思维导图间切换 |
+| 展开全部节点 | 展开所有折叠的节点 |
+| 折叠全部节点 | 折叠所有节点 |
+| 导入 OPML 文件 | 从 OPML 导入（支持幕布） |
+| 导入 FreeMind 文件 | 从 .mm 文件导入 |
+| 导出为 OPML | 导出为 OPML 格式 |
+| 导出为 JSON | 导出树结构为 JSON |
+| 导出为 PNG | 导出脑图为 PNG 图片 |
+| 复制为 AI 上下文 | 复制结构化内容用于 AI 对话 |
 
-## Settings
+## 设置项
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| 默认视图 | outline | Default view when opening files |
-| 默认标题深度 | 3 | Heading levels before converting to list items |
-| 自动保存延迟 | 300ms | Debounce delay before writing to file |
-| 大纲字体大小 | 14px | Font size in outline view |
-| 显示备注预览 | true | Show note preview next to node title |
-| 脑图方向 | side | Mind map layout direction |
-| 虚拟滚动 | true | Enable virtual scrolling for large files |
-| 虚拟滚动阈值 | 200 | Node count threshold for virtual scrolling |
-| 嵌入块默认高度 | 400px | Default height for embed blocks |
+| 设置 | 默认值 | 说明 |
+|------|--------|------|
+| 默认视图 | 大纲 | 打开文件时的默认视图 |
+| 默认标题深度 | 3 | 标题最大层级，超过后转为列表项 |
+| 自动保存延迟 | 300ms | 编辑后写入文件的防抖延迟 |
+| 大纲字体大小 | 14px | 大纲视图字体大小 |
+| 显示备注预览 | 开启 | 在节点标题旁显示 note 首行 |
+| 脑图方向 | 左右展开 | 思维导图展开方向 |
+| 虚拟滚动 | 开启 | 大文件自动启用虚拟滚动 |
+| 虚拟滚动阈值 | 200 | 节点数超过此值时启用 |
+| 嵌入块默认高度 | 400px | 嵌入块默认显示高度 |
 
-## Development
+## 开发
 
 ```bash
 npm install
-npm run dev      # watch mode
-npm run build    # production build
-npm test         # run tests
-npm run typecheck # TypeScript check
+npm run dev        # 监听模式
+npm run build      # 生产构建
+npm test           # 运行测试
+npm run typecheck  # TypeScript 类型检查
 ```
 
-### Architecture
+### 项目结构
 
 ```
 src/
-  core/           # Pure logic (parser, serializer, operations, undo)
-  views/          # Preact components (outline, mind map, embed)
-  bridge/         # Mind Elixir integration (data + theme)
-  importers/      # OPML, FreeMind importers
-  exporters/      # OPML, JSON, image exporters
-  commands/       # AI commands
-  settings/       # Plugin settings
-  utils/          # Debounce utility
-tests/            # Vitest test suite (75 tests)
+  core/           # 纯逻辑层（解析器、序列化器、操作、撤销）
+  views/          # Preact 组件（大纲、脑图、嵌入块）
+  bridge/         # Mind Elixir 集成（数据转换 + 主题适配）
+  importers/      # OPML、FreeMind 导入器
+  exporters/      # OPML、JSON、图片导出器
+  commands/       # AI 命令
+  settings/       # 插件设置
+  utils/          # 工具函数
+tests/            # Vitest 测试套件（75 个测试）
 ```
 
-### Tech Stack
+### 技术栈
 
-- TypeScript (strict mode, ES2022)
-- Preact + @preact/signals (UI rendering)
-- unified/remark (Markdown parsing)
-- Mind Elixir v4 (mind map rendering)
-- esbuild (bundling)
-- Vitest (testing)
+- TypeScript（严格模式，ES2022）
+- Preact + @preact/signals（UI 渲染）
+- unified/remark（Markdown 解析）
+- Mind Elixir v4（思维导图渲染）
+- esbuild（打包构建）
+- Vitest（单元测试）
 
-## License
+## 许可证
 
 MIT

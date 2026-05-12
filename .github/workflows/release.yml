@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - uses: softprops/action-gh-release@v2
+        with:
+          body: |
+            # MindDoc v1.0.0 — 首个正式版本
+
+            MindDoc 是一个 Obsidian 插件，将 Markdown 文件转化为交互式大纲与思维导图，数据始终以 `.mind.md` 文件存储，完全兼容 Obsidian 生态。
+
+            ## 双视图编辑
+            - **大纲视图**：拖拽排序、键盘快捷键、行内编辑
+            - **思维导图视图**：基于 Mind Elixir，可视化编辑节点关系
+            - 一键切换，数据实时同步
+
+            ## Markdown 原生
+            - `.mind.md` 文件为唯一数据源（往返保真：`serialize(parse(text)) === text`）
+            - 未修改节点保留原始 Markdown 格式，编辑不影响排版
+            - 可配置标题深度（默认 3），超出层级的节点自动转为列表项
+
+            ## 编辑功能
+            - 键盘快捷键：`Tab`/`Shift+Tab` 缩进升降、`Enter` 新建、`Delete` 删除
+            - 拖拽排序调整节点层级与位置
+            - 双击 / `F2` 行内编辑、任务复选框切换
+            - 节点详情面板：附加备注、代码块、引用等
+            - 完整撤销/重做系统
+
+            ## 搜索筛选
+            - `Ctrl+F` 搜索节点，关键词高亮
+            - 祖先节点保持可见，不丢失上下文
+
+            ## 嵌入块
+            - Markdown 中通过 ````minddoc` 代码块嵌入只读视图
+            - 可配置视图模式、高度、最大深度、初始折叠状态
+
+            ## 导入导出
+            - **导入**：OPML（幕布/WorkFlowy）、FreeMind (.mm)
+            - **导出**：OPML、JSON、PNG（思维导图截图）
+            - **复制为 AI 上下文**：一键生成结构化提示词，方便与大模型协作
+
+            ## 主题适配
+            - 自动跟随 Obsidian 亮色/暗色主题
+            - 思维导图配色从 Obsidian CSS 变量派生
+
+            ## 技术栈
+            TypeScript + Preact + @preact/signals + unified/remark + Mind Elixir + esbuild + Vitest
+          files: |
+            main.js
+            manifest.json
+            styles.css
