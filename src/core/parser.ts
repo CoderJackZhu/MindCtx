@@ -37,12 +37,11 @@ function extractInlineText(node: InlineNode): string {
     case 'break':
       return '\n';
     default: {
-      const n = node as InlineNode;
-      if (n.children && Array.isArray(n.children)) {
-        return n.children.map(extractInlineText).join('');
+      if (node.children && Array.isArray(node.children)) {
+        return node.children.map(extractInlineText).join('');
       }
-      if (n.value !== undefined) {
-        return n.value;
+      if (node.value !== undefined) {
+        return node.value;
       }
       return '';
     }

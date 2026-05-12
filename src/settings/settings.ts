@@ -41,7 +41,7 @@ export class MindDocSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('默认视图')
-      .setDesc('打开 MindDoc 文件时的默认视图')
+      .setDesc('打开 minddoc 文件时的默认视图')
       .addDropdown((drop) => {
         drop.addOption('outline', '大纲');
         drop.addOption('mindmap', '思维导图');

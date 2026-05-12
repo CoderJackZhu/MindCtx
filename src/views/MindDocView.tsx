@@ -53,6 +53,7 @@ export class MindDocView extends ItemView {
   }
 
   async onOpen() {
+    await super.onOpen();
     this.debouncedWrite = debounce(() => { void this.writeFile(); }, this.plugin.settings.autoSaveDelay, { maxWait: 2000 });
 
     this.registerEvent(
@@ -74,6 +75,7 @@ export class MindDocView extends ItemView {
   }
 
   async onClose() {
+    await super.onClose();
     this.debouncedWrite?.cancel();
     const container = this.containerEl.children[1];
     if (container) render(null, container);

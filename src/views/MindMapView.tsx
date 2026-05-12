@@ -56,7 +56,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       contextMenu: false,
       toolBar: false,
       keypress: false,
-      locale: 'zh_CN' as 'zh_CN',
+      locale: 'zh_CN' as const,
     });
 
     applyTheme(containerRef.current, getObsidianTheme(containerRef.current));
@@ -135,7 +135,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       }
     } else if (e.key === 'F2' && selectedNode) {
       e.preventDefault();
-      me.beginEdit(selectedNode);
+      void me.beginEdit(selectedNode);
     }
   };
 
@@ -145,7 +145,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       class="minddoc-mindmap-container"
       style={{ width: '100%', height: '100%' }}
       tabIndex={0}
-      onKeyDown={handleKeyDown as unknown as h.JSX.EventHandler<h.JSX.TargetedKeyboardEvent<HTMLDivElement>>}
+      onKeyDown={handleKeyDown}
     />
   );
 }

@@ -94,7 +94,7 @@ export default class MindDocPlugin extends Plugin {
 
     this.addCommand({
       id: 'import-opml',
-      name: '导入 OPML 文件',
+      name: '导入 opml 文件',
       callback: () => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -116,7 +116,7 @@ export default class MindDocPlugin extends Plugin {
 
     this.addCommand({
       id: 'import-freemind',
-      name: '导入 FreeMind 文件',
+      name: '导入 freemind 文件',
       callback: () => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -138,7 +138,7 @@ export default class MindDocPlugin extends Plugin {
 
     this.addCommand({
       id: 'export-opml',
-      name: '导出为 OPML',
+      name: '导出为 opml',
       checkCallback: (checking) => {
         const view = this.getActiveMindDocView();
         if (!view?.tree) return false;
@@ -204,7 +204,7 @@ export default class MindDocPlugin extends Plugin {
 
         if (file instanceof TFile && this.isMindDocFile(file)) {
           menu.addItem((item) => {
-            item.setTitle('导出为 OPML')
+            item.setTitle('导出为 opml')
               .setIcon('download')
               .onClick(() => {
                 void this.app.vault.read(file).then(async (content) => {
@@ -242,7 +242,7 @@ export default class MindDocPlugin extends Plugin {
         return view instanceof MindDocView && view.file?.path === file.path;
       });
     if (existing) {
-      this.app.workspace.revealLeaf(existing);
+      await this.app.workspace.revealLeaf(existing);
       return;
     }
     const leaf = this.app.workspace.getLeaf(false);
