@@ -91,8 +91,7 @@ export function treeToMindElixirData(
 }
 
 export function syncMindElixirAddChildButtons(
-  instance: MindElixirInstance,
-  onAddChild: (parentId: string) => void
+  instance: MindElixirInstance
 ): void {
   const topics = instance.container.querySelectorAll<MindElixirTopicElement>(
     'me-root > me-tpc, me-parent > me-tpc'
@@ -114,8 +113,7 @@ export function syncMindElixirAddChildButtons(
     const handleAddChild = (event: Event) => {
       event.preventDefault();
       event.stopPropagation();
-      const parentId = topic.nodeObj?.id;
-      if (parentId) onAddChild(parentId);
+      void instance.addChild(topic as unknown as import('mind-elixir').Topic);
     };
 
     button.addEventListener('click', handleAddChild);
