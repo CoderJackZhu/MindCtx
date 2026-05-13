@@ -2,9 +2,10 @@ import { h } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import MindElixir from 'mind-elixir';
 import type { MindElixirInstance } from 'mind-elixir';
-import { treeToMindElixirData, setupMindElixirEvents } from '../bridge/mindElixirBridge.js';
+import { treeToMindElixirData, setupMindElixirEvents, syncMindElixirAddChildButtons } from '../bridge/mindElixirBridge.js';
 import { getObsidianTheme, applyTheme } from '../bridge/mindElixirTheme.js';
 import type { MindDocTree, PartialOperation } from '../core/types.js';
+import { findNode } from '../core/operations.js';
 
 interface MindMapViewProps {
   tree: MindDocTree | null;
@@ -27,6 +28,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
   const isInternalUpdate = useRef(false);
   const collapsedIdsRef = useRef(collapsedIds);
   const treeIdRef = useRef<string | null>(null);
+  const pendingEditNodeIdRef = useRef<string | null>(null);
 
   collapsedIdsRef.current = collapsedIds;
 
@@ -34,6 +36,34 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     isInternalUpdate.current = true;
     onOperation(op);
     queueMicrotask(() => { isInternalUpdate.current = false; });
+  };
+
+  const focusNodeForEditing = (nodeId: string) => {
+    requestAnimationFrame(() => {
+      const me = instanceRef.current;
+      if (!me) return;
+      const topic = me.findEle(nodeId);
+      if (!topic) return;
+      me.selectNode(topic);
+      void me.beginEdit(topic);
+    });
+  };
+
+  const createChildAndEdit = (parentId: string) => {
+    if (!tree) return;
+    const parent = findNode(tree.root, parentId);
+    if (!parent) return;
+
+    const insertIndex = parent.children.length;
+    onOperation({
+      type: 'create',
+      parentId,
+      index: -1,
+      title: '',
+    });
+
+    const newNode = parent.children[insertIndex];
+    if (newNode) pendingEditNodeIdRef.current = newNode.id;
   };
 
   useEffect(() => {
@@ -70,12 +100,19 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
 
     const data = treeToMindElixirData(tree, collapsedIds);
     me.init(data);
+    syncMindElixirAddChildButtons(me, createChildAndEdit);
+
+    const addButtonObserver = new MutationObserver(() => {
+      syncMindElixirAddChildButtons(me, createChildAndEdit);
+    });
+    addButtonObserver.observe(containerRef.current, { childList: true, subtree: true });
 
     cleanupRef.current = setupMindElixirEvents(me, wrappedOnOperation, onCollapsedChange, () => collapsedIdsRef.current);
     instanceRef.current = me;
 
     return () => {
       cleanupRef.current?.();
+      addButtonObserver.disconnect();
       themeObserver.disconnect();
       if (instanceRef.current) {
         instanceRef.current.destroy();
@@ -90,6 +127,12 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     if (isInternalUpdate.current) return;
     const data = treeToMindElixirData(tree, collapsedIds);
     instanceRef.current.refresh(data);
+    syncMindElixirAddChildButtons(instanceRef.current, createChildAndEdit);
+    if (pendingEditNodeIdRef.current) {
+      const nodeId = pendingEditNodeIdRef.current;
+      pendingEditNodeIdRef.current = null;
+      focusNodeForEditing(nodeId);
+    }
   }, [tree, collapsedIds]);
 
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -109,12 +152,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       e.preventDefault();
       const nodeObj = (selectedNode as unknown as { nodeObj?: NodeObj }).nodeObj;
       if (nodeObj) {
-        onOperation({
-          type: 'create',
-          parentId: nodeObj.id,
-          index: -1,
-          title: '新节点',
-        });
+        createChildAndEdit(nodeObj.id);
       }
     } else if (e.key === 'Enter' && selectedNode) {
       e.preventDefault();

@@ -1,6 +1,8 @@
 import type { MindDocTree, MindDocNode, PartialOperation } from '../core/types.js';
 import type { NodeObj, MindElixirData, MindElixirInstance, Operation as MEOperation } from 'mind-elixir';
 
+type MindElixirTopicElement = HTMLElement & { nodeObj?: NodeObj };
+
 export function treeToMindElixirData(tree: MindDocTree, collapsedIds: Set<string>): MindElixirData {
   function convert(node: MindDocNode, isTopLevel: boolean, index: number): NodeObj {
     const data: NodeObj = {
@@ -30,6 +32,39 @@ export function treeToMindElixirData(tree: MindDocTree, collapsedIds: Set<string
   };
 
   return { nodeData: rootData };
+}
+
+export function syncMindElixirAddChildButtons(
+  instance: MindElixirInstance,
+  onAddChild: (parentId: string) => void
+): void {
+  const topics = instance.container.querySelectorAll<MindElixirTopicElement>('me-tpc');
+
+  topics.forEach(topic => {
+    if (!topic.nodeObj || topic.querySelector(':scope > .minddoc-mindmap-add-child')) return;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'minddoc-mindmap-add-child';
+    button.textContent = '+';
+    button.setAttribute('aria-label', '添加子节点');
+    button.setAttribute('title', '添加子节点');
+
+    const handleAddChild = (event: Event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const parentId = topic.nodeObj?.id;
+      if (parentId) onAddChild(parentId);
+    };
+
+    button.addEventListener('click', handleAddChild);
+    button.addEventListener('mousedown', event => {
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    topic.appendChild(button);
+  });
 }
 
 export function setupMindElixirEvents(
