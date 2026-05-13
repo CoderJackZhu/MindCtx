@@ -60,60 +60,47 @@ function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
       onMouseLeave={() => setIsOpen(false)}
     >
       {isOpen && (
-        <button
-          type="button"
-          class="minddoc-mindmap-center-button"
-          onClick={onCenter}
-          title="定位到中心主题"
-          aria-label="定位到中心主题"
-        >
-          <svg
-            class="minddoc-mindmap-center-icon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <path d="M4 9V4h5" />
-            <path d="M15 4h5v5" />
-            <path d="M20 15v5h-5" />
-            <path d="M9 20H4v-5" />
-            <circle cx="12" cy="12" r="1.6" />
-          </svg>
-        </button>
-      )}
-      {isOpen ? (
         <div class="minddoc-mindmap-zoom-panel">
-          <div class="minddoc-mindmap-zoom-slider-frame">
-            <input
-              type="range"
-              class="minddoc-mindmap-zoom-slider"
-              min="10"
-              max="400"
-              value={String(percentage)}
-              onInput={handleSliderInput}
-              onChange={handleSliderInput}
-              aria-label="缩放比例"
-            />
-          </div>
           <button
             type="button"
-            class="minddoc-mindmap-zoom-value"
-            onMouseEnter={() => setIsOpen(true)}
-            aria-expanded={isOpen}
+            class="minddoc-mindmap-center-button"
+            onClick={onCenter}
+            title="定位到中心主题"
+            aria-label="定位到中心主题"
           >
-            {percentage}%
+            <svg
+              class="minddoc-mindmap-center-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M4 9V4h5" />
+              <path d="M15 4h5v5" />
+              <path d="M20 15v5h-5" />
+              <path d="M9 20H4v-5" />
+              <circle cx="12" cy="12" r="1.6" />
+            </svg>
           </button>
+          <input
+            type="range"
+            class="minddoc-mindmap-zoom-slider"
+            min="10"
+            max="400"
+            value={String(percentage)}
+            onInput={handleSliderInput}
+            onChange={handleSliderInput}
+            aria-label="缩放比例"
+          />
         </div>
-      ) : (
-        <button
-          type="button"
-          class="minddoc-mindmap-zoom-value"
-          onMouseEnter={() => setIsOpen(true)}
-          aria-expanded={isOpen}
-        >
-          {percentage}%
-        </button>
       )}
+      <button
+        type="button"
+        class="minddoc-mindmap-zoom-value"
+        onMouseEnter={() => setIsOpen(true)}
+        aria-expanded={isOpen}
+      >
+        {percentage}%
+      </button>
     </div>
   );
 }
