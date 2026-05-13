@@ -233,13 +233,13 @@
   right: 8px;
   z-index: 20;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
 }
 
 .minddoc-mindmap-zoom-panel {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   gap: 8px;
   padding: 8px;
@@ -249,12 +249,23 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.minddoc-mindmap-zoom-slider {
-  width: 24px;
+.minddoc-mindmap-zoom-slider-frame {
+  position: relative;
+  width: 28px;
   height: 128px;
-  writing-mode: vertical-lr;
-  direction: rtl;
+  flex: 0 0 28px;
+}
+
+.minddoc-mindmap-zoom-slider {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 128px;
+  height: 24px;
+  margin: 0;
+  transform: translate(-50%, -50%) rotate(-90deg);
   accent-color: var(--interactive-accent);
+  cursor: pointer;
 }
 
 .minddoc-mindmap-zoom-value,
@@ -275,8 +286,28 @@
 }
 
 .minddoc-mindmap-center-button {
-  padding: 4px 8px;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.minddoc-mindmap-center-icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.minddoc-mindmap-center-icon circle {
+  fill: currentColor;
+  stroke: none;
 }
 
 .minddoc-mindmap-zoom-value:hover,
