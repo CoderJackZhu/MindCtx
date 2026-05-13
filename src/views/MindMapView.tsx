@@ -168,12 +168,39 @@ function FloatingToolbar({ selectedNodeId, onToggleCheck, onStartConnection, onI
 
   if (!selectedNodeId) return null;
 
+  const stopToolbarEvent = (event: JSX.TargetedMouseEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+  };
+
+  const handleToggleCheckClick = (event: JSX.TargetedMouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onToggleCheck();
+  };
+
+  const handleStartConnectionClick = (event: JSX.TargetedMouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onStartConnection();
+  };
+
+  const handleToggleLinkPanelClick = (event: JSX.TargetedMouseEvent<HTMLButtonElement>) => {
+    console.log('CLICKED');
+    event.preventDefault();
+    event.stopPropagation();
+    setShowLinkPanel(current => !current);
+  };
+
   return (
-    <div class="minddoc-floating-toolbar">
+    <div
+      class="minddoc-floating-toolbar"
+      onMouseDown={stopToolbarEvent}
+      onClick={stopToolbarEvent}
+    >
       <button
         type="button"
         class="minddoc-floating-toolbar-btn"
-        onClick={onToggleCheck}
+        onClick={handleToggleCheckClick}
         title="切换待办状态"
       >
         ☑ 待办
@@ -181,7 +208,7 @@ function FloatingToolbar({ selectedNodeId, onToggleCheck, onStartConnection, onI
       <button
         type="button"
         class={`minddoc-floating-toolbar-btn${connectionMode ? ' is-active' : ''}`}
-        onClick={onStartConnection}
+        onClick={handleStartConnectionClick}
         title="创建连结线"
       >
         🔗 连结线
@@ -189,7 +216,7 @@ function FloatingToolbar({ selectedNodeId, onToggleCheck, onStartConnection, onI
       <button
         type="button"
         class={`minddoc-floating-toolbar-btn${showLinkPanel ? ' is-active' : ''}`}
-        onClick={() => setShowLinkPanel(!showLinkPanel)}
+        onClick={handleToggleLinkPanelClick}
         title="插入链接"
       >
         🌐 链接
@@ -218,6 +245,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
   const [connectionMode, setConnectionMode] = useState(false);
   const connectionSourceRef = useRef<string | null>(null);
   const connectionSvgRef = useRef<SVGElement | null>(null);
+  const connectionCleanupRef = useRef<(() => void) | null>(null);
 
   collapsedIdsRef.current = collapsedIds;
 
@@ -228,12 +256,15 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
   };
 
   const handleToggleCheck = () => {
+    console.log('CLICKED');
     if (selectedNodeId) {
       onOperation({ type: 'toggleCheck', nodeId: selectedNodeId });
     }
   };
 
   const cleanupConnectionMode = () => {
+    connectionCleanupRef.current?.();
+    connectionCleanupRef.current = null;
     setConnectionMode(false);
     connectionSourceRef.current = null;
     if (connectionSvgRef.current) {
@@ -243,6 +274,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
   };
 
   const handleStartConnection = () => {
+    console.log('CLICKED');
     if (connectionMode) {
       cleanupConnectionMode();
       return;
@@ -252,7 +284,15 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     connectionSourceRef.current = selectedNodeId;
 
     const container = containerRef.current;
-    if (!container) return;
+    if (!container) {
+      cleanupConnectionMode();
+      return;
+    }
+    const shell = container.parentElement;
+    if (!shell) {
+      cleanupConnectionMode();
+      return;
+    }
 
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.classList.add('minddoc-connection-preview');
@@ -268,7 +308,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     line.setAttribute('stroke-width', '2');
     line.setAttribute('stroke-dasharray', '6 4');
     svg.appendChild(line);
-    container.parentElement!.appendChild(svg);
+    shell.appendChild(svg);
     connectionSvgRef.current = svg;
 
     const sourceEl = container.querySelector<HTMLElement>(`me-tpc[data-nodeid="${selectedNodeId}"]`) ??
@@ -311,19 +351,24 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       }
     };
 
-    const cleanup = () => {
+    const cleanupListeners = () => {
       document.removeEventListener('mousemove', onMouseMove);
       container.removeEventListener('click', onTargetClick, true);
       document.removeEventListener('keydown', onKeyDown);
+    };
+
+    const cleanup = () => {
       cleanupConnectionMode();
     };
 
     document.addEventListener('mousemove', onMouseMove);
     container.addEventListener('click', onTargetClick, true);
     document.addEventListener('keydown', onKeyDown);
+    connectionCleanupRef.current = cleanupListeners;
   };
 
   const handleInsertLink = (text: string, url: string) => {
+    console.log('CLICKED');
     if (!selectedNodeId || !tree) return;
     const node = findNode(tree.root, selectedNodeId);
     if (!node) return;
