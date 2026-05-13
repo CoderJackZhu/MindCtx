@@ -80,6 +80,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       el: containerRef.current,
       direction: MindElixir.SIDE,
       draggable: true,
+      selectionContainer: containerRef.current.ownerDocument.body,
       contextMenu: false,
       toolBar: false,
       keypress: false,
