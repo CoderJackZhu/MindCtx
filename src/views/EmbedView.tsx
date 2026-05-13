@@ -149,7 +149,7 @@ function ReadOnlyMindMap({ tree, direction }: ReadOnlyMindMapProps) {
 
     applyTheme(containerRef.current, getObsidianTheme(containerRef.current));
 
-    const data = treeToMindElixirData(tree, new Set());
+    const data = treeToMindElixirData(tree, new Set(), direction);
     me.init(data);
     instanceRef.current = me;
 

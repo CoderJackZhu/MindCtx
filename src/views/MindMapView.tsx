@@ -103,7 +103,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     });
     themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
-    const data = treeToMindElixirData(tree, collapsedIds);
+    const data = treeToMindElixirData(tree, collapsedIds, direction);
     me.init(data);
     syncMindElixirAddChildButtons(me, createChildAndEdit);
 
@@ -131,7 +131,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     if (!instanceRef.current || !tree) return;
     if (isInternalUpdate.current) return;
     instanceRef.current.direction = getMindElixirDirection(direction);
-    const data = treeToMindElixirData(tree, collapsedIds);
+    const data = treeToMindElixirData(tree, collapsedIds, direction);
     instanceRef.current.refresh(data);
     syncMindElixirAddChildButtons(instanceRef.current, createChildAndEdit);
     if (pendingEditParentIdRef.current) {

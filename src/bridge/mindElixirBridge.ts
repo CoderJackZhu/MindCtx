@@ -18,7 +18,23 @@ export function getMindElixirDirection(direction: MindMapDirection): number {
   }
 }
 
-export function treeToMindElixirData(tree: MindDocTree, collapsedIds: Set<string>): MindElixirData {
+export function treeToMindElixirData(
+  tree: MindDocTree,
+  collapsedIds: Set<string>,
+  direction: MindMapDirection
+): MindElixirData {
+  function getTopLevelDirection(index: number): number {
+    switch (direction) {
+      case 'left':
+        return 0;
+      case 'right':
+        return 1;
+      case 'side':
+      default:
+        return index % 2 === 0 ? 0 : 1;
+    }
+  }
+
   function convert(node: MindDocNode, isTopLevel: boolean, index: number): NodeObj {
     const data: NodeObj = {
       id: node.id,
@@ -29,7 +45,7 @@ export function treeToMindElixirData(tree: MindDocTree, collapsedIds: Set<string
     };
 
     if (isTopLevel) {
-      data.direction = index % 2 === 0 ? 0 : 1;
+      data.direction = getTopLevelDirection(index);
     }
 
     if (node.children.length > 0) {
