@@ -155,6 +155,7 @@ export class MindDocView extends ItemView {
             this.tree.root.children.forEach(walk);
             this.collapsedIds.value = ids;
           },
+          mindmapDirection: this.plugin.settings.mindmapDirection,
         }),
         container
       );

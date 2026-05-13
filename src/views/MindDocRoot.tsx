@@ -6,6 +6,7 @@ import { OutlineToolbar } from './components/OutlineToolbar.js';
 import { OutlineView } from './OutlineView.js';
 import { MindMapView } from './MindMapView.js';
 import { DetailPanel } from './components/DetailPanel.js';
+import type { MindMapDirection } from '../bridge/mindElixirBridge.js';
 
 interface MindDocRootProps {
   treeSignal: Signal<MindDocTree | null>;
@@ -20,6 +21,7 @@ interface MindDocRootProps {
   onCollapsedChange: (ids: Set<string>) => void;
   onExpandAll: () => void;
   onCollapseAll: () => void;
+  mindmapDirection: MindMapDirection;
 }
 
 export function MindDocRoot(props: MindDocRootProps) {
@@ -56,6 +58,7 @@ export function MindDocRoot(props: MindDocRootProps) {
             onUndo={props.onUndo}
             onRedo={props.onRedo}
             onCollapsedChange={props.onCollapsedChange}
+            direction={props.mindmapDirection}
           />
         ) : (
           <div class="minddoc-loading">加载中...</div>

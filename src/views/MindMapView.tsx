@@ -2,10 +2,16 @@ import { h } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import MindElixir from 'mind-elixir';
 import type { MindElixirInstance } from 'mind-elixir';
-import { treeToMindElixirData, setupMindElixirEvents, syncMindElixirAddChildButtons } from '../bridge/mindElixirBridge.js';
+import {
+  getMindElixirDirection,
+  treeToMindElixirData,
+  setupMindElixirEvents,
+  syncMindElixirAddChildButtons,
+} from '../bridge/mindElixirBridge.js';
 import { getObsidianTheme, applyTheme } from '../bridge/mindElixirTheme.js';
 import type { MindDocTree, PartialOperation } from '../core/types.js';
 import { findNode } from '../core/operations.js';
+import type { MindMapDirection } from '../bridge/mindElixirBridge.js';
 
 interface MindMapViewProps {
   tree: MindDocTree | null;
@@ -14,6 +20,7 @@ interface MindMapViewProps {
   onUndo: () => void;
   onRedo: () => void;
   onCollapsedChange: (ids: Set<string>) => void;
+  direction: MindMapDirection;
 }
 
 interface NodeObj {
@@ -21,7 +28,7 @@ interface NodeObj {
   parent?: NodeObj;
 }
 
-export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, onCollapsedChange }: MindMapViewProps) {
+export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, onCollapsedChange, direction }: MindMapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<MindElixirInstance | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
@@ -78,7 +85,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
 
     const me = new MindElixir({
       el: containerRef.current,
-      direction: MindElixir.SIDE,
+      direction: getMindElixirDirection(direction),
       draggable: true,
       selectionContainer: containerRef.current.ownerDocument.body,
       contextMenu: false,
@@ -118,11 +125,12 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       }
       treeIdRef.current = null;
     };
-  }, [tree?.filePath]);
+  }, [tree?.filePath, direction]);
 
   useEffect(() => {
     if (!instanceRef.current || !tree) return;
     if (isInternalUpdate.current) return;
+    instanceRef.current.direction = getMindElixirDirection(direction);
     const data = treeToMindElixirData(tree, collapsedIds);
     instanceRef.current.refresh(data);
     syncMindElixirAddChildButtons(instanceRef.current, createChildAndEdit);
@@ -133,7 +141,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       pendingEditParentIdRef.current = null;
       if (newNode) focusNodeForEditing(newNode.id);
     }
-  }, [tree, collapsedIds]);
+  }, [tree, collapsedIds, direction]);
 
   const handleKeyDown = (e: KeyboardEvent) => {
     const mod = e.metaKey || e.ctrlKey;

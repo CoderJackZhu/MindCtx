@@ -4,7 +4,7 @@ import { TFile } from 'obsidian';
 import MindElixir from 'mind-elixir';
 import type { MindElixirInstance } from 'mind-elixir';
 import { parse } from '../core/parser.js';
-import { treeToMindElixirData } from '../bridge/mindElixirBridge.js';
+import { getMindElixirDirection, treeToMindElixirData } from '../bridge/mindElixirBridge.js';
 import { getObsidianTheme, applyTheme } from '../bridge/mindElixirTheme.js';
 import { MINDDOC_VIEW_TYPE } from '../constants.js';
 import type { MindDocTree, MindDocNode } from '../core/types.js';
@@ -59,7 +59,7 @@ export function EmbedView({ tree, config, file, plugin }: EmbedViewProps) {
         {currentView === 'outline' ? (
           <ReadOnlyOutline tree={currentTree} maxDepth={config.maxDepth} collapsed={config.collapsed} />
         ) : (
-          <ReadOnlyMindMap tree={currentTree} />
+          <ReadOnlyMindMap tree={currentTree} direction={plugin.settings.mindmapDirection} />
         )}
       </div>
     </div>
@@ -127,9 +127,10 @@ function ReadOnlyOutline({ tree, maxDepth, collapsed }: ReadOnlyOutlineProps) {
 
 interface ReadOnlyMindMapProps {
   tree: MindDocTree;
+  direction: MindDocPlugin['settings']['mindmapDirection'];
 }
 
-function ReadOnlyMindMap({ tree }: ReadOnlyMindMapProps) {
+function ReadOnlyMindMap({ tree, direction }: ReadOnlyMindMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<MindElixirInstance | null>(null);
 
@@ -138,7 +139,7 @@ function ReadOnlyMindMap({ tree }: ReadOnlyMindMapProps) {
 
     const me = new MindElixir({
       el: containerRef.current,
-      direction: MindElixir.SIDE,
+      direction: getMindElixirDirection(direction),
       draggable: false,
       editable: false,
       contextMenu: false,
@@ -158,7 +159,7 @@ function ReadOnlyMindMap({ tree }: ReadOnlyMindMapProps) {
         instanceRef.current = null;
       }
     };
-  }, [tree]);
+  }, [tree, direction]);
 
   return (
     <div

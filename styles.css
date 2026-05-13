@@ -228,6 +228,11 @@
   z-index: 10;
 }
 
+.minddoc-mindmap-container .lhs me-tpc .minddoc-mindmap-add-child {
+  right: auto;
+  left: -22px;
+}
+
 .minddoc-mindmap-container me-tpc:hover .minddoc-mindmap-add-child,
 .minddoc-mindmap-container me-tpc.selected .minddoc-mindmap-add-child {
   opacity: 1;

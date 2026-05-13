@@ -1,7 +1,22 @@
 import type { MindDocTree, MindDocNode, PartialOperation } from '../core/types.js';
+import MindElixir from 'mind-elixir';
 import type { NodeObj, MindElixirData, MindElixirInstance, Operation as MEOperation } from 'mind-elixir';
+import type { MindDocSettings } from '../settings/settings.js';
 
 type MindElixirTopicElement = HTMLElement & { nodeObj?: NodeObj };
+export type MindMapDirection = MindDocSettings['mindmapDirection'];
+
+export function getMindElixirDirection(direction: MindMapDirection): number {
+  switch (direction) {
+    case 'left':
+      return MindElixir.LEFT;
+    case 'right':
+      return MindElixir.RIGHT;
+    case 'side':
+    default:
+      return MindElixir.SIDE;
+  }
+}
 
 export function treeToMindElixirData(tree: MindDocTree, collapsedIds: Set<string>): MindElixirData {
   function convert(node: MindDocNode, isTopLevel: boolean, index: number): NodeObj {
