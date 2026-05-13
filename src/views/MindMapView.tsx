@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import MindElixir from 'mind-elixir';
 import type { MindElixirInstance } from 'mind-elixir';
 import {
@@ -34,10 +34,13 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
   const cleanupRef = useRef<(() => void) | null>(null);
   const isInternalUpdate = useRef(false);
   const collapsedIdsRef = useRef(collapsedIds);
+  const treeRef = useRef(tree);
   const treeIdRef = useRef<string | null>(null);
   const pendingEditParentIdRef = useRef<string | null>(null);
+  const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
 
   collapsedIdsRef.current = collapsedIds;
+  treeRef.current = tree;
 
   const wrappedOnOperation = (op: PartialOperation) => {
     isInternalUpdate.current = true;
@@ -57,8 +60,9 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
   };
 
   const createChildAndEdit = (parentId: string) => {
-    if (!tree) return;
-    const parent = findNode(tree.root, parentId);
+    const currentTree = treeRef.current;
+    if (!currentTree) return;
+    const parent = findNode(currentTree.root, parentId);
     if (!parent) return;
 
     pendingEditParentIdRef.current = parentId;
@@ -68,6 +72,21 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       index: -1,
       title: '',
     });
+  };
+
+  const enterFocusedNode = () => {
+    const nodeObj = (instanceRef.current?.currentNode as unknown as { nodeObj?: NodeObj } | null)?.nodeObj;
+    if (nodeObj) {
+      setFocusNodeId(nodeObj.id);
+    }
+  };
+
+  const closeContextMenu = (event: MouseEvent) => {
+    const target = event.currentTarget;
+    if (target instanceof HTMLElement) {
+      const menu = target.closest('.context-menu') as HTMLElement | null;
+      if (menu) menu.hidden = true;
+    }
   };
 
   useEffect(() => {
@@ -88,7 +107,19 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       direction: getMindElixirDirection(direction),
       draggable: true,
       selectionContainer: containerRef.current.ownerDocument.body,
-      contextMenu: false,
+      contextMenu: {
+        focus: false,
+        link: false,
+        extend: [
+          {
+            name: '进入此节点',
+            onclick: (event: MouseEvent) => {
+              closeContextMenu(event);
+              enterFocusedNode();
+            },
+          },
+        ],
+      },
       toolBar: false,
       keypress: false,
       locale: 'zh_CN' as const,
@@ -103,7 +134,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     });
     themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
-    const data = treeToMindElixirData(tree, collapsedIds, direction);
+    const data = treeToMindElixirData(tree, collapsedIds, direction, focusNodeId);
     me.init(data);
     syncMindElixirAddChildButtons(me, createChildAndEdit);
 
@@ -128,10 +159,21 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
   }, [tree?.filePath, direction]);
 
   useEffect(() => {
+    setFocusNodeId(null);
+  }, [tree?.filePath]);
+
+  useEffect(() => {
+    if (!tree || !focusNodeId) return;
+    if (!findNode(tree.root, focusNodeId)) {
+      setFocusNodeId(null);
+    }
+  }, [tree, focusNodeId]);
+
+  useEffect(() => {
     if (!instanceRef.current || !tree) return;
     if (isInternalUpdate.current) return;
     instanceRef.current.direction = getMindElixirDirection(direction);
-    const data = treeToMindElixirData(tree, collapsedIds, direction);
+    const data = treeToMindElixirData(tree, collapsedIds, direction, focusNodeId);
     instanceRef.current.refresh(data);
     syncMindElixirAddChildButtons(instanceRef.current, createChildAndEdit);
     if (pendingEditParentIdRef.current) {
@@ -141,7 +183,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       pendingEditParentIdRef.current = null;
       if (newNode) focusNodeForEditing(newNode.id);
     }
-  }, [tree, collapsedIds, direction]);
+  }, [tree, collapsedIds, direction, focusNodeId]);
 
   const handleKeyDown = (e: KeyboardEvent) => {
     const mod = e.metaKey || e.ctrlKey;
@@ -185,13 +227,29 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     }
   };
 
+  const focusedNode = tree && focusNodeId ? findNode(tree.root, focusNodeId) : null;
+
   return (
-    <div
-      ref={containerRef}
-      class="minddoc-mindmap-container"
-      style={{ width: '100%', height: '100%' }}
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
-    />
+    <div class="minddoc-mindmap-shell">
+      {focusedNode && (
+        <div class="minddoc-mindmap-focusbar">
+          <span class="minddoc-mindmap-focusbar-label">当前聚焦：{focusedNode.title || '(空节点)'}</span>
+          <button
+            type="button"
+            class="minddoc-mindmap-focusbar-button"
+            onClick={() => setFocusNodeId(null)}
+          >
+            退出聚焦
+          </button>
+        </div>
+      )}
+      <div
+        ref={containerRef}
+        class="minddoc-mindmap-container"
+        style={{ width: '100%', height: '100%' }}
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+      />
+    </div>
   );
 }

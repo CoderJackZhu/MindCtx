@@ -21,8 +21,18 @@ export function getMindElixirDirection(direction: MindMapDirection): number {
 export function treeToMindElixirData(
   tree: MindDocTree,
   collapsedIds: Set<string>,
-  direction: MindMapDirection
+  direction: MindMapDirection,
+  focusNodeId?: string | null
 ): MindElixirData {
+  function findMindDocNode(node: MindDocNode, id: string): MindDocNode | null {
+    if (node.id === id) return node;
+    for (const child of node.children) {
+      const found = findMindDocNode(child, id);
+      if (found) return found;
+    }
+    return null;
+  }
+
   function getTopLevelDirection(index: number): number {
     switch (direction) {
       case 'left':
@@ -55,6 +65,21 @@ export function treeToMindElixirData(
     return data;
   }
 
+  const focusNode = focusNodeId ? findMindDocNode(tree.root, focusNodeId) : null;
+  if (focusNode) {
+    return {
+      direction: getMindElixirDirection(direction),
+      nodeData: {
+        id: focusNode.id,
+        topic: focusNode.title || '(空节点)',
+        expanded: true,
+        tags: focusNode.tags.length > 0 ? focusNode.tags : undefined,
+        note: focusNode.note || undefined,
+        children: focusNode.children.map((child, i) => convert(child, true, i)),
+      },
+    };
+  }
+
   const rootData: NodeObj = {
     id: tree.root.id,
     topic: tree.root.title || tree.filePath.replace(/.*\//, '').replace(/\.mind\.md$/, '').replace(/\.md$/, ''),
@@ -62,7 +87,7 @@ export function treeToMindElixirData(
     children: tree.root.children.map((child, i) => convert(child, true, i)),
   };
 
-  return { nodeData: rootData };
+  return { direction: getMindElixirDirection(direction), nodeData: rootData };
 }
 
 export function syncMindElixirAddChildButtons(
