@@ -82,4 +82,16 @@ describe('Serializer', () => {
     const result = serialize(tree, { headingDepth: 1 });
     expect(result).toContain('- Sub');
   });
+
+  test('dirty 列表项 block 不会被重复缩进', () => {
+    const md = '# Title\n\n- Item\n  > quoted\n';
+    const tree = parse(md);
+    const item = tree.root.children[0].children[0];
+    item.title = 'Changed';
+    item.dirty = true;
+    tree.root.subtreeDirty = true;
+    tree.root.children[0].subtreeDirty = true;
+
+    expect(serialize(tree)).toBe('# Title\n\n- Changed\n  > quoted\n\n');
+  });
 });

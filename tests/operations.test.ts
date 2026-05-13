@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeEach } from 'vitest';
 import { parse } from '../src/core/parser.js';
 import { applyOperation, findNode, findParent, findIndex, recalculateNodeTypes } from '../src/core/operations.js';
+import { serialize } from '../src/core/serializer.js';
 import { UndoManager } from '../src/core/undo.js';
 import type { MindDocTree } from '../src/core/types.js';
 
@@ -63,6 +64,26 @@ describe('Operations', () => {
     expect(childA.children[2].title).toBe('Item 2');
   });
 
+  test('move 同一父节点时正确处理向后插入索引', () => {
+    const h1 = tree.root.children[0];
+    const childA = h1.children[0];
+    const item1 = childA.children[0];
+    const item2 = childA.children[1];
+
+    applyOperation(tree, { type: 'move', nodeId: item1.id, newParentId: childA.id, index: findIndex(childA, item2.id) + 1 });
+
+    expect(childA.children.map(c => c.title)).toEqual(['Item 2', 'Item 1', 'Item 3']);
+    expect(serialize(tree)).toContain('- Item 2\n- Item 1\n- Item 3');
+  });
+
+  test('move 拒绝把节点移动到自身后代下', () => {
+    const h1 = tree.root.children[0];
+    const childA = h1.children[0];
+
+    expect(() => applyOperation(tree, { type: 'move', nodeId: childA.id, newParentId: childA.children[0].id, index: -1 }))
+      .toThrow('Cannot move');
+  });
+
   test('rename 节点', () => {
     const h1 = tree.root.children[0];
     const childA = h1.children[0];
@@ -104,6 +125,17 @@ describe('Operations', () => {
     if (op.type === 'delete') {
       expect(op.deletedNode.title).toBe('Item 1');
     }
+  });
+
+  test('delete 后序列化不会保留已删除节点', () => {
+    const h1 = tree.root.children[0];
+    const childA = h1.children[0];
+
+    applyOperation(tree, { type: 'delete', nodeId: childA.children[0].id });
+
+    const markdown = serialize(tree);
+    expect(markdown).not.toContain('- Item 1');
+    expect(markdown).toContain('- Item 2');
   });
 
   test('indent 节点', () => {
@@ -173,6 +205,16 @@ describe('Operations', () => {
     expect(childA.children[1].title).toBe('Item 2');
   });
 
+  test('moveUp 后序列化使用新顺序', () => {
+    const h1 = tree.root.children[0];
+    const childA = h1.children[0];
+    const item2Id = childA.children[1].id;
+
+    applyOperation(tree, { type: 'moveUp', nodeId: item2Id });
+
+    expect(serialize(tree)).toContain('- Item 2\n- Item 1\n- Item 3');
+  });
+
   test('toggleCheck 循环', () => {
     const h1 = tree.root.children[0];
     const childA = h1.children[0];
@@ -191,6 +233,14 @@ describe('Operations', () => {
     // true -> null
     applyOperation(tree, { type: 'toggleCheck', nodeId: item1Id });
     expect(item1.checked).toBe(null);
+  });
+
+  test('toggleCheck 标题节点会序列化为任务列表项', () => {
+    const h1 = tree.root.children[0];
+
+    applyOperation(tree, { type: 'toggleCheck', nodeId: h1.id });
+
+    expect(serialize(tree).startsWith('---\nminddoc: true\n---\n\n- [ ] Root\n')).toBe(true);
   });
 
   test('操作后节点 dirty=true', () => {
@@ -321,6 +371,26 @@ describe('Undo/Redo', () => {
     // Undo should restore to null (not cycle to true)
     undoManager.undo(tree);
     expect(item1.checked).toBe(null);
+  });
+
+  test('undo/redo toggleCheck 会恢复标题节点类型', () => {
+    const h1 = tree.root.children[0];
+    const op = applyOperation(tree, { type: 'toggleCheck', nodeId: h1.id });
+    undoManager.push([op]);
+
+    expect(h1.nodeType).toBe('list-item');
+    expect(h1.checked).toBe(false);
+
+    undoManager.undo(tree);
+    expect(h1.nodeType).toBe('heading');
+    expect(h1.headingLevel).toBe(1);
+    expect(h1.checked).toBe(null);
+    expect(serialize(tree)).toContain('# Root');
+
+    undoManager.redo(tree);
+    expect(h1.nodeType).toBe('list-item');
+    expect(h1.checked).toBe(false);
+    expect(serialize(tree)).toContain('- [ ] Root');
   });
 
   test('undo outdent 恢复被收走的兄弟节点', () => {

@@ -61,6 +61,14 @@ function extractTags(text: string): string[] {
   return tags;
 }
 
+function normalizeHeadingDepth(value: unknown, fallback: number): number {
+  const parsed = typeof value === 'number' || typeof value === 'string'
+    ? Number(value)
+    : NaN;
+  const depth = Number.isInteger(parsed) ? parsed : fallback;
+  return Math.min(6, Math.max(1, depth));
+}
+
 /**
  * Create a blank MindDocNode with defaults.
  */
@@ -233,10 +241,10 @@ export function parse(markdown: string, options?: ParseOptions): MindDocTree {
   }
 
   // Determine headingDepth
-  const headingDepth: number =
-    (frontmatter['heading-depth'] as number | undefined) ??
-    options?.defaultHeadingDepth ??
-    3;
+  const headingDepth = normalizeHeadingDepth(
+    frontmatter['heading-depth'],
+    normalizeHeadingDepth(options?.defaultHeadingDepth, 3)
+  );
 
   // Step 3: Create virtual root
   const filePath = options?.filePath || '';

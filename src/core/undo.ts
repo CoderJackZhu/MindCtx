@@ -1,6 +1,47 @@
 import type { MindDocTree, Operation } from './types.js';
 import { findNode, findParent, findIndex, getAbsoluteDepth, recalculateNodeTypes } from './operations.js';
 
+function hasRecordedNewValue(op: Operation & { type: 'toggleCheck' }): boolean {
+  return Object.prototype.hasOwnProperty.call(op, 'newValue');
+}
+
+function markSubtreeDirtyPath(root: MindDocTree['root'], nodeId: string): void {
+  function walk(current: MindDocTree['root']): boolean {
+    if (current.id === nodeId) {
+      current.subtreeDirty = true;
+      return true;
+    }
+    for (const child of current.children) {
+      if (walk(child)) {
+        current.subtreeDirty = true;
+        return true;
+      }
+    }
+    return false;
+  }
+  walk(root);
+}
+
+function normalizeInsertIndex(index: number, length: number): number {
+  if (index === -1) return length;
+  return Math.min(Math.max(index, 0), length);
+}
+
+function normalizeMoveIndex(index: number, oldParent: MindDocTree['root'], newParent: MindDocTree['root'], oldIndex: number): number {
+  const insertIdx = normalizeInsertIndex(index, newParent.children.length);
+  return oldParent === newParent && insertIdx > oldIndex ? insertIdx - 1 : insertIdx;
+}
+
+function extractTagsFromTitle(title: string): string[] {
+  const tagRegex = /#([^\s#]+)/g;
+  const tags: string[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = tagRegex.exec(title)) !== null) {
+    tags.push(match[1]);
+  }
+  return tags;
+}
+
 export function invertOperation(op: Operation): Operation[] {
   switch (op.type) {
     case 'move':
@@ -39,7 +80,18 @@ export function invertOperation(op: Operation): Operation[] {
 
     case 'toggleCheck':
       // Restore oldValue directly (not cycle again)
-      return [{ type: 'toggleCheck', nodeId: op.nodeId, oldValue: op.oldValue }];
+      return [{
+        type: 'toggleCheck',
+        nodeId: op.nodeId,
+        oldValue: hasRecordedNewValue(op) ? op.newValue! : op.oldValue,
+        newValue: op.oldValue,
+        oldNodeType: op.newNodeType,
+        oldHeadingLevel: op.newHeadingLevel,
+        oldListDepth: op.newListDepth,
+        newNodeType: op.oldNodeType,
+        newHeadingLevel: op.oldHeadingLevel,
+        newListDepth: op.oldListDepth,
+      }];
 
     case 'updateNote':
       return [{ type: 'updateNote', nodeId: op.nodeId, note: op.oldNote, oldNote: op.note }];
@@ -61,15 +113,20 @@ function executeOperation(tree: MindDocTree, op: Operation): Operation {
       const node = findNode(root, op.nodeId)!;
       const currentParent = findParent(root, op.nodeId)!;
       const currentIndex = findIndex(currentParent, op.nodeId);
+      const newParent = findNode(root, op.newParentId)!;
       currentParent.children.splice(currentIndex, 1);
 
-      const newParent = findNode(root, op.newParentId)!;
-      const insertIdx = op.index === -1 ? newParent.children.length : op.index;
+      const insertIdx = normalizeMoveIndex(op.index, currentParent, newParent, currentIndex);
       newParent.children.splice(insertIdx, 0, node);
 
       node.dirty = true;
-      const depth = getAbsoluteDepth(root, op.nodeId);
-      recalculateNodeTypes(node, depth, tree.headingDepth);
+      if (currentParent !== newParent) {
+        const depth = getAbsoluteDepth(root, op.nodeId);
+        recalculateNodeTypes(node, depth, tree.headingDepth);
+      }
+      markSubtreeDirtyPath(root, currentParent.id);
+      markSubtreeDirtyPath(root, newParent.id);
+      markSubtreeDirtyPath(root, op.nodeId);
       return { ...op, oldParentId: currentParent.id, oldIndex: currentIndex };
     }
 
@@ -77,15 +134,18 @@ function executeOperation(tree: MindDocTree, op: Operation): Operation {
       const node = findNode(root, op.nodeId)!;
       const oldTitle = node.title;
       node.title = op.newTitle;
+      node.tags = extractTagsFromTitle(op.newTitle);
       node.dirty = true;
+      markSubtreeDirtyPath(root, op.nodeId);
       return { ...op, oldTitle };
     }
 
     case 'create': {
       const parent = findNode(root, op.parentId)!;
-      const insertIdx = op.index === -1 ? parent.children.length : op.index;
+      const insertIdx = normalizeInsertIndex(op.index, parent.children.length);
       parent.children.splice(insertIdx, 0, op.node);
       op.node.dirty = true;
+      markSubtreeDirtyPath(root, op.parentId);
       return op;
     }
 
@@ -93,16 +153,37 @@ function executeOperation(tree: MindDocTree, op: Operation): Operation {
       const parent = findNode(root, op.parentId)!;
       const index = findIndex(parent, op.nodeId);
       const deletedNode = parent.children.splice(index, 1)[0];
+      markSubtreeDirtyPath(root, op.parentId);
       return { ...op, deletedNode };
     }
 
     case 'toggleCheck': {
-      // For undo: directly set to oldValue (not cycle)
+      // For undo/redo: directly set the recorded target value and shape.
       const node = findNode(root, op.nodeId)!;
       const currentValue = node.checked;
-      node.checked = op.oldValue;
+      const currentNodeType = node.nodeType;
+      const currentHeadingLevel = node.headingLevel;
+      const currentListDepth = node.listDepth;
+      node.checked = hasRecordedNewValue(op) ? op.newValue! : op.oldValue;
+      if (op.newNodeType) {
+        node.nodeType = op.newNodeType;
+        node.headingLevel = op.newHeadingLevel ?? node.headingLevel;
+        node.listDepth = op.newListDepth ?? node.listDepth;
+      }
       node.dirty = true;
-      return { type: 'toggleCheck', nodeId: op.nodeId, oldValue: currentValue };
+      markSubtreeDirtyPath(root, op.nodeId);
+      return {
+        type: 'toggleCheck',
+        nodeId: op.nodeId,
+        oldValue: currentValue,
+        newValue: node.checked,
+        oldNodeType: currentNodeType,
+        oldHeadingLevel: currentHeadingLevel,
+        oldListDepth: currentListDepth,
+        newNodeType: node.nodeType,
+        newHeadingLevel: node.headingLevel,
+        newListDepth: node.listDepth,
+      };
     }
 
     case 'updateNote': {
@@ -110,6 +191,7 @@ function executeOperation(tree: MindDocTree, op: Operation): Operation {
       const currentNote = node.note;
       node.note = op.note;
       node.dirty = true;
+      markSubtreeDirtyPath(root, op.nodeId);
       return { type: 'updateNote', nodeId: op.nodeId, note: op.note, oldNote: currentNote };
     }
 
@@ -118,6 +200,7 @@ function executeOperation(tree: MindDocTree, op: Operation): Operation {
       const index = findIndex(parent, op.nodeId);
       if (index > 0) {
         [parent.children[index - 1], parent.children[index]] = [parent.children[index], parent.children[index - 1]];
+        markSubtreeDirtyPath(root, parent.id);
       }
       return op;
     }
@@ -127,6 +210,7 @@ function executeOperation(tree: MindDocTree, op: Operation): Operation {
       const index = findIndex(parent, op.nodeId);
       if (index < parent.children.length - 1) {
         [parent.children[index], parent.children[index + 1]] = [parent.children[index + 1], parent.children[index]];
+        markSubtreeDirtyPath(root, parent.id);
       }
       return op;
     }

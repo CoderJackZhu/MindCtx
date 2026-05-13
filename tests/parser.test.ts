@@ -162,6 +162,12 @@ describe('Parser', () => {
     expect(tree3.headingDepth).toBe(3);
   });
 
+  test('heading-depth 会解析字符串并限制在 1 到 6', () => {
+    expect(parse('---\nheading-depth: "5"\n---\n\n# Title\n').headingDepth).toBe(5);
+    expect(parse('---\nheading-depth: 99\n---\n\n# Title\n').headingDepth).toBe(6);
+    expect(parse('---\nheading-depth: invalid\n---\n\n# Title\n').headingDepth).toBe(3);
+  });
+
   test('节点 ID 不重复', () => {
     const tree = parse(fixture('complex.mind.md'));
     const ids = new Set<string>();

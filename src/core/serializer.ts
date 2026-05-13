@@ -78,6 +78,28 @@ function collectRawText(node: MindDocNode): string {
   return output;
 }
 
+function shouldSerializeAsHeading(node: MindDocNode, absoluteDepth: number, headingDepth: number): boolean {
+  return node.nodeType === 'heading' && absoluteDepth <= headingDepth;
+}
+
+function reindentRawBlock(raw: string, indent: string): string {
+  const lines = raw.split('\n');
+  const indentedLineLengths = lines
+    .filter(line => line.trim().length > 0)
+    .map(line => line.match(/^[ \t]*/)?.[0].length ?? 0);
+  const commonIndent = indentedLineLengths.length > 0 ? Math.min(...indentedLineLengths) : 0;
+  return lines
+    .map(line => indent + (commonIndent > 0 ? line.slice(commonIndent) : line))
+    .join('\n');
+}
+
+function getListIndentDepth(node: MindDocNode, absoluteDepth: number, headingDepth: number): number {
+  if (node.nodeType === 'list-item') {
+    return Math.max(0, node.listDepth - 1);
+  }
+  return Math.max(0, absoluteDepth - headingDepth - 1);
+}
+
 /**
  * Regenerate node content from structured data when dirty.
  * This is used after operations modify the tree (rename, create, etc.).
@@ -85,12 +107,12 @@ function collectRawText(node: MindDocNode): string {
 function generateNodeContent(node: MindDocNode, headingDepth: number, absoluteDepth: number): string {
   let output = '';
 
-  if (absoluteDepth <= headingDepth) {
+  if (shouldSerializeAsHeading(node, absoluteDepth, headingDepth)) {
     // Output as heading
     output += '#'.repeat(absoluteDepth) + ' ' + node.title + '\n\n';
   } else {
     // Output as list-item
-    const listDepth = absoluteDepth - headingDepth - 1;
+    const listDepth = getListIndentDepth(node, absoluteDepth, headingDepth);
     const indent = '  '.repeat(listDepth);
     if (node.checked !== null) {
       const check = node.checked ? '[x]' : '[ ]';
@@ -104,11 +126,11 @@ function generateNodeContent(node: MindDocNode, headingDepth: number, absoluteDe
 
   // Output note
   if (node.note) {
-    if (absoluteDepth <= headingDepth) {
+    if (shouldSerializeAsHeading(node, absoluteDepth, headingDepth)) {
       output += node.note + '\n\n';
     } else {
       // List item note needs indentation
-      const listDepth = absoluteDepth - headingDepth - 1;
+      const listDepth = getListIndentDepth(node, absoluteDepth, headingDepth);
       const noteIndent = '  '.repeat(listDepth + 1);
       const indentedNote = node.note.split('\n').map(line => noteIndent + line).join('\n');
       output += indentedNote + '\n\n';
@@ -117,13 +139,12 @@ function generateNodeContent(node: MindDocNode, headingDepth: number, absoluteDe
 
   // Output blocks
   for (const block of node.blocks) {
-    if (absoluteDepth <= headingDepth) {
+    if (shouldSerializeAsHeading(node, absoluteDepth, headingDepth)) {
       output += block.raw + '\n\n';
     } else {
-      const listDepth = absoluteDepth - headingDepth - 1;
+      const listDepth = getListIndentDepth(node, absoluteDepth, headingDepth);
       const blockIndent = '  '.repeat(listDepth + 1);
-      const indentedBlock = block.raw.split('\n').map(line => blockIndent + line).join('\n');
-      output += indentedBlock + '\n\n';
+      output += reindentRawBlock(block.raw, blockIndent) + '\n\n';
     }
   }
 
@@ -137,10 +158,11 @@ function generateNodeContent(node: MindDocNode, headingDepth: number, absoluteDe
 export function serializeSubtree(node: MindDocNode, headingDepth: number, baseDepth = 1): string {
   let output = '';
 
-  if (baseDepth <= headingDepth) {
+  if (shouldSerializeAsHeading(node, baseDepth, headingDepth)) {
     output += '#'.repeat(baseDepth) + ' ' + node.title + '\n\n';
   } else {
-    const indent = '  '.repeat(baseDepth - headingDepth - 1);
+    const listDepth = getListIndentDepth(node, baseDepth, headingDepth);
+    const indent = '  '.repeat(listDepth);
     if (node.checked !== null) {
       const check = node.checked ? '[x]' : '[ ]';
       output += indent + '- ' + check + ' ' + node.title + '\n';
@@ -152,10 +174,10 @@ export function serializeSubtree(node: MindDocNode, headingDepth: number, baseDe
   }
 
   if (node.note) {
-    if (baseDepth <= headingDepth) {
+    if (shouldSerializeAsHeading(node, baseDepth, headingDepth)) {
       output += node.note + '\n\n';
     } else {
-      const listDepth = baseDepth - headingDepth - 1;
+      const listDepth = getListIndentDepth(node, baseDepth, headingDepth);
       const noteIndent = '  '.repeat(listDepth + 1);
       const indentedNote = node.note.split('\n').map(line => noteIndent + line).join('\n');
       output += indentedNote + '\n\n';
@@ -163,13 +185,12 @@ export function serializeSubtree(node: MindDocNode, headingDepth: number, baseDe
   }
 
   for (const block of node.blocks) {
-    if (baseDepth <= headingDepth) {
+    if (shouldSerializeAsHeading(node, baseDepth, headingDepth)) {
       output += block.raw + '\n\n';
     } else {
-      const listDepth = baseDepth - headingDepth - 1;
+      const listDepth = getListIndentDepth(node, baseDepth, headingDepth);
       const blockIndent = '  '.repeat(listDepth + 1);
-      const indentedBlock = block.raw.split('\n').map(line => blockIndent + line).join('\n');
-      output += indentedBlock + '\n\n';
+      output += reindentRawBlock(block.raw, blockIndent) + '\n\n';
     }
   }
 

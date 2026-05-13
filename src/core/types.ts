@@ -61,7 +61,18 @@ export type Operation =
   | { type: 'delete'; nodeId: string; parentId: string; index: number; deletedNode: MindDocNode }
   | { type: 'indent'; nodeId: string; oldParentId: string; oldIndex: number }
   | { type: 'outdent'; nodeId: string; oldParentId: string; oldIndex: number; adoptedSiblingIds: string[] }
-  | { type: 'toggleCheck'; nodeId: string; oldValue: boolean | null }
+  | {
+      type: 'toggleCheck';
+      nodeId: string;
+      oldValue: boolean | null;
+      newValue?: boolean | null;
+      oldNodeType?: MindDocNode['nodeType'];
+      oldHeadingLevel?: number;
+      oldListDepth?: number;
+      newNodeType?: MindDocNode['nodeType'];
+      newHeadingLevel?: number;
+      newListDepth?: number;
+    }
   | { type: 'updateNote'; nodeId: string; note: string; oldNote: string }
   | { type: 'moveUp'; nodeId: string }
   | { type: 'moveDown'; nodeId: string };
