@@ -94,9 +94,14 @@ export function syncMindElixirAddChildButtons(
   instance: MindElixirInstance,
   onAddChild: (parentId: string) => void
 ): void {
-  const topics = instance.container.querySelectorAll<MindElixirTopicElement>('me-tpc');
+  const topics = instance.container.querySelectorAll<MindElixirTopicElement>(
+    'me-root > me-tpc, me-parent > me-tpc'
+  );
 
   topics.forEach(topic => {
+    if (!topic.nodeObj && topic.parentElement?.tagName === 'ME-ROOT') {
+      topic.nodeObj = instance.nodeData;
+    }
     if (!topic.nodeObj || topic.querySelector(':scope > .minddoc-mindmap-add-child')) return;
 
     const button = document.createElement('button');
