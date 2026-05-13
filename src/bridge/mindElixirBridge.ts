@@ -126,11 +126,17 @@ export function syncMindElixirAddChildButtons(
   });
 }
 
+export interface SelectionCallbacks {
+  onSelect: (nodeId: string, isRoot: boolean) => void;
+  onUnselect: () => void;
+}
+
 export function setupMindElixirEvents(
   instance: MindElixirInstance,
   onOperation: (op: PartialOperation) => void,
   onCollapsedChange: (ids: Set<string>) => void,
-  getCollapsedIds: () => Set<string>
+  getCollapsedIds: () => Set<string>,
+  selectionCallbacks?: SelectionCallbacks
 ): () => void {
   const handlers: Array<() => void> = [];
 
@@ -237,6 +243,20 @@ export function setupMindElixirEvents(
   };
   instance.bus.addListener('expandNode', onExpand);
   handlers.push(() => instance.bus.removeListener('expandNode', onExpand));
+
+  if (selectionCallbacks) {
+    const onSelect = (nodeObj: NodeObj) => {
+      const isRoot = !nodeObj.parent;
+      selectionCallbacks.onSelect(nodeObj.id, isRoot);
+    };
+    const onUnselect = () => {
+      selectionCallbacks.onUnselect();
+    };
+    instance.bus.addListener('selectNode', onSelect);
+    instance.bus.addListener('unselectNode', onUnselect);
+    handlers.push(() => instance.bus.removeListener('selectNode', onSelect));
+    handlers.push(() => instance.bus.removeListener('unselectNode', onUnselect));
+  }
 
   return () => handlers.forEach(h => h());
 }

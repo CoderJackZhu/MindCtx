@@ -8,6 +8,7 @@ import {
   setupMindElixirEvents,
   syncMindElixirAddChildButtons,
 } from '../bridge/mindElixirBridge.js';
+import type { SelectionCallbacks } from '../bridge/mindElixirBridge.js';
 import { getObsidianTheme, applyTheme } from '../bridge/mindElixirTheme.js';
 import type { MindDocTree, PartialOperation } from '../core/types.js';
 import { findNode } from '../core/operations.js';
@@ -100,6 +101,109 @@ function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
   );
 }
 
+interface FloatingToolbarProps {
+  selectedNodeId: string | null;
+  onToggleCheck: () => void;
+  onStartConnection: () => void;
+  onInsertLink: (text: string, url: string) => void;
+  connectionMode: boolean;
+}
+
+function LinkPanel({ onConfirm, onClose }: { onConfirm: (text: string, url: string) => void; onClose: () => void }) {
+  const [text, setText] = useState('');
+  const [url, setUrl] = useState('');
+
+  const handleConfirm = () => {
+    if (url.trim()) {
+      onConfirm(text.trim() || url.trim(), url.trim());
+      onClose();
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleConfirm();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      onClose();
+    }
+  };
+
+  return (
+    <div class="minddoc-floating-toolbar-link-panel" onKeyDown={handleKeyDown}>
+      <input
+        type="text"
+        class="minddoc-floating-toolbar-link-input"
+        placeholder="显示文字"
+        value={text}
+        onInput={(e) => setText((e.target as HTMLInputElement).value)}
+      />
+      <input
+        type="text"
+        class="minddoc-floating-toolbar-link-input"
+        placeholder="链接地址"
+        value={url}
+        onInput={(e) => setUrl((e.target as HTMLInputElement).value)}
+        autoFocus
+      />
+      <button
+        type="button"
+        class="minddoc-floating-toolbar-link-confirm"
+        onClick={handleConfirm}
+        disabled={!url.trim()}
+      >
+        确认
+      </button>
+    </div>
+  );
+}
+
+function FloatingToolbar({ selectedNodeId, onToggleCheck, onStartConnection, onInsertLink, connectionMode }: FloatingToolbarProps) {
+  const [showLinkPanel, setShowLinkPanel] = useState(false);
+
+  useEffect(() => {
+    setShowLinkPanel(false);
+  }, [selectedNodeId]);
+
+  if (!selectedNodeId) return null;
+
+  return (
+    <div class="minddoc-floating-toolbar">
+      <button
+        type="button"
+        class="minddoc-floating-toolbar-btn"
+        onClick={onToggleCheck}
+        title="切换待办状态"
+      >
+        ☑ 待办
+      </button>
+      <button
+        type="button"
+        class={`minddoc-floating-toolbar-btn${connectionMode ? ' is-active' : ''}`}
+        onClick={onStartConnection}
+        title="创建连结线"
+      >
+        🔗 连结线
+      </button>
+      <button
+        type="button"
+        class={`minddoc-floating-toolbar-btn${showLinkPanel ? ' is-active' : ''}`}
+        onClick={() => setShowLinkPanel(!showLinkPanel)}
+        title="插入链接"
+      >
+        🌐 链接
+      </button>
+      {showLinkPanel && (
+        <LinkPanel
+          onConfirm={onInsertLink}
+          onClose={() => setShowLinkPanel(false)}
+        />
+      )}
+    </div>
+  );
+}
+
 export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, onCollapsedChange, direction }: MindMapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<MindElixirInstance | null>(null);
@@ -110,6 +214,10 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
   const treeIdRef = useRef<string | null>(null);
   const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
   const [currentScale, setCurrentScale] = useState(1.0);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [connectionMode, setConnectionMode] = useState(false);
+  const connectionSourceRef = useRef<string | null>(null);
+  const connectionSvgRef = useRef<SVGElement | null>(null);
 
   collapsedIdsRef.current = collapsedIds;
 
@@ -117,6 +225,111 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     isInternalUpdate.current = true;
     onOperation(op);
     queueMicrotask(() => { isInternalUpdate.current = false; });
+  };
+
+  const handleToggleCheck = () => {
+    if (selectedNodeId) {
+      wrappedOnOperation({ type: 'toggleCheck', nodeId: selectedNodeId });
+    }
+  };
+
+  const cleanupConnectionMode = () => {
+    setConnectionMode(false);
+    connectionSourceRef.current = null;
+    if (connectionSvgRef.current) {
+      connectionSvgRef.current.remove();
+      connectionSvgRef.current = null;
+    }
+  };
+
+  const handleStartConnection = () => {
+    if (connectionMode) {
+      cleanupConnectionMode();
+      return;
+    }
+    if (!selectedNodeId) return;
+    setConnectionMode(true);
+    connectionSourceRef.current = selectedNodeId;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add('minddoc-connection-preview');
+    svg.style.position = 'absolute';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    svg.style.pointerEvents = 'none';
+    svg.style.zIndex = '15';
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('stroke', 'var(--interactive-accent)');
+    line.setAttribute('stroke-width', '2');
+    line.setAttribute('stroke-dasharray', '6 4');
+    svg.appendChild(line);
+    container.parentElement!.appendChild(svg);
+    connectionSvgRef.current = svg;
+
+    const sourceEl = container.querySelector<HTMLElement>(`me-tpc[data-nodeid="${selectedNodeId}"]`) ??
+      container.querySelector<HTMLElement>(`[data-nodeid="${selectedNodeId}"]`);
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!sourceEl || !svg.parentElement) return;
+      const shellRect = svg.parentElement.getBoundingClientRect();
+      const srcRect = sourceEl.getBoundingClientRect();
+      const x1 = srcRect.left + srcRect.width / 2 - shellRect.left;
+      const y1 = srcRect.top + srcRect.height / 2 - shellRect.top;
+      const x2 = e.clientX - shellRect.left;
+      const y2 = e.clientY - shellRect.top;
+      line.setAttribute('x1', String(x1));
+      line.setAttribute('y1', String(y1));
+      line.setAttribute('x2', String(x2));
+      line.setAttribute('y2', String(y2));
+    };
+
+    const onTargetClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement).closest<HTMLElement>('me-tpc');
+      if (!target) return;
+      const targetNodeObj = (target as unknown as { nodeObj?: NodeObj }).nodeObj;
+      if (targetNodeObj && targetNodeObj.id !== connectionSourceRef.current) {
+        const me = instanceRef.current;
+        if (me && connectionSourceRef.current) {
+          const fromEl = container.querySelector<HTMLElement>(`me-tpc[data-nodeid="${connectionSourceRef.current}"]`) ??
+            container.querySelector<HTMLElement>(`[data-nodeid="${connectionSourceRef.current}"]`);
+          if (fromEl) {
+            me.createArrow(fromEl as unknown as import('mind-elixir').Topic, target as unknown as import('mind-elixir').Topic);
+          }
+        }
+      }
+      cleanup();
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        cleanup();
+      }
+    };
+
+    const cleanup = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      container.removeEventListener('click', onTargetClick, true);
+      document.removeEventListener('keydown', onKeyDown);
+      cleanupConnectionMode();
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    container.addEventListener('click', onTargetClick, true);
+    document.addEventListener('keydown', onKeyDown);
+  };
+
+  const handleInsertLink = (text: string, url: string) => {
+    if (!selectedNodeId || !tree) return;
+    const node = findNode(tree.root, selectedNodeId);
+    if (!node) return;
+    const linkMd = `[${text}](${url})`;
+    const newTitle = node.title ? `${node.title} ${linkMd}` : linkMd;
+    wrappedOnOperation({ type: 'rename', nodeId: selectedNodeId, newTitle });
   };
 
   const enterFocusedNode = () => {
@@ -209,7 +422,18 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     });
     addButtonObserver.observe(containerRef.current, { childList: true, subtree: true });
 
-    cleanupRef.current = setupMindElixirEvents(me, wrappedOnOperation, onCollapsedChange, () => collapsedIdsRef.current);
+    cleanupRef.current = setupMindElixirEvents(me, wrappedOnOperation, onCollapsedChange, () => collapsedIdsRef.current, {
+      onSelect: (nodeId: string, isRoot: boolean) => {
+        if (isRoot) {
+          setSelectedNodeId(null);
+        } else {
+          setSelectedNodeId(nodeId);
+        }
+      },
+      onUnselect: () => {
+        setSelectedNodeId(null);
+      },
+    });
     instanceRef.current = me;
 
     return () => {
@@ -314,6 +538,13 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
         tabIndex={0}
         onKeyDown={handleKeyDown}
         onWheel={handleWheel}
+      />
+      <FloatingToolbar
+        selectedNodeId={selectedNodeId}
+        onToggleCheck={handleToggleCheck}
+        onStartConnection={handleStartConnection}
+        onInsertLink={handleInsertLink}
+        connectionMode={connectionMode}
       />
     </div>
   );
