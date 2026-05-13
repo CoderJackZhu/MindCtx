@@ -229,7 +229,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
 
   const handleToggleCheck = () => {
     if (selectedNodeId) {
-      wrappedOnOperation({ type: 'toggleCheck', nodeId: selectedNodeId });
+      onOperation({ type: 'toggleCheck', nodeId: selectedNodeId });
     }
   };
 
@@ -329,7 +329,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     if (!node) return;
     const linkMd = `[${text}](${url})`;
     const newTitle = node.title ? `${node.title} ${linkMd}` : linkMd;
-    wrappedOnOperation({ type: 'rename', nodeId: selectedNodeId, newTitle });
+    onOperation({ type: 'rename', nodeId: selectedNodeId, newTitle });
   };
 
   const enterFocusedNode = () => {
