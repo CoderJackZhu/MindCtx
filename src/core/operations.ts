@@ -204,7 +204,7 @@ export function applyOperation(tree: MindDocTree, op: PartialOperation): Operati
     case 'indent': {
       const parent = requireParent(root, op.nodeId);
       const index = findIndex(parent, op.nodeId);
-      if (index === 0) throw new Error('Cannot indent: no previous sibling');
+      if (index === 0) return { type: 'indent', nodeId: op.nodeId, oldParentId: parent.id, oldIndex: index };
 
       const node = parent.children.splice(index, 1)[0];
       const newParent = parent.children[index - 1];
@@ -223,7 +223,10 @@ export function applyOperation(tree: MindDocTree, op: PartialOperation): Operati
     case 'outdent': {
       const parent = requireParent(root, op.nodeId);
       const grandParent = findParent(root, parent.id);
-      if (!grandParent) throw new Error('Cannot outdent: parent is root');
+      if (!grandParent) {
+        const index = findIndex(parent, op.nodeId);
+        return { type: 'outdent', nodeId: op.nodeId, oldParentId: parent.id, oldIndex: index, adoptedSiblingIds: [] };
+      }
 
       const index = findIndex(parent, op.nodeId);
       const node = parent.children.splice(index, 1)[0];
@@ -299,7 +302,7 @@ export function applyOperation(tree: MindDocTree, op: PartialOperation): Operati
     case 'moveUp': {
       const parent = requireParent(root, op.nodeId);
       const index = findIndex(parent, op.nodeId);
-      if (index === 0) throw new Error('Cannot moveUp: already first');
+      if (index === 0) return { type: 'moveUp', nodeId: op.nodeId };
       [parent.children[index - 1], parent.children[index]] = [parent.children[index], parent.children[index - 1]];
       markSubtreeDirtyPath(root, parent.id);
       return { type: 'moveUp', nodeId: op.nodeId };
@@ -308,7 +311,7 @@ export function applyOperation(tree: MindDocTree, op: PartialOperation): Operati
     case 'moveDown': {
       const parent = requireParent(root, op.nodeId);
       const index = findIndex(parent, op.nodeId);
-      if (index === parent.children.length - 1) throw new Error('Cannot moveDown: already last');
+      if (index === parent.children.length - 1) return { type: 'moveDown', nodeId: op.nodeId };
       [parent.children[index], parent.children[index + 1]] = [parent.children[index + 1], parent.children[index]];
       markSubtreeDirtyPath(root, parent.id);
       return { type: 'moveDown', nodeId: op.nodeId };

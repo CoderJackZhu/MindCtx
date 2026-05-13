@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from 'vitest';
 import { parse } from '../src/core/parser.js';
-import { applyOperation, findNode, findParent, findIndex, recalculateNodeTypes } from '../src/core/operations.js';
+import { applyOperation, findNode, findParent, findIndex, recalculateNodeTypes, getAbsoluteDepth } from '../src/core/operations.js';
 import { serialize } from '../src/core/serializer.js';
 import { UndoManager } from '../src/core/undo.js';
 import type { MindDocTree } from '../src/core/types.js';
@@ -179,14 +179,16 @@ describe('Operations', () => {
     const childA = h1.children[0];
     const item1Id = childA.children[0].id;
 
-    expect(() => applyOperation(tree, { type: 'indent', nodeId: item1Id })).toThrow('Cannot indent');
+    applyOperation(tree, { type: 'indent', nodeId: item1Id });
+    expect(childA.children.map(c => c.title)).toEqual(['Item 1', 'Item 2', 'Item 3']);
   });
 
   test('outdent 边界：根的子节点不能 outdent', () => {
     const h1 = tree.root.children[0];
     const h1Id = h1.id;
 
-    expect(() => applyOperation(tree, { type: 'outdent', nodeId: h1Id })).toThrow('Cannot outdent');
+    applyOperation(tree, { type: 'outdent', nodeId: h1Id });
+    expect(tree.root.children.map(c => c.title)).toEqual(['Root']);
   });
 
   test('moveUp/moveDown', () => {
@@ -269,6 +271,128 @@ describe('Operations', () => {
     const movedNode = findNode(tree.root, item1Id)!;
     expect(movedNode.nodeType).toBe('heading');
     expect(movedNode.headingLevel).toBe(1);
+  });
+
+  test('indent on first child does nothing (no previous sibling)', () => {
+    const h1 = tree.root.children[0];
+    const childA = h1.children[0];
+    const item1Id = childA.children[0].id;
+    const before = serialize(tree);
+
+    const op = applyOperation(tree, { type: 'indent', nodeId: item1Id });
+
+    expect(op.type).toBe('indent');
+    expect(serialize(tree)).toBe(before);
+    expect(findParent(tree.root, item1Id)?.id).toBe(childA.id);
+    expect(findIndex(childA, item1Id)).toBe(0);
+  });
+
+  test('outdent on root child does nothing', () => {
+    const h1 = tree.root.children[0];
+    const before = serialize(tree);
+
+    const op = applyOperation(tree, { type: 'outdent', nodeId: h1.id });
+
+    expect(op.type).toBe('outdent');
+    expect(serialize(tree)).toBe(before);
+    expect(findParent(tree.root, h1.id)?.id).toBe(tree.root.id);
+  });
+
+  test('moveUp on first sibling is no-op', () => {
+    const h1 = tree.root.children[0];
+    const childA = h1.children[0];
+    const item1Id = childA.children[0].id;
+    const before = childA.children.map(c => c.id);
+
+    const op = applyOperation(tree, { type: 'moveUp', nodeId: item1Id });
+
+    expect(op.type).toBe('moveUp');
+    expect(childA.children.map(c => c.id)).toEqual(before);
+  });
+
+  test('moveDown on last sibling is no-op', () => {
+    const h1 = tree.root.children[0];
+    const childA = h1.children[0];
+    const item3Id = childA.children[2].id;
+    const before = childA.children.map(c => c.id);
+
+    const op = applyOperation(tree, { type: 'moveDown', nodeId: item3Id });
+
+    expect(op.type).toBe('moveDown');
+    expect(childA.children.map(c => c.id)).toEqual(before);
+  });
+
+  test('create with non-existent parentId throws', () => {
+    expect(() => applyOperation(tree, { type: 'create', parentId: 'missing-parent', index: -1, title: 'Orphan' }))
+      .toThrow('Cannot find parent: missing-parent');
+  });
+
+  test('delete root node is blocked', () => {
+    expect(() => applyOperation(tree, { type: 'delete', nodeId: tree.root.id }))
+      .toThrow(`Cannot find parent for node: ${tree.root.id}`);
+  });
+
+  test('recalculateNodeTypes: list item becomes heading after outdent', () => {
+    const h1 = tree.root.children[0];
+    const childA = h1.children[0];
+    const item2Id = childA.children[1].id;
+
+    applyOperation(tree, { type: 'indent', nodeId: item2Id });
+    const indentedItem2 = findNode(tree.root, item2Id)!;
+    expect(indentedItem2.nodeType).toBe('list-item');
+
+    applyOperation(tree, { type: 'outdent', nodeId: item2Id });
+    const outdentedItem2 = findNode(tree.root, item2Id)!;
+    const depth = getAbsoluteDepth(tree.root, item2Id);
+    recalculateNodeTypes(outdentedItem2, depth, tree.headingDepth);
+
+    expect(outdentedItem2.nodeType).toBe('heading');
+    expect(outdentedItem2.headingLevel).toBe(3);
+  });
+
+  test('indent then outdent restores original state', () => {
+    const localTree = parse(simpleMd, { defaultHeadingDepth: 2 });
+    const h1 = localTree.root.children[0];
+    const childA = h1.children[0];
+    const item2Id = childA.children[1].id;
+    const before = serialize(localTree);
+
+    applyOperation(localTree, { type: 'indent', nodeId: item2Id });
+    applyOperation(localTree, { type: 'outdent', nodeId: item2Id });
+
+    expect(serialize(localTree)).toBe(before);
+    expect(findParent(localTree.root, item2Id)?.id).toBe(childA.id);
+    expect(findIndex(childA, item2Id)).toBe(1);
+  });
+
+  test('move node across different parents updates depth', () => {
+    const h1 = tree.root.children[0];
+    const childA = h1.children[0];
+    const childB = h1.children[1];
+    const item1Id = childA.children[0].id;
+
+    expect(getAbsoluteDepth(tree.root, item1Id)).toBe(3);
+    applyOperation(tree, { type: 'move', nodeId: item1Id, newParentId: childB.children[0].id, index: -1 });
+
+    const movedItem = findNode(tree.root, item1Id)!;
+    expect(findParent(tree.root, item1Id)?.title).toBe('Item B1');
+    expect(getAbsoluteDepth(tree.root, item1Id)).toBe(4);
+    expect(movedItem.nodeType).toBe('list-item');
+    expect(movedItem.listDepth).toBe(1);
+  });
+
+  test('toggleCheck cycles null-false-true-null', () => {
+    const h1 = tree.root.children[0];
+    const childA = h1.children[0];
+    const item1 = childA.children[0];
+
+    expect(item1.checked).toBe(null);
+    applyOperation(tree, { type: 'toggleCheck', nodeId: item1.id });
+    expect(item1.checked).toBe(false);
+    applyOperation(tree, { type: 'toggleCheck', nodeId: item1.id });
+    expect(item1.checked).toBe(true);
+    applyOperation(tree, { type: 'toggleCheck', nodeId: item1.id });
+    expect(item1.checked).toBe(null);
   });
 });
 
