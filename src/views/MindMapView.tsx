@@ -28,7 +28,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
   const isInternalUpdate = useRef(false);
   const collapsedIdsRef = useRef(collapsedIds);
   const treeIdRef = useRef<string | null>(null);
-  const pendingEditNodeIdRef = useRef<string | null>(null);
+  const pendingEditParentIdRef = useRef<string | null>(null);
 
   collapsedIdsRef.current = collapsedIds;
 
@@ -54,16 +54,13 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     const parent = findNode(tree.root, parentId);
     if (!parent) return;
 
-    const insertIndex = parent.children.length;
+    pendingEditParentIdRef.current = parentId;
     onOperation({
       type: 'create',
       parentId,
       index: -1,
       title: '',
     });
-
-    const newNode = parent.children[insertIndex];
-    if (newNode) pendingEditNodeIdRef.current = newNode.id;
   };
 
   useEffect(() => {
@@ -128,10 +125,12 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     const data = treeToMindElixirData(tree, collapsedIds);
     instanceRef.current.refresh(data);
     syncMindElixirAddChildButtons(instanceRef.current, createChildAndEdit);
-    if (pendingEditNodeIdRef.current) {
-      const nodeId = pendingEditNodeIdRef.current;
-      pendingEditNodeIdRef.current = null;
-      focusNodeForEditing(nodeId);
+    if (pendingEditParentIdRef.current) {
+      const parentId = pendingEditParentIdRef.current;
+      const parent = findNode(tree.root, parentId);
+      const newNode = parent?.children[parent.children.length - 1];
+      pendingEditParentIdRef.current = null;
+      if (newNode) focusNodeForEditing(newNode.id);
     }
   }, [tree, collapsedIds]);
 
