@@ -1,4 +1,4 @@
-import { h } from 'preact';
+import { h, type JSX } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import MindElixir from 'mind-elixir';
 import type { MindElixirInstance } from 'mind-elixir';
@@ -28,9 +28,70 @@ interface NodeObj {
   parent?: NodeObj;
 }
 
+const MIN_SCALE = 0.1;
+const MAX_SCALE = 4.0;
+const SCALE_STEP = 0.1;
+
+function clampScale(scale: number): number {
+  return Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
+}
+
+function normalizeScale(scale: number): number {
+  return Math.round(clampScale(scale) * 10) / 10;
+}
+
+interface ZoomControlsProps {
+  scale: number;
+  onScaleChange: (scale: number) => void;
+  onCenter: () => void;
+}
+
+function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const percentage = Math.round(scale * 100);
+
+  const handleSliderInput = (event: JSX.TargetedEvent<HTMLInputElement, Event>) => {
+    onScaleChange(Number(event.currentTarget.value) / 100);
+  };
+
+  return (
+    <div class="minddoc-mindmap-zoom-controls">
+      {isOpen && (
+        <div class="minddoc-mindmap-zoom-panel">
+          <input
+            type="range"
+            class="minddoc-mindmap-zoom-slider"
+            min="10"
+            max="400"
+            value={String(percentage)}
+            onInput={handleSliderInput}
+            aria-label="缩放比例"
+          />
+          <button
+            type="button"
+            class="minddoc-mindmap-center-button"
+            onClick={onCenter}
+          >
+            回中心
+          </button>
+        </div>
+      )}
+      <button
+        type="button"
+        class="minddoc-mindmap-zoom-value"
+        onClick={() => setIsOpen((open) => !open)}
+        aria-expanded={isOpen}
+      >
+        {percentage}%
+      </button>
+    </div>
+  );
+}
+
 export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, onCollapsedChange, direction }: MindMapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<MindElixirInstance | null>(null);
+  const scaleRef = useRef(1.0);
   const cleanupRef = useRef<(() => void) | null>(null);
   const isInternalUpdate = useRef(false);
   const collapsedIdsRef = useRef(collapsedIds);
@@ -38,6 +99,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
   const treeIdRef = useRef<string | null>(null);
   const pendingEditParentIdRef = useRef<string | null>(null);
   const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
+  const [currentScale, setCurrentScale] = useState(1.0);
 
   collapsedIdsRef.current = collapsedIds;
   treeRef.current = tree;
@@ -89,6 +151,25 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
     }
   };
 
+  const applyScale = (nextScale: number) => {
+    const normalizedScale = normalizeScale(nextScale);
+    scaleRef.current = normalizedScale;
+    setCurrentScale(normalizedScale);
+    instanceRef.current?.scale(normalizedScale);
+  };
+
+  const handleWheel = (event: JSX.TargetedWheelEvent<HTMLDivElement>) => {
+    if (!event.ctrlKey) return;
+    event.preventDefault();
+    const delta = event.deltaY < 0 ? SCALE_STEP : -SCALE_STEP;
+    applyScale(scaleRef.current + delta);
+  };
+
+  const handleCenter = () => {
+    applyScale(1.0);
+    instanceRef.current?.toCenter();
+  };
+
   useEffect(() => {
     if (!containerRef.current || !tree) return;
 
@@ -136,6 +217,8 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
 
     const data = treeToMindElixirData(tree, collapsedIds, direction, focusNodeId);
     me.init(data);
+    scaleRef.current = 1.0;
+    setCurrentScale(1.0);
     syncMindElixirAddChildButtons(me, createChildAndEdit);
 
     const addButtonObserver = new MutationObserver(() => {
@@ -243,12 +326,18 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
           </button>
         </div>
       )}
+      <ZoomControls
+        scale={currentScale}
+        onScaleChange={applyScale}
+        onCenter={handleCenter}
+      />
       <div
         ref={containerRef}
         class="minddoc-mindmap-container"
         style={{ width: '100%', height: '100%' }}
         tabIndex={0}
         onKeyDown={handleKeyDown}
+        onWheel={handleWheel}
       />
     </div>
   );

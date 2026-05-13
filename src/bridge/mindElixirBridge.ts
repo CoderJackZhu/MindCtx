@@ -33,7 +33,7 @@ export function treeToMindElixirData(
     return null;
   }
 
-  function getTopLevelDirection(index: number): number {
+  function getTopLevelDirection(index: number): 0 | 1 {
     switch (direction) {
       case 'left':
         return 0;
