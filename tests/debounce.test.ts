@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { debounce } from '../src/utils/debounce.js';
+import { debounce } from '@minddoc/core';
 
 describe('debounce', () => {
   beforeEach(() => {

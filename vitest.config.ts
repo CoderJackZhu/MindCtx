@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
 
 export default defineConfig({
   test: {
@@ -6,7 +7,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@minddoc/core': './packages/core/src/index.ts',
+      '@minddoc/core': resolve(__dirname, 'packages/core/src/index.ts'),
     },
   },
 });

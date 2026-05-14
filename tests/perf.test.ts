@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { parse } from '../src/core/parser.js';
+import { parse } from '@minddoc/core';
 
 test('5000+ line Markdown parsing < 2000ms', () => {
   let bigMd = '---\nminddoc: true\n---\n\n';

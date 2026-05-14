@@ -1,9 +1,6 @@
 import { describe, test, expect, beforeEach } from 'vitest';
-import { parse } from '../src/core/parser.js';
-import { applyOperation, findNode, findParent, findIndex, recalculateNodeTypes, getAbsoluteDepth } from '../src/core/operations.js';
-import { serialize } from '../src/core/serializer.js';
-import { UndoManager } from '../src/core/undo.js';
-import type { MindDocTree } from '../src/core/types.js';
+import { parse, applyOperation, findNode, findParent, findIndex, recalculateNodeTypes, getAbsoluteDepth, serialize, UndoManager } from '@minddoc/core';
+import type { MindDocTree } from '@minddoc/core';
 
 const simpleMd = `---
 minddoc: true

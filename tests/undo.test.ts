@@ -1,7 +1,6 @@
 import { describe, test, expect, beforeEach } from 'vitest';
-import { UndoManager, invertOperation } from '../src/core/undo.js';
-import { parse } from '../src/core/parser.js';
-import type { Operation, MindDocNode } from '../src/core/types.js';
+import { UndoManager, invertOperation, parse } from '@minddoc/core';
+import type { Operation, MindDocNode } from '@minddoc/core';
 
 const simpleMd = `---
 minddoc: true

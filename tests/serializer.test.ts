@@ -1,6 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { parse } from '../src/core/parser.js';
-import { serialize, serializeSubtree } from '../src/core/serializer.js';
+import { parse, serialize, serializeSubtree } from '@minddoc/core';
 
 describe('Serializer', () => {
   test('基本标题序列化', () => {

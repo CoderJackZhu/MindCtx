@@ -1,8 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import type { MindDocNode, MindDocTree } from '../src/core/types.js';
-import { exportOPML } from '../src/exporters/opml.js';
-import { importOPML } from '../src/importers/opml.js';
-import { parse } from '../src/core/parser.js';
+import { exportOPML, importOPML, parse } from '@minddoc/core';
+import type { MindDocNode, MindDocTree } from '@minddoc/core';
 
 class TestElement {
   tagName: string;
