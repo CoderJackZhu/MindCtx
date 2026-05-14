@@ -10,6 +10,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
+    },
+    "./bridge": {
+      "import": "./dist/bridge.js",
+      "require": "./dist/bridge.cjs",
+      "types": "./dist/bridge.d.ts"
     }
   },
   "scripts": {
@@ -22,7 +27,8 @@
     "remark-frontmatter": "^5",
     "remark-gfm": "^4",
     "remark-math": "^6",
-    "yaml": "^2"
+    "yaml": "^2",
+    "mind-elixir": "^4.0"
   },
   "devDependencies": {
     "typescript": "^5.4",

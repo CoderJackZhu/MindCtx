@@ -44,13 +44,8 @@ export { exportJSON } from './exporters/json.js';
 // AI
 export { copyAsAIContext } from './ai/contextBuilder.js';
 
-// Bridge (browser-only, import separately from '@minddoc/core/src/bridge/mindElixirBridge.js')
-// export {
-//   getMindElixirDirection,
-//   treeToMindElixirData,
-//   syncMindElixirAddChildButtons,
-//   setupMindElixirEvents,
-// } from './bridge/mindElixirBridge.js';
+// Bridge (browser-only, import from '@minddoc/core/bridge')
+// Re-exported via separate subpath to avoid pulling in mind-elixir in Node environments
 
 // Utils
 export { debounce } from './utils/debounce.js';

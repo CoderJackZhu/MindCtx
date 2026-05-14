@@ -7,6 +7,8 @@ import {
   treeToMindElixirData,
   setupMindElixirEvents,
   syncMindElixirAddChildButtons,
+} from '@minddoc/core/bridge';
+import {
   findNode,
 } from '@minddoc/core';
 import type { MindDocTree, PartialOperation, MindMapDirection } from '@minddoc/core';
