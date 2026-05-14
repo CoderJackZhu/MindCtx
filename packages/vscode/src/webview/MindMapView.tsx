@@ -52,26 +52,6 @@ function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
     >
       {isOpen && (
         <div class="minddoc-mindmap-zoom-panel">
-          <button
-            type="button"
-            class="minddoc-mindmap-center-button"
-            onClick={onCenter}
-            title="Center on root"
-            aria-label="Center on root"
-          >
-            <svg
-              class="minddoc-mindmap-center-icon"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              focusable="false"
-            >
-              <path d="M4 9V4h5" />
-              <path d="M15 4h5v5" />
-              <path d="M20 15v5h-5" />
-              <path d="M9 20H4v-5" />
-              <circle cx="12" cy="12" r="1.6" />
-            </svg>
-          </button>
           <input
             type="range"
             class="minddoc-mindmap-zoom-slider"
@@ -86,7 +66,28 @@ function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
       )}
       <button
         type="button"
+        class="minddoc-mindmap-center-button"
+        onClick={onCenter}
+        title="Center on root"
+        aria-label="Center on root"
+      >
+        <svg
+          class="minddoc-mindmap-center-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M4 9V4h5" />
+          <path d="M15 4h5v5" />
+          <path d="M20 15v5h-5" />
+          <path d="M9 20H4v-5" />
+          <circle cx="12" cy="12" r="1.6" />
+        </svg>
+      </button>
+      <button
+        type="button"
         class="minddoc-mindmap-zoom-value"
+        onClick={onCenter}
         onMouseEnter={() => setIsOpen(true)}
         aria-expanded={isOpen}
       >
@@ -143,7 +144,10 @@ export function MindMapView({ bridge, collapsedIds }: MindMapViewProps) {
     const normalizedScale = normalizeScale(nextScale);
     scaleRef.current = normalizedScale;
     setCurrentScale(normalizedScale);
-    instanceRef.current?.scale(normalizedScale);
+    if (instanceRef.current) {
+      instanceRef.current.scale(normalizedScale);
+      instanceRef.current.toCenter();
+    }
   };
 
   const handleWheel = (event: JSX.TargetedWheelEvent<HTMLDivElement>) => {
@@ -181,7 +185,7 @@ export function MindMapView({ bridge, collapsedIds }: MindMapViewProps) {
         link: false,
         extend: [
           {
-            name: 'Focus this node',
+            name: '聚焦此节点',
             onclick: (event: MouseEvent) => {
               closeContextMenu(event);
               enterFocusedNode();
@@ -191,7 +195,7 @@ export function MindMapView({ bridge, collapsedIds }: MindMapViewProps) {
       },
       toolBar: false,
       keypress: false,
-      locale: 'en' as const,
+      locale: 'zh_CN' as const,
     });
 
     applyTheme(containerRef.current, getVSCodeTheme(themeColors));
@@ -201,6 +205,10 @@ export function MindMapView({ bridge, collapsedIds }: MindMapViewProps) {
     scaleRef.current = 1.0;
     setCurrentScale(1.0);
     syncMindElixirAddChildButtons(me);
+
+    requestAnimationFrame(() => {
+      me.toCenter();
+    });
 
     const addButtonObserver = new MutationObserver(() => {
       syncMindElixirAddChildButtons(me);

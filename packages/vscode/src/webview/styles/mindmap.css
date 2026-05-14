@@ -132,7 +132,13 @@
   flex: 1;
   min-height: 0;
   background: var(--vscode-editor-background);
-  overflow: hidden;
+  overflow: auto;
+}
+
+.minddoc-mindmap-container .context-menu #cm-summary,
+.minddoc-mindmap-container .map-container .context-menu #cm-summary,
+#cm-summary {
+  display: none !important;
 }
 
 .minddoc-mindmap-container me-root {
