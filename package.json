@@ -3,13 +3,12 @@
   "private": true,
   "scripts": {
     "build": "pnpm -r build",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "pnpm --filter @minddoc/core test",
+    "test:watch": "pnpm --filter @minddoc/core test:watch",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
     "typescript": "^5.4",
-    "vitest": "^2.0",
     "@types/node": "^20"
   }
 }

@@ -7,7 +7,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@minddoc/core': resolve(__dirname, 'packages/core/src/index.ts'),
+      '@minddoc/core': resolve(__dirname, 'src/index.ts'),
     },
   },
 });
