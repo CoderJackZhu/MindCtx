@@ -21,6 +21,9 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('minddoc.export.json', () => exportFromEditor('json')),
     vscode.commands.registerCommand('minddoc.export.png', () => exportPngFromEditor()),
     vscode.commands.registerCommand('minddoc.copyAIContext', copyAIContextFromEditor),
+    vscode.commands.registerCommand('minddoc.toggleView', () => sendWebviewCommand('toggleView')),
+    vscode.commands.registerCommand('minddoc.expandAll', () => sendWebviewCommand('expandAll')),
+    vscode.commands.registerCommand('minddoc.collapseAll', () => sendWebviewCommand('collapseAll')),
   );
 }
 
@@ -123,4 +126,10 @@ async function copyAIContextFromEditor(): Promise<void> {
   const text = copyAsAIContext(doc.tree);
   await vscode.env.clipboard.writeText(text);
   vscode.window.showInformationMessage('AI context copied to clipboard.');
+}
+
+function sendWebviewCommand(name: 'toggleView' | 'expandAll' | 'collapseAll'): void {
+  const doc = provider.getActiveDocument();
+  if (!doc) return;
+  provider.sendCommandToActivePanel(doc, name);
 }

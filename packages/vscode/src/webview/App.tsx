@@ -1,6 +1,7 @@
 import { h } from 'preact';
 import { signal } from '@preact/signals';
 import { findNode } from '@minddoc/core';
+import { toPng } from 'html-to-image';
 import { WebviewBridge } from './WebviewBridge.js';
 import { OutlineToolbar } from './components/OutlineToolbar.js';
 import { OutlineView } from './OutlineView.js';
@@ -40,8 +41,18 @@ bridge.onCommand((cmd) => {
       bridge.syncState({ activeView: next });
       break;
     }
-    case 'export.png':
+    case 'export.png': {
+      const container = document.querySelector('.minddoc-mindmap-container') as HTMLElement | null;
+      if (container) {
+        toPng(container, {
+          backgroundColor: getComputedStyle(container).backgroundColor,
+          pixelRatio: 2,
+        }).then((dataUrl) => {
+          bridge.sendExportResult('png', dataUrl);
+        });
+      }
       break;
+    }
   }
 });
 

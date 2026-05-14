@@ -82,6 +82,9 @@ importers:
       '@minddoc/core':
         specifier: workspace:*
         version: link:../core
+      html-to-image:
+        specifier: ^1.11.13
+        version: 1.11.13
     devDependencies:
       '@preact/signals':
         specifier: ^1.2
