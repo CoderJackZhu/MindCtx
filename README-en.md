@@ -4,6 +4,8 @@ Markdown-first structured outline editor with mind map view — for Obsidian and
 
 Write standard Markdown, see interactive outlines, switch to mind maps — all backed by the same `.md` file.
 
+![VS Code Screenshot](assets/vscode-show.png)
+
 ## Features
 
 **Dual View**
