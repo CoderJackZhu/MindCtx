@@ -23,12 +23,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter @minddoc/core typecheck
-      - run: pnpm --filter @minddoc/core build
+      - run: pnpm --filter @mindctx/core typecheck
+      - run: pnpm --filter @mindctx/core build
 
-      - run: pnpm --filter @minddoc/obsidian typecheck
-      - run: pnpm --filter vscode-minddoc typecheck
+      - run: pnpm --filter @mindctx/obsidian typecheck
+      - run: pnpm --filter vscode-mindctx typecheck
 
-      - run: pnpm --filter @minddoc/core test
+      - run: pnpm --filter @mindctx/core test
 
       - run: pnpm build

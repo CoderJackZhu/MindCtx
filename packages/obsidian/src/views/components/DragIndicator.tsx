@@ -6,5 +6,5 @@ interface DragIndicatorProps {
 
 export function DragIndicator({ position }: DragIndicatorProps) {
   if (!position) return null;
-  return <div class={`minddoc-drop-line ${position}`} />;
+  return <div class={`mindctx-drop-line ${position}`} />;
 }

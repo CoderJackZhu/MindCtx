@@ -5,7 +5,7 @@ html, body, #root {
   overflow: hidden;
 }
 
-.minddoc-container {
+.mindctx-container {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -14,7 +14,7 @@ html, body, #root {
   font-family: var(--vscode-font-family);
 }
 
-.minddoc-toolbar {
+.mindctx-toolbar {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -22,7 +22,7 @@ html, body, #root {
   border-bottom: 1px solid var(--vscode-panel-border);
 }
 
-.minddoc-toolbar-btn {
+.mindctx-toolbar-btn {
   padding: 4px 8px;
   border-radius: 4px;
   border: none;
@@ -32,18 +32,18 @@ html, body, #root {
   font-size: 12px;
 }
 
-.minddoc-toolbar-btn:hover {
+.mindctx-toolbar-btn:hover {
   background: var(--vscode-button-secondaryHoverBackground);
 }
 
-.minddoc-main-area {
+.mindctx-main-area {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.minddoc-outline {
+.mindctx-outline {
   font-family: var(--vscode-font-family);
   font-size: 14px;
   padding: 8px;
@@ -52,7 +52,7 @@ html, body, #root {
   outline: none;
 }
 
-.minddoc-node {
+.mindctx-node {
   display: flex;
   align-items: center;
   height: 32px;
@@ -63,16 +63,16 @@ html, body, #root {
   position: relative;
 }
 
-.minddoc-node:hover {
+.mindctx-node:hover {
   background: var(--vscode-list-hoverBackground);
 }
 
-.minddoc-node.is-selected {
+.mindctx-node.is-selected {
   background: var(--vscode-list-activeSelectionBackground);
   color: var(--vscode-list-activeSelectionForeground);
 }
 
-.minddoc-collapse-btn {
+.mindctx-collapse-btn {
   width: 20px;
   height: 20px;
   display: flex;
@@ -86,11 +86,11 @@ html, body, #root {
   padding: 0;
 }
 
-.minddoc-collapse-btn:hover {
+.mindctx-collapse-btn:hover {
   color: var(--vscode-foreground);
 }
 
-.minddoc-drag-handle {
+.mindctx-drag-handle {
   width: 16px;
   height: 16px;
   opacity: 0;
@@ -103,11 +103,11 @@ html, body, #root {
   font-size: 10px;
 }
 
-.minddoc-node:hover .minddoc-drag-handle {
+.mindctx-node:hover .mindctx-drag-handle {
   opacity: 1;
 }
 
-.minddoc-bullet {
+.mindctx-bullet {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -116,19 +116,19 @@ html, body, #root {
   flex-shrink: 0;
 }
 
-.minddoc-checkbox {
+.mindctx-checkbox {
   margin: 0 4px;
   flex-shrink: 0;
 }
 
-.minddoc-title {
+.mindctx-title {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.minddoc-note-preview {
+.mindctx-note-preview {
   color: var(--vscode-descriptionForeground);
   font-size: 12px;
   margin-left: 8px;
@@ -138,7 +138,7 @@ html, body, #root {
   max-width: 200px;
 }
 
-.minddoc-inline-editor {
+.mindctx-inline-editor {
   background: var(--vscode-input-background);
   border: 1px solid var(--vscode-focusBorder);
   border-radius: 2px;
@@ -150,7 +150,7 @@ html, body, #root {
   outline: none;
 }
 
-.minddoc-drop-line {
+.mindctx-drop-line {
   position: absolute;
   left: 0;
   right: 0;
@@ -159,19 +159,19 @@ html, body, #root {
   pointer-events: none;
 }
 
-.minddoc-drop-line.before {
+.mindctx-drop-line.before {
   top: 0;
 }
 
-.minddoc-drop-line.after {
+.mindctx-drop-line.after {
   bottom: 0;
 }
 
-.minddoc-node.drop-highlight {
+.mindctx-node.drop-highlight {
   background: var(--vscode-list-activeSelectionBackground) !important;
 }
 
-.minddoc-view-switcher {
+.mindctx-view-switcher {
   display: flex;
   gap: 2px;
   padding: 2px;
@@ -179,7 +179,7 @@ html, body, #root {
   border-radius: 6px;
 }
 
-.minddoc-switch-btn {
+.mindctx-switch-btn {
   padding: 4px 12px;
   border: none;
   border-radius: 4px;
@@ -189,13 +189,13 @@ html, body, #root {
   font-size: 12px;
 }
 
-.minddoc-switch-btn.is-active {
+.mindctx-switch-btn.is-active {
   background: var(--vscode-editor-background);
   color: var(--vscode-foreground);
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
-.minddoc-search-bar {
+.mindctx-search-bar {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -204,7 +204,7 @@ html, body, #root {
   background: var(--vscode-sideBar-background);
 }
 
-.minddoc-search-input {
+.mindctx-search-input {
   flex: 1;
   border: 1px solid var(--vscode-input-border);
   border-radius: 4px;
@@ -215,17 +215,17 @@ html, body, #root {
   outline: none;
 }
 
-.minddoc-search-input:focus {
+.mindctx-search-input:focus {
   border-color: var(--vscode-focusBorder);
 }
 
-.minddoc-search-count {
+.mindctx-search-count {
   font-size: 12px;
   color: var(--vscode-descriptionForeground);
   white-space: nowrap;
 }
 
-.minddoc-search-close {
+.mindctx-search-close {
   border: none;
   background: none;
   color: var(--vscode-descriptionForeground);
@@ -234,19 +234,19 @@ html, body, #root {
   padding: 2px 4px;
 }
 
-.minddoc-highlight {
+.mindctx-highlight {
   background: var(--vscode-editor-findMatchHighlightBackground, rgba(255, 208, 0, 0.4));
   border-radius: 2px;
 }
 
-.minddoc-detail-panel {
+.mindctx-detail-panel {
   border-top: 1px solid var(--vscode-panel-border);
   padding: 12px;
   max-height: 200px;
   overflow-y: auto;
 }
 
-.minddoc-detail-note textarea {
+.mindctx-detail-note textarea {
   width: 100%;
   min-height: 60px;
   border: 1px solid var(--vscode-input-border);
@@ -259,12 +259,12 @@ html, body, #root {
   resize: vertical;
 }
 
-.minddoc-detail-note textarea:focus {
+.mindctx-detail-note textarea:focus {
   border-color: var(--vscode-focusBorder);
   outline: none;
 }
 
-.minddoc-detail-blocks pre {
+.mindctx-detail-blocks pre {
   background: var(--vscode-textBlockQuote-background);
   padding: 8px;
   border-radius: 4px;
@@ -273,7 +273,7 @@ html, body, #root {
   margin: 4px 0;
 }
 
-.minddoc-loading {
+.mindctx-loading {
   flex: 1;
   display: flex;
   align-items: center;

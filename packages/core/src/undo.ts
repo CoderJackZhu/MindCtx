@@ -1,12 +1,12 @@
-import type { MindDocTree, Operation } from './types.js';
+import type { MindCtxTree, Operation } from './types.js';
 import { findNode, findParent, findIndex, getAbsoluteDepth, recalculateNodeTypes } from './operations.js';
 
 function hasRecordedNewValue(op: Operation & { type: 'toggleCheck' }): boolean {
   return Object.prototype.hasOwnProperty.call(op, 'newValue');
 }
 
-function markSubtreeDirtyPath(root: MindDocTree['root'], nodeId: string): void {
-  function walk(current: MindDocTree['root']): boolean {
+function markSubtreeDirtyPath(root: MindCtxTree['root'], nodeId: string): void {
+  function walk(current: MindCtxTree['root']): boolean {
     if (current.id === nodeId) {
       current.subtreeDirty = true;
       return true;
@@ -27,7 +27,7 @@ function normalizeInsertIndex(index: number, length: number): number {
   return Math.min(Math.max(index, 0), length);
 }
 
-function normalizeMoveIndex(index: number, oldParent: MindDocTree['root'], newParent: MindDocTree['root'], oldIndex: number): number {
+function normalizeMoveIndex(index: number, oldParent: MindCtxTree['root'], newParent: MindCtxTree['root'], oldIndex: number): number {
   const insertIdx = normalizeInsertIndex(index, newParent.children.length);
   return oldParent === newParent && insertIdx > oldIndex ? insertIdx - 1 : insertIdx;
 }
@@ -105,7 +105,7 @@ export function invertOperation(op: Operation): Operation[] {
 }
 
 // Execute an Operation directly on the tree (used by undo/redo)
-function executeOperation(tree: MindDocTree, op: Operation): Operation {
+function executeOperation(tree: MindCtxTree, op: Operation): Operation {
   const root = tree.root;
 
   switch (op.type) {
@@ -234,7 +234,7 @@ export class UndoManager {
     this.redoStack = [];
   }
 
-  undo(tree: MindDocTree): Operation[] | null {
+  undo(tree: MindCtxTree): Operation[] | null {
     const ops = this.undoStack.pop();
     if (!ops) return null;
 
@@ -252,7 +252,7 @@ export class UndoManager {
     return executedOps;
   }
 
-  redo(tree: MindDocTree): Operation[] | null {
+  redo(tree: MindCtxTree): Operation[] | null {
     const ops = this.redoStack.pop();
     if (!ops) return null;
 

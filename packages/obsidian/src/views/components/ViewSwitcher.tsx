@@ -7,16 +7,16 @@ interface ViewSwitcherProps {
 
 export function ViewSwitcher({ currentView, onSwitch }: ViewSwitcherProps) {
   return (
-    <div class="minddoc-view-switcher">
+    <div class="mindctx-view-switcher">
       <button
-        class={`minddoc-switch-btn ${currentView === 'outline' ? 'is-active' : ''}`}
+        class={`mindctx-switch-btn ${currentView === 'outline' ? 'is-active' : ''}`}
         onClick={() => onSwitch('outline')}
         title="大纲视图"
       >
         大纲
       </button>
       <button
-        class={`minddoc-switch-btn ${currentView === 'mindmap' ? 'is-active' : ''}`}
+        class={`mindctx-switch-btn ${currentView === 'mindmap' ? 'is-active' : ''}`}
         onClick={() => onSwitch('mindmap')}
         title="思维导图"
       >

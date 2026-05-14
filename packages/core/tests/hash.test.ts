@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { fnv1a64, generateNodeId } from '@minddoc/core';
+import { fnv1a64, generateNodeId } from '@mindctx/core';
 
 describe('hash', () => {
   test('fnv1a64 returns consistent results', () => {

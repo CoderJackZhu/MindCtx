@@ -1,4 +1,4 @@
-# MindDoc
+# MindCtx
 
 Markdown-first structured outline editor with mind map view — for Obsidian and VS Code.
 
@@ -32,18 +32,18 @@ Write standard Markdown, see interactive outlines, switch to mind maps — all b
 
 | Platform | Package | Notes |
 |----------|---------|-------|
-| [Obsidian](packages/obsidian/) | `@minddoc/obsidian` | Community plugin, embed blocks, mobile support |
-| [VS Code](packages/vscode/) | `vscode-minddoc` | Custom Editor extension, native undo/redo integration |
+| [Obsidian](packages/obsidian/) | `@mindctx/obsidian` | Community plugin, embed blocks, mobile support |
+| [VS Code](packages/vscode/) | `vscode-mindctx` | Custom Editor extension, native undo/redo integration |
 
-Both platforms share the same core engine: [`@minddoc/core`](packages/core/).
+Both platforms share the same core engine: [`@mindctx/core`](packages/core/).
 
 ## File Format
 
-MindDoc works with standard Markdown. Headings become tree branches, lists become leaf nodes:
+MindCtx works with standard Markdown. Headings become tree branches, lists become leaf nodes:
 
 ```markdown
 ---
-minddoc: true
+mindctx: true
 heading-depth: 3
 ---
 
@@ -111,16 +111,16 @@ examples/             # Sample .mind.md files
 
 ```bash
 # Develop Obsidian plugin (watch mode)
-pnpm --filter @minddoc/obsidian dev
+pnpm --filter @mindctx/obsidian dev
 
 # Develop VS Code extension (watch mode)
-pnpm --filter vscode-minddoc dev
+pnpm --filter vscode-mindctx dev
 
 # Build core only
-pnpm --filter @minddoc/core build
+pnpm --filter @mindctx/core build
 
 # Run tests
-pnpm --filter @minddoc/core test
+pnpm --filter @mindctx/core test
 ```
 
 ## Documentation

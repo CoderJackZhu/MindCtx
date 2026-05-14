@@ -21,9 +21,9 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           body: |
-            # MindDoc v0.0.1 — 首个社区预览版
+            # MindCtx v0.0.1 — 首个社区预览版
 
-            MindDoc 是一个 Obsidian 插件，将 Markdown 文件转化为交互式大纲与思维导图，数据始终以 `.mind.md` 文件存储，完全兼容 Obsidian 生态。
+            MindCtx 是一个 Obsidian 插件，将 Markdown 文件转化为交互式大纲与思维导图，数据始终以 `.mind.md` 文件存储，完全兼容 Obsidian 生态。
 
             ## 双视图编辑
             - **大纲视图**：拖拽排序、键盘快捷键、行内编辑
@@ -47,7 +47,7 @@ jobs:
             - 祖先节点保持可见，不丢失上下文
 
             ## 嵌入块
-            - Markdown 中通过 ````minddoc` 代码块嵌入只读视图
+            - Markdown 中通过 ````mindctx` 代码块嵌入只读视图
             - 可配置视图模式、高度、最大深度、初始折叠状态
 
             ## 导入导出

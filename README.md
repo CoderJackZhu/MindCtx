@@ -1,14 +1,14 @@
-# MindDoc
+# MindCtx
 
 Markdown 优先的结构化大纲编辑器，支持思维导图视图 —— 同时适配 Obsidian 和 VS Code。
 
 写标准 Markdown，看交互式大纲，切换思维导图——所有数据始终存储在同一个 `.md` 文件中。原生 LLM 协作：一键将脑图转为结构化提示词，AI 输出回写即节点。
 
-## 为什么选择 MindDoc
+## 为什么选择 MindCtx
 
-市面上不乏大纲工具和思维导图软件，但 MindDoc 的设计出发点是解决几个被忽略的痛点：
+市面上不乏大纲工具和思维导图软件，但 MindCtx 的设计出发点是解决几个被忽略的痛点：
 
-**Markdown 即数据源，而非导出格式。** 大多数思维导图工具把 Markdown 当作导入/导出的二等公民——导出的 md 丢失结构、导入后无法双向同步。MindDoc 让 `.md` 文件成为唯一的真实数据源，编辑结果直接写回原文件，Git 可追踪、任意编辑器可打开。
+**Markdown 即数据源，而非导出格式。** 大多数思维导图工具把 Markdown 当作导入/导出的二等公民——导出的 md 丢失结构、导入后无法双向同步。MindCtx 让 `.md` 文件成为唯一的真实数据源，编辑结果直接写回原文件，Git 可追踪、任意编辑器可打开。
 
 **为 LLM 协作而生。** `.mind.md` 是标准 Markdown，大模型天然就能读懂和生成。通过"复制为 AI 上下文"功能，一键将当前脑图结构转化为结构化提示词，粘贴给 ChatGPT/Claude 即可获得精准的文档整理、思路扩展或内容润色——AI 的输出拖回来直接就是可编辑的节点。
 
@@ -44,18 +44,18 @@ Markdown 优先的结构化大纲编辑器，支持思维导图视图 —— 同
 
 | 平台 | 包名 | 说明 |
 |------|------|------|
-| [Obsidian](packages/obsidian/) | `@minddoc/obsidian` | 社区插件，支持嵌入块、移动端 |
-| [VS Code](packages/vscode/) | `vscode-minddoc` | Custom Editor 扩展，原生撤销/重做集成 |
+| [Obsidian](packages/obsidian/) | `@mindctx/obsidian` | 社区插件，支持嵌入块、移动端 |
+| [VS Code](packages/vscode/) | `vscode-mindctx` | Custom Editor 扩展，原生撤销/重做集成 |
 
-两个平台共享同一个核心引擎 [`@minddoc/core`](packages/core/)。
+两个平台共享同一个核心引擎 [`@mindctx/core`](packages/core/)。
 
 ## 文件格式
 
-MindDoc 使用标准 Markdown。标题成为树的分支，列表成为叶节点：
+MindCtx 使用标准 Markdown。标题成为树的分支，列表成为叶节点：
 
 ```markdown
 ---
-minddoc: true
+mindctx: true
 heading-depth: 3
 ---
 
@@ -126,16 +126,16 @@ examples/             # 示例 .mind.md 文件
 
 ```bash
 # 开发 Obsidian 插件（监听模式）
-pnpm --filter @minddoc/obsidian dev
+pnpm --filter @mindctx/obsidian dev
 
 # 开发 VS Code 扩展（监听模式）
-pnpm --filter vscode-minddoc dev
+pnpm --filter vscode-mindctx dev
 
 # 只构建核心包
-pnpm --filter @minddoc/core build
+pnpm --filter @mindctx/core build
 
 # 运行测试
-pnpm --filter @minddoc/core test
+pnpm --filter @mindctx/core test
 ```
 
 ## 文档

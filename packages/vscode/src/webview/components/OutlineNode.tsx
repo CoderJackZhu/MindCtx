@@ -1,10 +1,10 @@
 import { h } from 'preact';
-import type { MindDocNode } from '@minddoc/core';
+import type { MindCtxNode } from '@mindctx/core';
 import { InlineEditor } from './InlineEditor.js';
 import { DragIndicator } from './DragIndicator.js';
 
 interface OutlineNodeProps {
-  node: MindDocNode;
+  node: MindCtxNode;
   depth: number;
   isSelected: boolean;
   isEditing: boolean;
@@ -26,16 +26,16 @@ interface OutlineNodeProps {
 }
 
 function HighlightedTitle({ title, query }: { title: string; query: string }) {
-  if (!query) return <span class="minddoc-title">{title}</span>;
+  if (!query) return <span class="mindctx-title">{title}</span>;
   const lowerTitle = title.toLowerCase();
   const lowerQuery = query.toLowerCase();
   const idx = lowerTitle.indexOf(lowerQuery);
-  if (idx === -1) return <span class="minddoc-title">{title}</span>;
+  if (idx === -1) return <span class="mindctx-title">{title}</span>;
 
   return (
-    <span class="minddoc-title">
+    <span class="mindctx-title">
       {title.slice(0, idx)}
-      <mark class="minddoc-highlight">{title.slice(idx, idx + query.length)}</mark>
+      <mark class="mindctx-highlight">{title.slice(idx, idx + query.length)}</mark>
       {title.slice(idx + query.length)}
     </span>
   );
@@ -65,7 +65,7 @@ export function OutlineNode({
   const hasChildren = node.children.length > 0;
   const paddingLeft = depth * indentSize;
 
-  let className = 'minddoc-node';
+  let className = 'mindctx-node';
   if (isSelected) className += ' is-selected';
   if (dropPosition === 'child') className += ' drop-highlight';
 
@@ -85,21 +85,21 @@ export function OutlineNode({
     >
       {dropPosition === 'before' && <DragIndicator position="before" />}
 
-      <span class="minddoc-collapse-btn" onClick={(e) => { e.stopPropagation(); onToggleCollapse(); }}>
+      <span class="mindctx-collapse-btn" onClick={(e) => { e.stopPropagation(); onToggleCollapse(); }}>
         {hasChildren ? (isCollapsed ? '▸' : '▾') : ' '}
       </span>
 
-      <span class="minddoc-drag-handle">⋮⋮</span>
+      <span class="mindctx-drag-handle">⋮⋮</span>
 
       {node.checked !== null ? (
         <input
           type="checkbox"
-          class="minddoc-checkbox"
+          class="mindctx-checkbox"
           checked={node.checked}
           onClick={(e) => e.stopPropagation()}
         />
       ) : (
-        <span class="minddoc-bullet" />
+        <span class="mindctx-bullet" />
       )}
 
       {isEditing ? (
@@ -113,7 +113,7 @@ export function OutlineNode({
       )}
 
       {!isEditing && showNotePreview && node.note && (
-        <span class="minddoc-note-preview">{node.note.slice(0, 50)}</span>
+        <span class="mindctx-note-preview">{node.note.slice(0, 50)}</span>
       )}
 
       {dropPosition === 'after' && <DragIndicator position="after" />}

@@ -1,4 +1,4 @@
-# MindDoc for VS Code
+# MindCtx for VS Code
 
 Markdown-first structured outline editor with mind map view for Visual Studio Code.
 
@@ -6,48 +6,48 @@ Markdown-first structured outline editor with mind map view for Visual Studio Co
 
 ### From VS Code Marketplace
 
-Search for "MindDoc" in the Extensions view (Ctrl+Shift+X).
+Search for "MindCtx" in the Extensions view (Ctrl+Shift+X).
 
 ### From VSIX
 
 Download the `.vsix` file from the latest release and install via:
 
 ```
-code --install-extension vscode-minddoc-0.0.1.vsix
+code --install-extension vscode-mindctx-0.0.1.vsix
 ```
 
 ## Usage
 
-### Creating a MindDoc File
+### Creating a MindCtx File
 
-- Command Palette (Ctrl+Shift+P): "MindDoc: Create New File"
-- Create any `.mind.md` file — it opens automatically with the MindDoc editor
+- Command Palette (Ctrl+Shift+P): "MindCtx: Create New File"
+- Create any `.mind.md` file — it opens automatically with the MindCtx editor
 
 ### Opening Existing Files
 
-Any file matching `*.mind.md` opens in the MindDoc editor by default. You can also right-click a `.md` file in the Explorer and select "MindDoc: Open with MindDoc".
+Any file matching `*.mind.md` opens in the MindCtx editor by default. You can also right-click a `.md` file in the Explorer and select "MindCtx: Open with MindCtx".
 
 ## Commands
 
 | Command | Keybinding | Description |
 |---------|-----------|-------------|
-| MindDoc: Create New File | — | Create a new .mind.md file |
-| MindDoc: Open with MindDoc | — | Open current file in MindDoc editor |
-| MindDoc: Toggle View | Cmd/Ctrl+Shift+M | Switch between outline and mind map |
-| MindDoc: Expand All | Cmd/Ctrl+Shift+E | Expand all collapsed nodes |
-| MindDoc: Collapse All | Cmd/Ctrl+Shift+C | Collapse all nodes |
-| MindDoc: Export as OPML | — | Export to OPML format |
-| MindDoc: Export as JSON | — | Export tree as JSON |
-| MindDoc: Export as PNG | — | Export mind map as PNG image |
-| MindDoc: Import OPML | — | Import from OPML file |
-| MindDoc: Import FreeMind | — | Import from .mm file |
-| MindDoc: Copy as AI Context | — | Copy structured content to clipboard |
+| MindCtx: Create New File | — | Create a new .mind.md file |
+| MindCtx: Open with MindCtx | — | Open current file in MindCtx editor |
+| MindCtx: Toggle View | Cmd/Ctrl+Shift+M | Switch between outline and mind map |
+| MindCtx: Expand All | Cmd/Ctrl+Shift+E | Expand all collapsed nodes |
+| MindCtx: Collapse All | Cmd/Ctrl+Shift+C | Collapse all nodes |
+| MindCtx: Export as OPML | — | Export to OPML format |
+| MindCtx: Export as JSON | — | Export tree as JSON |
+| MindCtx: Export as PNG | — | Export mind map as PNG image |
+| MindCtx: Import OPML | — | Import from OPML file |
+| MindCtx: Import FreeMind | — | Import from .mm file |
+| MindCtx: Copy as AI Context | — | Copy structured content to clipboard |
 
 ## Features
 
 ### Custom Editor Integration
 
-MindDoc registers as a VS Code Custom Editor for `.mind.md` files. This means:
+MindCtx registers as a VS Code Custom Editor for `.mind.md` files. This means:
 - Native undo/redo integration (Ctrl+Z/Ctrl+Shift+Z works through VS Code's undo stack)
 - File dirty state tracked by VS Code (dot indicator on tab)
 - Auto-save supported
@@ -68,33 +68,33 @@ Your view preferences are saved per file:
 
 ### External File Change Detection
 
-If the `.mind.md` file is modified by another process (e.g., git pull, external editor), MindDoc detects the change and updates automatically.
+If the `.mind.md` file is modified by another process (e.g., git pull, external editor), MindCtx detects the change and updates automatically.
 
 ## Settings
 
-Configure in VS Code Settings (Ctrl+,) under "MindDoc":
+Configure in VS Code Settings (Ctrl+,) under "MindCtx":
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `minddoc.defaultView` | outline | Default view when opening files |
-| `minddoc.headingDepth` | 3 | Maximum heading depth (deeper = list items) |
-| `minddoc.autoSaveDelay` | 300 | Auto-save debounce in milliseconds |
-| `minddoc.outlineFontSize` | 14 | Outline view font size (px) |
-| `minddoc.showNotePreview` | true | Show note preview next to titles |
-| `minddoc.mindmapDirection` | side | Mind map layout: `side`, `right`, or `left` |
+| `mindctx.defaultView` | outline | Default view when opening files |
+| `mindctx.headingDepth` | 3 | Maximum heading depth (deeper = list items) |
+| `mindctx.autoSaveDelay` | 300 | Auto-save debounce in milliseconds |
+| `mindctx.outlineFontSize` | 14 | Outline view font size (px) |
+| `mindctx.showNotePreview` | true | Show note preview next to titles |
+| `mindctx.mindmapDirection` | side | Mind map layout: `side`, `right`, or `left` |
 
 ## Development
 
-This package is part of the MindDoc monorepo. From the repository root:
+This package is part of the MindCtx monorepo. From the repository root:
 
 ```bash
 pnpm install
-pnpm --filter vscode-minddoc dev    # watch mode (rebuilds on change)
-pnpm --filter vscode-minddoc build  # production build
+pnpm --filter vscode-mindctx dev    # watch mode (rebuilds on change)
+pnpm --filter vscode-mindctx build  # production build
 ```
 
 To test in VS Code:
-1. Run `pnpm --filter vscode-minddoc dev`
+1. Run `pnpm --filter vscode-mindctx dev`
 2. Open the `packages/vscode` folder in VS Code
 3. Press F5 to launch the Extension Development Host
 4. Open any `.mind.md` file in the development host

@@ -1,14 +1,14 @@
 import { h } from 'preact';
 import type { Signal } from '@preact/signals';
-import { findNode } from '@minddoc/core';
-import type { MindDocTree, PartialOperation, MindMapDirection } from '@minddoc/core';
+import { findNode } from '@mindctx/core';
+import type { MindCtxTree, PartialOperation, MindMapDirection } from '@mindctx/core';
 import { OutlineToolbar } from './components/OutlineToolbar.js';
 import { OutlineView } from './OutlineView.js';
 import { MindMapView } from './MindMapView.js';
 import { DetailPanel } from './components/DetailPanel.js';
 
-interface MindDocRootProps {
-  treeSignal: Signal<MindDocTree | null>;
+interface MindCtxRootProps {
+  treeSignal: Signal<MindCtxTree | null>;
   collapsedIds: Signal<Set<string>>;
   selectedNodeId: Signal<string | null>;
   editingNodeId: Signal<string | null>;
@@ -23,7 +23,7 @@ interface MindDocRootProps {
   mindmapDirection: MindMapDirection;
 }
 
-export function MindDocRoot(props: MindDocRootProps) {
+export function MindCtxRoot(props: MindCtxRootProps) {
   const tree = props.treeSignal.value;
   const view = props.currentView.value;
   const selectedId = props.selectedNodeId.value;
@@ -31,14 +31,14 @@ export function MindDocRoot(props: MindDocRootProps) {
   const selectedNode = tree && selectedId ? findNode(tree.root, selectedId) : null;
 
   return (
-    <div class="minddoc-container">
+    <div class="mindctx-container">
       <OutlineToolbar
         currentView={view}
         onSwitchView={props.onSwitchView}
         onExpandAll={props.onExpandAll}
         onCollapseAll={props.onCollapseAll}
       />
-      <div class="minddoc-main-area">
+      <div class="mindctx-main-area">
         {view === 'outline' ? (
           <OutlineView
             treeSignal={props.treeSignal}
@@ -60,7 +60,7 @@ export function MindDocRoot(props: MindDocRootProps) {
             direction={props.mindmapDirection}
           />
         ) : (
-          <div class="minddoc-loading">加载中...</div>
+          <div class="mindctx-loading">加载中...</div>
         )}
       </div>
       {view === 'outline' && selectedNode && (

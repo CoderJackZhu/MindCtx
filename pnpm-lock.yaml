@@ -57,7 +57,7 @@ importers:
 
   packages/obsidian:
     dependencies:
-      '@minddoc/core':
+      '@mindctx/core':
         specifier: workspace:*
         version: link:../core
       '@preact/signals':
@@ -89,7 +89,7 @@ importers:
         specifier: ^4.6.2
         version: 4.6.2
     devDependencies:
-      '@minddoc/core':
+      '@mindctx/core':
         specifier: workspace:*
         version: link:../core
       '@preact/signals':

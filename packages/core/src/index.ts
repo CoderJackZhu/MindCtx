@@ -2,8 +2,8 @@
 export type {
   ContentBlock,
   SourceRange,
-  MindDocNode,
-  MindDocTree,
+  MindCtxNode,
+  MindCtxTree,
   PartialOperation,
   Operation,
   ParseOptions,
@@ -44,7 +44,7 @@ export { exportJSON } from './exporters/json.js';
 // AI
 export { copyAsAIContext } from './ai/contextBuilder.js';
 
-// Bridge (browser-only, import from '@minddoc/core/bridge')
+// Bridge (browser-only, import from '@mindctx/core/bridge')
 // Re-exported via separate subpath to avoid pulling in mind-elixir in Node environments
 
 // Utils

@@ -1,12 +1,12 @@
-# VSCode MindDoc Phase 3: Mind Map View Implementation Plan
+# VSCode MindCtx Phase 3: Mind Map View Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Port the Mind Elixir-based mind map view to the VSCode extension webview, providing full drag-and-drop node manipulation, zoom controls, focus mode, context menu, and keyboard shortcuts.
 
-**Architecture:** The MindMapView uses Mind Elixir for rendering. The `@minddoc/core/bridge` subpath already exports the data conversion and event wiring. We need a VSCode-specific theme bridge (replacing the Obsidian theme bridge) and adapt the component to use WebviewBridge signals.
+**Architecture:** The MindMapView uses Mind Elixir for rendering. The `@mindctx/core/bridge` subpath already exports the data conversion and event wiring. We need a VSCode-specific theme bridge (replacing the Obsidian theme bridge) and adapt the component to use WebviewBridge signals.
 
-**Tech Stack:** Preact, Mind Elixir v4, @minddoc/core/bridge (treeToMindElixirData, setupMindElixirEvents, syncMindElixirAddChildButtons, getMindElixirDirection)
+**Tech Stack:** Preact, Mind Elixir v4, @mindctx/core/bridge (treeToMindElixirData, setupMindElixirEvents, syncMindElixirAddChildButtons, getMindElixirDirection)
 
 ---
 
@@ -90,9 +90,9 @@ import {
   treeToMindElixirData,
   setupMindElixirEvents,
   syncMindElixirAddChildButtons,
-} from '@minddoc/core/bridge';
-import { findNode } from '@minddoc/core';
-import type { MindDocTree, PartialOperation, MindMapDirection } from '@minddoc/core';
+} from '@mindctx/core/bridge';
+import { findNode } from '@mindctx/core';
+import type { MindCtxTree, PartialOperation, MindMapDirection } from '@mindctx/core';
 import type { WebviewBridge } from './WebviewBridge.js';
 import { getVSCodeTheme, applyTheme } from './bridge/mindElixirTheme.js';
 
@@ -129,20 +129,20 @@ function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
 
   return (
     <div
-      class="minddoc-mindmap-zoom-controls"
+      class="mindctx-mindmap-zoom-controls"
       onMouseLeave={() => setIsOpen(false)}
     >
       {isOpen && (
-        <div class="minddoc-mindmap-zoom-panel">
+        <div class="mindctx-mindmap-zoom-panel">
           <button
             type="button"
-            class="minddoc-mindmap-center-button"
+            class="mindctx-mindmap-center-button"
             onClick={onCenter}
             title="Center on root"
             aria-label="Center on root"
           >
             <svg
-              class="minddoc-mindmap-center-icon"
+              class="mindctx-mindmap-center-icon"
               viewBox="0 0 24 24"
               aria-hidden="true"
               focusable="false"
@@ -156,7 +156,7 @@ function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
           </button>
           <input
             type="range"
-            class="minddoc-mindmap-zoom-slider"
+            class="mindctx-mindmap-zoom-slider"
             min="10"
             max="400"
             value={String(percentage)}
@@ -168,7 +168,7 @@ function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
       )}
       <button
         type="button"
-        class="minddoc-mindmap-zoom-value"
+        class="mindctx-mindmap-zoom-value"
         onMouseEnter={() => setIsOpen(true)}
         aria-expanded={isOpen}
       >
@@ -364,13 +364,13 @@ export function MindMapView({ bridge, collapsedIds }: MindMapViewProps) {
   const focusedNode = tree && focusNodeId ? findNode(tree.root, focusNodeId) : null;
 
   return (
-    <div class="minddoc-mindmap-shell">
+    <div class="mindctx-mindmap-shell">
       {focusedNode && (
-        <div class="minddoc-mindmap-focusbar">
-          <span class="minddoc-mindmap-focusbar-label">Focused: {focusedNode.title || '(empty)'}</span>
+        <div class="mindctx-mindmap-focusbar">
+          <span class="mindctx-mindmap-focusbar-label">Focused: {focusedNode.title || '(empty)'}</span>
           <button
             type="button"
-            class="minddoc-mindmap-focusbar-button"
+            class="mindctx-mindmap-focusbar-button"
             onClick={() => setFocusNodeId(null)}
           >
             Exit Focus
@@ -384,7 +384,7 @@ export function MindMapView({ bridge, collapsedIds }: MindMapViewProps) {
       />
       <div
         ref={containerRef}
-        class="minddoc-mindmap-container"
+        class="mindctx-mindmap-container"
         style={{ width: '100%', height: '100%' }}
         tabIndex={0}
         onKeyDown={handleKeyDown}
@@ -414,7 +414,7 @@ Port the mind map specific styles from Obsidian, mapping to VSCode CSS variables
 - [ ] **Step 1: Create mindmap.css**
 
 ```css
-.minddoc-mindmap-shell {
+.mindctx-mindmap-shell {
   position: relative;
   flex: 1;
   min-height: 0;
@@ -423,7 +423,7 @@ Port the mind map specific styles from Obsidian, mapping to VSCode CSS variables
   background: var(--vscode-editor-background);
 }
 
-.minddoc-mindmap-focusbar {
+.mindctx-mindmap-focusbar {
   position: absolute;
   top: 8px;
   left: 8px;
@@ -439,7 +439,7 @@ Port the mind map specific styles from Obsidian, mapping to VSCode CSS variables
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.minddoc-mindmap-focusbar-label {
+.mindctx-mindmap-focusbar-label {
   min-width: 0;
   max-width: 320px;
   overflow: hidden;
@@ -449,7 +449,7 @@ Port the mind map specific styles from Obsidian, mapping to VSCode CSS variables
   white-space: nowrap;
 }
 
-.minddoc-mindmap-focusbar-button {
+.mindctx-mindmap-focusbar-button {
   flex: 0 0 auto;
   padding: 2px 8px;
   border: 1px solid var(--vscode-panel-border);
@@ -460,11 +460,11 @@ Port the mind map specific styles from Obsidian, mapping to VSCode CSS variables
   cursor: pointer;
 }
 
-.minddoc-mindmap-focusbar-button:hover {
+.mindctx-mindmap-focusbar-button:hover {
   background: var(--vscode-button-secondaryHoverBackground);
 }
 
-.minddoc-mindmap-zoom-controls {
+.mindctx-mindmap-zoom-controls {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -475,7 +475,7 @@ Port the mind map specific styles from Obsidian, mapping to VSCode CSS variables
   gap: 8px;
 }
 
-.minddoc-mindmap-zoom-panel {
+.mindctx-mindmap-zoom-panel {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -487,7 +487,7 @@ Port the mind map specific styles from Obsidian, mapping to VSCode CSS variables
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.minddoc-mindmap-zoom-slider {
+.mindctx-mindmap-zoom-slider {
   width: 120px;
   height: 28px;
   margin: 0;
@@ -495,8 +495,8 @@ Port the mind map specific styles from Obsidian, mapping to VSCode CSS variables
   cursor: pointer;
 }
 
-.minddoc-mindmap-zoom-value,
-.minddoc-mindmap-center-button {
+.mindctx-mindmap-zoom-value,
+.mindctx-mindmap-center-button {
   border: 1px solid var(--vscode-panel-border);
   border-radius: 4px;
   background: var(--vscode-editor-background);
@@ -505,14 +505,14 @@ Port the mind map specific styles from Obsidian, mapping to VSCode CSS variables
   cursor: pointer;
 }
 
-.minddoc-mindmap-zoom-value {
+.mindctx-mindmap-zoom-value {
   min-width: 48px;
   height: 28px;
   padding: 0 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.minddoc-mindmap-center-button {
+.mindctx-mindmap-center-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -524,7 +524,7 @@ Port the mind map specific styles from Obsidian, mapping to VSCode CSS variables
   box-shadow: none;
 }
 
-.minddoc-mindmap-center-icon {
+.mindctx-mindmap-center-icon {
   width: 16px;
   height: 16px;
   fill: none;
@@ -534,42 +534,42 @@ Port the mind map specific styles from Obsidian, mapping to VSCode CSS variables
   stroke-linejoin: round;
 }
 
-.minddoc-mindmap-center-icon circle {
+.mindctx-mindmap-center-icon circle {
   fill: currentColor;
   stroke: none;
 }
 
-.minddoc-mindmap-zoom-value:hover,
-.minddoc-mindmap-center-button:hover {
+.mindctx-mindmap-zoom-value:hover,
+.mindctx-mindmap-center-button:hover {
   background: var(--vscode-button-secondaryHoverBackground);
 }
 
-.minddoc-mindmap-container {
+.mindctx-mindmap-container {
   flex: 1;
   min-height: 0;
   background: var(--vscode-editor-background);
   overflow: hidden;
 }
 
-.minddoc-mindmap-container me-root {
+.mindctx-mindmap-container me-root {
   font-size: 18px;
   font-weight: 600;
   padding: 8px 16px;
   border-radius: 8px;
 }
 
-.minddoc-mindmap-container me-wrapper .node-content {
+.mindctx-mindmap-container me-wrapper .node-content {
   font-family: var(--vscode-font-family);
   font-size: 14px;
   padding: 4px 10px;
   border-radius: 4px;
 }
 
-.minddoc-mindmap-container me-tpc {
+.mindctx-mindmap-container me-tpc {
   position: relative;
 }
 
-.minddoc-mindmap-container me-tpc .minddoc-mindmap-add-child {
+.mindctx-mindmap-container me-tpc .mindctx-mindmap-add-child {
   position: absolute;
   top: 50%;
   right: -22px;
@@ -596,17 +596,17 @@ Port the mind map specific styles from Obsidian, mapping to VSCode CSS variables
   z-index: 10;
 }
 
-.minddoc-mindmap-container .lhs me-tpc .minddoc-mindmap-add-child {
+.mindctx-mindmap-container .lhs me-tpc .mindctx-mindmap-add-child {
   right: auto;
   left: -22px;
 }
 
-.minddoc-mindmap-container me-tpc:hover .minddoc-mindmap-add-child,
-.minddoc-mindmap-container me-tpc.selected .minddoc-mindmap-add-child {
+.mindctx-mindmap-container me-tpc:hover .mindctx-mindmap-add-child,
+.mindctx-mindmap-container me-tpc.selected .mindctx-mindmap-add-child {
   opacity: 1;
 }
 
-.minddoc-mindmap-container me-tpc .minddoc-mindmap-add-child:hover {
+.mindctx-mindmap-container me-tpc .mindctx-mindmap-add-child:hover {
   background: var(--vscode-focusBorder);
   border-color: var(--vscode-focusBorder);
   color: #ffffff;
@@ -656,7 +656,7 @@ import { MindMapView } from './MindMapView.js';
 Replace the mindmap placeholder block:
 ```tsx
 // Before:
-<div class="minddoc-loading">Mind Map view coming in Phase 3.</div>
+<div class="mindctx-loading">Mind Map view coming in Phase 3.</div>
 
 // After:
 <MindMapView bridge={bridge} collapsedIds={collapsedIds} />
@@ -687,8 +687,8 @@ git commit -m "feat(vscode): integrate MindMapView in App layout"
 - [ ] **Step 1: Build all packages**
 
 ```bash
-pnpm --filter @minddoc/core build
-pnpm --filter vscode-minddoc build
+pnpm --filter @mindctx/core build
+pnpm --filter vscode-mindctx build
 ```
 
 Expected: Both extension.js and webview.js build without errors. The webview.js will be larger now (~150-200KB) due to Mind Elixir being bundled in.

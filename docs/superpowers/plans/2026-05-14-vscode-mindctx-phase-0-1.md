@@ -1,8 +1,8 @@
-# VSCode MindDoc — Phase 0-1 Implementation Plan
+# VSCode MindCtx — Phase 0-1 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Restructure the MindDoc project into a pnpm monorepo with a shared `@minddoc/core` package, then build the VSCode extension skeleton with Custom Editor, postMessage communication, and file I/O.
+**Goal:** Restructure the MindCtx project into a pnpm monorepo with a shared `@mindctx/core` package, then build the VSCode extension skeleton with Custom Editor, postMessage communication, and file I/O.
 
 **Architecture:** Extract pure logic (parser, serializer, operations, undo, hash, types, importers, exporters, AI context builder, bridge data conversion, debounce) into `packages/core`. Obsidian plugin becomes `packages/obsidian` consuming core. New `packages/vscode` registers a CustomEditorProvider that renders a Webview, communicates via typed postMessage protocol, and manages file read/write with debounced saves.
 
@@ -15,7 +15,7 @@
 ### Phase 0 — Monorepo restructure
 
 ```
-minddoc/                          ← repo root (rename conceptual, same git repo)
+mindctx/                          ← repo root (rename conceptual, same git repo)
 ├── packages/
 │   ├── core/
 │   │   ├── src/
@@ -43,7 +43,7 @@ minddoc/                          ← repo root (rename conceptual, same git rep
 │   │   └── tsup.config.ts
 │   └── obsidian/
 │       ├── src/
-│       │   ├── main.ts           ← from src/main.ts (imports from @minddoc/core)
+│       │   ├── main.ts           ← from src/main.ts (imports from @mindctx/core)
 │       │   ├── views/            ← from src/views/
 │       │   ├── bridge/
 │       │   │   └── mindElixirTheme.ts  ← from src/bridge/mindElixirTheme.ts (Obsidian-specific theming)
@@ -59,7 +59,7 @@ minddoc/                          ← repo root (rename conceptual, same git rep
 │       ├── styles.css            ← from styles.css
 │       ├── package.json
 │       └── tsconfig.json
-├── tests/                        ← stays at root (tests @minddoc/core)
+├── tests/                        ← stays at root (tests @mindctx/core)
 │   ├── parser.test.ts
 │   ├── serializer.test.ts
 │   ├── operations.test.ts
@@ -82,8 +82,8 @@ minddoc/                          ← repo root (rename conceptual, same git rep
 packages/vscode/
 ├── src/
 │   ├── extension.ts              ← activate/deactivate, register provider + commands
-│   ├── MindDocEditorProvider.ts  ← CustomEditorProvider, webview lifecycle, multi-panel mgmt
-│   ├── MindDocDocument.ts        ← CustomDocument, tree state, edit tracking, file I/O
+│   ├── MindCtxEditorProvider.ts  ← CustomEditorProvider, webview lifecycle, multi-panel mgmt
+│   ├── MindCtxDocument.ts        ← CustomDocument, tree state, edit tracking, file I/O
 │   ├── types/
 │   │   └── messages.ts           ← ExtToWebview, WebviewToExt, ViewState types
 │   └── webview/
@@ -117,7 +117,7 @@ packages:
 
 ```json
 {
-  "name": "minddoc",
+  "name": "mindctx",
   "private": true,
   "scripts": {
     "build": "pnpm -r build",
@@ -164,7 +164,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@minddoc/core': './packages/core/src/index.ts',
+      '@mindctx/core': './packages/core/src/index.ts',
     },
   },
 });
@@ -179,7 +179,7 @@ git commit -m "chore: initialize pnpm monorepo workspace structure"
 
 ---
 
-## Task 2: Create @minddoc/core package
+## Task 2: Create @mindctx/core package
 
 **Files:**
 - Create: `packages/core/package.json`
@@ -195,7 +195,7 @@ mkdir -p packages/core/src
 
 ```json
 {
-  "name": "@minddoc/core",
+  "name": "@mindctx/core",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -277,7 +277,7 @@ export { debounce } from './utils/debounce.js';
 
 ```bash
 git add packages/core/
-git commit -m "chore: create @minddoc/core package skeleton"
+git commit -m "chore: create @mindctx/core package skeleton"
 ```
 
 ---
@@ -360,17 +360,17 @@ import type { ... } from '../types.js';
 
 In `packages/core/src/ai/contextBuilder.ts`:
 ```typescript
-// Change: import type { MindDocTree, MindDocNode } from '../core/types.js';
+// Change: import type { MindCtxTree, MindCtxNode } from '../core/types.js';
 // To:
-import type { MindDocTree, MindDocNode } from '../types.js';
+import type { MindCtxTree, MindCtxNode } from '../types.js';
 ```
 
 In `packages/core/src/bridge/mindElixirBridge.ts`:
 ```typescript
-// Change: import type { MindDocTree, MindDocNode, PartialOperation } from '../core/types.js';
+// Change: import type { MindCtxTree, MindCtxNode, PartialOperation } from '../core/types.js';
 // To:
-import type { MindDocTree, MindDocNode, PartialOperation } from '../types.js';
-// Also remove: import type { MindDocSettings } from '../settings/settings.js';
+import type { MindCtxTree, MindCtxNode, PartialOperation } from '../types.js';
+// Also remove: import type { MindCtxSettings } from '../settings/settings.js';
 // Define the direction type locally or export from types.ts
 ```
 
@@ -378,9 +378,9 @@ In `packages/core/src/utils/debounce.ts`:
 - Change `window.setTimeout` to `setTimeout` (no `window` global in Node/extension host)
 - Change `window.clearTimeout` to `clearTimeout`
 
-- [ ] **Step 8: Handle mindElixirBridge dependency on MindDocSettings type**
+- [ ] **Step 8: Handle mindElixirBridge dependency on MindCtxSettings type**
 
-The bridge file imports `MindDocSettings` for the direction type. Extract just the direction type into core:
+The bridge file imports `MindCtxSettings` for the direction type. Extract just the direction type into core:
 
 Add to `packages/core/src/types.ts`:
 ```typescript
@@ -433,7 +433,7 @@ mkdir -p packages/obsidian/src/{views/components,bridge,exporters,settings}
 
 ```json
 {
-  "name": "@minddoc/obsidian",
+  "name": "@mindctx/obsidian",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -443,7 +443,7 @@ mkdir -p packages/obsidian/src/{views/components,bridge,exporters,settings}
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@minddoc/core": "workspace:*",
+    "@mindctx/core": "workspace:*",
     "preact": "^10.19",
     "@preact/signals": "^1.2",
     "mind-elixir": "^4.0",
@@ -487,30 +487,30 @@ mv styles.css packages/obsidian/styles.css
 
 - [ ] **Step 5: Update import paths in Obsidian source files**
 
-All files that previously imported from `'../core/types.js'`, `'../core/parser.js'` etc. now import from `@minddoc/core`:
+All files that previously imported from `'../core/types.js'`, `'../core/parser.js'` etc. now import from `@mindctx/core`:
 
 In `packages/obsidian/src/main.ts`:
 ```typescript
 // Change: import { parse } from './core/parser.js';
 // To:
-import { parse, serialize, applyPartialOperation, type MindDocTree, type PartialOperation } from '@minddoc/core';
+import { parse, serialize, applyPartialOperation, type MindCtxTree, type PartialOperation } from '@mindctx/core';
 ```
 
-In `packages/obsidian/src/views/MindDocView.tsx` (and other view files):
+In `packages/obsidian/src/views/MindCtxView.tsx` (and other view files):
 ```typescript
-// Change: import type { MindDocTree, MindDocNode } from '../core/types.js';
+// Change: import type { MindCtxTree, MindCtxNode } from '../core/types.js';
 // To:
-import type { MindDocTree, MindDocNode } from '@minddoc/core';
+import type { MindCtxTree, MindCtxNode } from '@mindctx/core';
 ```
 
 Apply same pattern to all files importing from the old `../core/`, `../importers/`, `../exporters/`, `../commands/`, `../utils/`, `../bridge/mindElixirBridge` paths.
 
-Files that import from `@minddoc/core`:
+Files that import from `@mindctx/core`:
 - `main.ts` — parser, serializer, operations, undo, importers, exporters, AI, types
-- `views/MindDocView.tsx` — types, operations, undo
+- `views/MindCtxView.tsx` — types, operations, undo
 - `views/OutlineView.tsx` — types, operations
 - `views/MindMapView.tsx` — types, bridge
-- `views/MindDocRoot.tsx` — types
+- `views/MindCtxRoot.tsx` — types
 - `views/EmbedProcessor.ts` — parser, types
 - `views/EmbedView.tsx` — types
 - `views/components/OutlineNode.tsx` — types
@@ -547,7 +547,7 @@ esbuild.build({
 }).catch(() => process.exit(1));
 ```
 
-(Same as before — esbuild resolves `@minddoc/core` via node_modules symlink from pnpm workspace.)
+(Same as before — esbuild resolves `@mindctx/core` via node_modules symlink from pnpm workspace.)
 
 - [ ] **Step 7: Run pnpm install and verify build**
 
@@ -576,7 +576,7 @@ rm -rf src/
 
 ```bash
 git add -A
-git commit -m "refactor: move obsidian plugin to packages/obsidian, consuming @minddoc/core"
+git commit -m "refactor: move obsidian plugin to packages/obsidian, consuming @mindctx/core"
 ```
 
 ---
@@ -594,7 +594,7 @@ git commit -m "refactor: move obsidian plugin to packages/obsidian, consuming @m
 - Modify: `tests/debounce.test.ts`
 - Modify: `tests/opml.test.ts`
 
-- [ ] **Step 1: Update all test imports to use @minddoc/core**
+- [ ] **Step 1: Update all test imports to use @mindctx/core**
 
 All test files currently import like:
 ```typescript
@@ -603,10 +603,10 @@ import { parse } from '../src/core/parser.js';
 
 Change to:
 ```typescript
-import { parse } from '@minddoc/core';
+import { parse } from '@mindctx/core';
 ```
 
-Apply to all 9 test files. Each test imports different symbols but all from `@minddoc/core`.
+Apply to all 9 test files. Each test imports different symbols but all from `@mindctx/core`.
 
 - [ ] **Step 2: Run tests**
 
@@ -628,7 +628,7 @@ Expected: No type errors.
 
 ```bash
 git add tests/
-git commit -m "test: update test imports to use @minddoc/core package"
+git commit -m "test: update test imports to use @mindctx/core package"
 ```
 
 ---
@@ -655,7 +655,7 @@ Expected: All 3 files present. `main.js` is a valid CJS bundle.
 grep -c "function parse" packages/obsidian/main.js
 ```
 
-Expected: At least 1 match — confirms @minddoc/core is bundled inline (not left as external).
+Expected: At least 1 match — confirms @mindctx/core is bundled inline (not left as external).
 
 - [ ] **Step 3: Run full test suite one final time**
 
@@ -691,24 +691,24 @@ mkdir -p packages/vscode/media
 
 ```json
 {
-  "name": "vscode-minddoc",
-  "displayName": "MindDoc",
+  "name": "vscode-mindctx",
+  "displayName": "MindCtx",
   "description": "Markdown-first structured outline editor with mind map view",
   "version": "0.0.1",
-  "publisher": "minddoc",
+  "publisher": "mindctx",
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": ["Other"],
   "activationEvents": [
-    "onCustomEditor:minddoc.editor"
+    "onCustomEditor:mindctx.editor"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "customEditors": [
       {
-        "viewType": "minddoc.editor",
-        "displayName": "MindDoc Editor",
+        "viewType": "mindctx.editor",
+        "displayName": "MindCtx Editor",
         "selector": [
           { "filenamePattern": "*.mind.md" }
         ],
@@ -717,110 +717,110 @@ mkdir -p packages/vscode/media
     ],
     "commands": [
       {
-        "command": "minddoc.create",
-        "title": "MindDoc: Create New File"
+        "command": "mindctx.create",
+        "title": "MindCtx: Create New File"
       },
       {
-        "command": "minddoc.openAs",
-        "title": "MindDoc: Open with MindDoc"
+        "command": "mindctx.openAs",
+        "title": "MindCtx: Open with MindCtx"
       },
       {
-        "command": "minddoc.toggleView",
-        "title": "MindDoc: Toggle View (Outline / Mind Map)",
+        "command": "mindctx.toggleView",
+        "title": "MindCtx: Toggle View (Outline / Mind Map)",
         "icon": "$(symbol-structure)",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.expandAll",
-        "title": "MindDoc: Expand All",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "command": "mindctx.expandAll",
+        "title": "MindCtx: Expand All",
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.collapseAll",
-        "title": "MindDoc: Collapse All",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "command": "mindctx.collapseAll",
+        "title": "MindCtx: Collapse All",
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.export.opml",
-        "title": "MindDoc: Export as OPML",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "command": "mindctx.export.opml",
+        "title": "MindCtx: Export as OPML",
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.export.json",
-        "title": "MindDoc: Export as JSON",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "command": "mindctx.export.json",
+        "title": "MindCtx: Export as JSON",
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.export.png",
-        "title": "MindDoc: Export as PNG",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "command": "mindctx.export.png",
+        "title": "MindCtx: Export as PNG",
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.import.opml",
-        "title": "MindDoc: Import OPML"
+        "command": "mindctx.import.opml",
+        "title": "MindCtx: Import OPML"
       },
       {
-        "command": "minddoc.import.freemind",
-        "title": "MindDoc: Import FreeMind"
+        "command": "mindctx.import.freemind",
+        "title": "MindCtx: Import FreeMind"
       },
       {
-        "command": "minddoc.copyAIContext",
-        "title": "MindDoc: Copy as AI Context",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "command": "mindctx.copyAIContext",
+        "title": "MindCtx: Copy as AI Context",
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       }
     ],
     "menus": {
       "editor/title": [
         {
-          "command": "minddoc.toggleView",
-          "when": "activeCustomEditorId == 'minddoc.editor'",
+          "command": "mindctx.toggleView",
+          "when": "activeCustomEditorId == 'mindctx.editor'",
           "group": "navigation"
         }
       ],
       "explorer/context": [
         {
-          "command": "minddoc.openAs",
+          "command": "mindctx.openAs",
           "when": "resourceExtname == .md",
           "group": "navigation"
         }
       ]
     },
     "configuration": {
-      "title": "MindDoc",
+      "title": "MindCtx",
       "properties": {
-        "minddoc.defaultView": {
+        "mindctx.defaultView": {
           "type": "string",
           "enum": ["outline", "mindmap"],
           "default": "outline",
           "description": "Default view when opening a file"
         },
-        "minddoc.headingDepth": {
+        "mindctx.headingDepth": {
           "type": "number",
           "minimum": 1,
           "maximum": 6,
           "default": 3,
           "description": "Maximum heading depth (deeper nodes become list items)"
         },
-        "minddoc.autoSaveDelay": {
+        "mindctx.autoSaveDelay": {
           "type": "number",
           "minimum": 100,
           "maximum": 5000,
           "default": 300,
           "description": "Auto-save debounce delay in milliseconds"
         },
-        "minddoc.outlineFontSize": {
+        "mindctx.outlineFontSize": {
           "type": "number",
           "minimum": 10,
           "maximum": 24,
           "default": 14,
           "description": "Outline view font size in pixels"
         },
-        "minddoc.showNotePreview": {
+        "mindctx.showNotePreview": {
           "type": "boolean",
           "default": true,
           "description": "Show note preview next to node titles"
         },
-        "minddoc.mindmapDirection": {
+        "mindctx.mindmapDirection": {
           "type": "string",
           "enum": ["side", "right", "left"],
           "default": "side",
@@ -836,7 +836,7 @@ mkdir -p packages/vscode/media
     "package": "vsce package"
   },
   "dependencies": {
-    "@minddoc/core": "workspace:*"
+    "@mindctx/core": "workspace:*"
   },
   "devDependencies": {
     "@types/vscode": "^1.85.0",
@@ -881,11 +881,11 @@ git commit -m "feat(vscode): create extension package with manifest and configur
 - [ ] **Step 1: Write the complete protocol type definitions**
 
 ```typescript
-import type { MindDocTree, PartialOperation } from '@minddoc/core';
+import type { MindCtxTree, PartialOperation } from '@mindctx/core';
 
 // --- Settings passed to Webview ---
 
-export interface MindDocSettings {
+export interface MindCtxSettings {
   defaultView: 'outline' | 'mindmap';
   headingDepth: number;
   autoSaveDelay: number;
@@ -931,10 +931,10 @@ export type WebviewCommand =
 // --- Extension → Webview messages ---
 
 export type ExtToWebview =
-  | { type: 'init'; tree: MindDocTree; settings: MindDocSettings; state: PersistedViewState | null }
-  | { type: 'treeUpdated'; tree: MindDocTree; reason: 'self' | 'peerEdit' | 'undo' | 'redo' | 'externalChange' }
+  | { type: 'init'; tree: MindCtxTree; settings: MindCtxSettings; state: PersistedViewState | null }
+  | { type: 'treeUpdated'; tree: MindCtxTree; reason: 'self' | 'peerEdit' | 'undo' | 'redo' | 'externalChange' }
   | { type: 'themeChanged'; colors: ThemeColors }
-  | { type: 'settingsChanged'; settings: Partial<MindDocSettings> }
+  | { type: 'settingsChanged'; settings: Partial<MindCtxSettings> }
   | { type: 'command'; command: WebviewCommand }
   | { type: 'error'; message: string; operationId?: string };
 
@@ -965,24 +965,24 @@ git commit -m "feat(vscode): define postMessage protocol types"
 
 ---
 
-## Task 9: Implement MindDocDocument
+## Task 9: Implement MindCtxDocument
 
 **Files:**
-- Create: `packages/vscode/src/MindDocDocument.ts`
+- Create: `packages/vscode/src/MindCtxDocument.ts`
 
-- [ ] **Step 1: Write MindDocDocument implementation**
+- [ ] **Step 1: Write MindCtxDocument implementation**
 
 ```typescript
 import * as vscode from 'vscode';
-import { parse, serialize, applyPartialOperation, invertOperation, type MindDocTree, type Operation, type PartialOperation } from '@minddoc/core';
-import type { MindDocSettings } from './types/messages.js';
+import { parse, serialize, applyPartialOperation, invertOperation, type MindCtxTree, type Operation, type PartialOperation } from '@mindctx/core';
+import type { MindCtxSettings } from './types/messages.js';
 
-interface MindDocEdit {
+interface MindCtxEdit {
   readonly operation: Operation;
 }
 
-export class MindDocDocument implements vscode.CustomDocument {
-  private _tree: MindDocTree;
+export class MindCtxDocument implements vscode.CustomDocument {
+  private _tree: MindCtxTree;
   private _content: string;
   private _fileHash: string;
   private _disposed = false;
@@ -990,21 +990,21 @@ export class MindDocDocument implements vscode.CustomDocument {
   private readonly _onDidDispose = new vscode.EventEmitter<void>();
   public readonly onDidDispose = this._onDidDispose.event;
 
-  private readonly _onDidChange = new vscode.EventEmitter<vscode.CustomDocumentEditEvent<MindDocEdit>>();
+  private readonly _onDidChange = new vscode.EventEmitter<vscode.CustomDocumentEditEvent<MindCtxEdit>>();
   public readonly onDidChange = this._onDidChange.event;
 
   private _saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  static async create(uri: vscode.Uri, settings: MindDocSettings): Promise<MindDocDocument> {
+  static async create(uri: vscode.Uri, settings: MindCtxSettings): Promise<MindCtxDocument> {
     const fileData = await vscode.workspace.fs.readFile(uri);
     const content = new TextDecoder().decode(fileData);
-    return new MindDocDocument(uri, content, settings);
+    return new MindCtxDocument(uri, content, settings);
   }
 
   private constructor(
     public readonly uri: vscode.Uri,
     content: string,
-    private _settings: MindDocSettings,
+    private _settings: MindCtxSettings,
   ) {
     this._content = content;
     this._fileHash = this.computeHash(content);
@@ -1014,7 +1014,7 @@ export class MindDocDocument implements vscode.CustomDocument {
     });
   }
 
-  get tree(): MindDocTree {
+  get tree(): MindCtxTree {
     return this._tree;
   }
 
@@ -1026,7 +1026,7 @@ export class MindDocDocument implements vscode.CustomDocument {
     return this._fileHash;
   }
 
-  updateSettings(settings: Partial<MindDocSettings>): void {
+  updateSettings(settings: Partial<MindCtxSettings>): void {
     Object.assign(this._settings, settings);
   }
 
@@ -1096,7 +1096,7 @@ export class MindDocDocument implements vscode.CustomDocument {
     return this._saveTimeout !== null;
   }
 
-  async handleExternalChange(): Promise<MindDocTree | null> {
+  async handleExternalChange(): Promise<MindCtxTree | null> {
     if (this.hasPendingSave) return null;
 
     const fileData = await vscode.workspace.fs.readFile(this.uri);
@@ -1146,36 +1146,36 @@ Expected: No type errors (may need `@types/vscode` installed first via `pnpm ins
 - [ ] **Step 3: Commit**
 
 ```bash
-git add packages/vscode/src/MindDocDocument.ts
-git commit -m "feat(vscode): implement MindDocDocument with edit tracking and file I/O"
+git add packages/vscode/src/MindCtxDocument.ts
+git commit -m "feat(vscode): implement MindCtxDocument with edit tracking and file I/O"
 ```
 
 ---
 
-## Task 10: Implement MindDocEditorProvider
+## Task 10: Implement MindCtxEditorProvider
 
 **Files:**
-- Create: `packages/vscode/src/MindDocEditorProvider.ts`
+- Create: `packages/vscode/src/MindCtxEditorProvider.ts`
 
 - [ ] **Step 1: Write the provider implementation**
 
 ```typescript
 import * as vscode from 'vscode';
-import { MindDocDocument } from './MindDocDocument.js';
-import type { ExtToWebview, WebviewToExt, MindDocSettings, ThemeColors, PersistedViewState } from './types/messages.js';
+import { MindCtxDocument } from './MindCtxDocument.js';
+import type { ExtToWebview, WebviewToExt, MindCtxSettings, ThemeColors, PersistedViewState } from './types/messages.js';
 
-export class MindDocEditorProvider implements vscode.CustomEditorProvider<MindDocDocument> {
-  private static readonly viewType = 'minddoc.editor';
+export class MindCtxEditorProvider implements vscode.CustomEditorProvider<MindCtxDocument> {
+  private static readonly viewType = 'mindctx.editor';
 
-  private readonly _webviews = new Map<MindDocDocument, Set<vscode.WebviewPanel>>();
+  private readonly _webviews = new Map<MindCtxDocument, Set<vscode.WebviewPanel>>();
   private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<vscode.CustomDocumentEditEvent<never>>();
 
   constructor(private readonly context: vscode.ExtensionContext) {}
 
   static register(context: vscode.ExtensionContext): vscode.Disposable {
-    const provider = new MindDocEditorProvider(context);
+    const provider = new MindCtxEditorProvider(context);
     return vscode.window.registerCustomEditorProvider(
-      MindDocEditorProvider.viewType,
+      MindCtxEditorProvider.viewType,
       provider,
       {
         webviewOptions: { retainContextWhenHidden: true },
@@ -1190,9 +1190,9 @@ export class MindDocEditorProvider implements vscode.CustomEditorProvider<MindDo
     uri: vscode.Uri,
     _openContext: vscode.CustomDocumentOpenContext,
     _token: vscode.CancellationToken,
-  ): Promise<MindDocDocument> {
+  ): Promise<MindCtxDocument> {
     const settings = this.getSettings();
-    const document = await MindDocDocument.create(uri, settings);
+    const document = await MindCtxDocument.create(uri, settings);
 
     const watcher = vscode.workspace.createFileSystemWatcher(uri.fsPath);
     const changeListener = watcher.onDidChange(async () => {
@@ -1212,7 +1212,7 @@ export class MindDocEditorProvider implements vscode.CustomEditorProvider<MindDo
   }
 
   async resolveCustomEditor(
-    document: MindDocDocument,
+    document: MindCtxDocument,
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken,
   ): Promise<void> {
@@ -1238,7 +1238,7 @@ export class MindDocEditorProvider implements vscode.CustomEditorProvider<MindDo
 
     // Listen for document changes (edit events drive undo/redo)
     document.onDidChange((e) => {
-      // Forward to VSCode's undo system — the event is already fired by MindDocDocument
+      // Forward to VSCode's undo system — the event is already fired by MindCtxDocument
     });
 
     // Listen for theme changes
@@ -1252,24 +1252,24 @@ export class MindDocEditorProvider implements vscode.CustomEditorProvider<MindDo
 
   // --- CustomEditorProvider edit lifecycle ---
 
-  public readonly onDidChangeCustomDocument = new vscode.EventEmitter<vscode.CustomDocumentEditEvent<MindDocDocument>>().event;
+  public readonly onDidChangeCustomDocument = new vscode.EventEmitter<vscode.CustomDocumentEditEvent<MindCtxDocument>>().event;
 
-  async saveCustomDocument(document: MindDocDocument, cancellation: vscode.CancellationToken): Promise<void> {
+  async saveCustomDocument(document: MindCtxDocument, cancellation: vscode.CancellationToken): Promise<void> {
     await document.save(cancellation);
   }
 
-  async saveCustomDocumentAs(document: MindDocDocument, destination: vscode.Uri, cancellation: vscode.CancellationToken): Promise<void> {
+  async saveCustomDocumentAs(document: MindCtxDocument, destination: vscode.Uri, cancellation: vscode.CancellationToken): Promise<void> {
     const encoded = new TextEncoder().encode(document.content);
     await vscode.workspace.fs.writeFile(destination, encoded);
   }
 
-  async revertCustomDocument(document: MindDocDocument, cancellation: vscode.CancellationToken): Promise<void> {
+  async revertCustomDocument(document: MindCtxDocument, cancellation: vscode.CancellationToken): Promise<void> {
     await document.revert(cancellation);
     this.broadcastToAll(document, { type: 'treeUpdated', tree: document.tree, reason: 'externalChange' });
   }
 
   async backupCustomDocument(
-    document: MindDocDocument,
+    document: MindCtxDocument,
     context: vscode.CustomDocumentBackupContext,
     cancellation: vscode.CancellationToken,
   ): Promise<vscode.CustomDocumentBackup> {
@@ -1279,7 +1279,7 @@ export class MindDocEditorProvider implements vscode.CustomEditorProvider<MindDo
 
   // --- Message handling ---
 
-  private handleWebviewMessage(document: MindDocDocument, source: vscode.WebviewPanel, msg: WebviewToExt): void {
+  private handleWebviewMessage(document: MindCtxDocument, source: vscode.WebviewPanel, msg: WebviewToExt): void {
     switch (msg.type) {
       case 'ready': {
         const state = this.loadViewState(document.uri);
@@ -1338,7 +1338,7 @@ export class MindDocEditorProvider implements vscode.CustomEditorProvider<MindDo
     panel.webview.postMessage(msg);
   }
 
-  private broadcastToAll(document: MindDocDocument, msg: ExtToWebview): void {
+  private broadcastToAll(document: MindCtxDocument, msg: ExtToWebview): void {
     const panels = this._webviews.get(document);
     if (panels) {
       for (const panel of panels) {
@@ -1347,8 +1347,8 @@ export class MindDocEditorProvider implements vscode.CustomEditorProvider<MindDo
     }
   }
 
-  private getSettings(): MindDocSettings {
-    const config = vscode.workspace.getConfiguration('minddoc');
+  private getSettings(): MindCtxSettings {
+    const config = vscode.workspace.getConfiguration('mindctx');
     return {
       defaultView: config.get('defaultView', 'outline'),
       headingDepth: config.get('headingDepth', 3),
@@ -1375,12 +1375,12 @@ export class MindDocEditorProvider implements vscode.CustomEditorProvider<MindDo
   }
 
   private loadViewState(uri: vscode.Uri): PersistedViewState | null {
-    const key = `minddoc:viewState:${uri.fsPath}`;
+    const key = `mindctx:viewState:${uri.fsPath}`;
     return this.context.workspaceState.get<PersistedViewState>(key) ?? null;
   }
 
   private saveViewState(uri: vscode.Uri, state: PersistedViewState): void {
-    const key = `minddoc:viewState:${uri.fsPath}`;
+    const key = `mindctx:viewState:${uri.fsPath}`;
     this.context.workspaceState.update(key, state);
   }
 
@@ -1412,7 +1412,7 @@ export class MindDocEditorProvider implements vscode.CustomEditorProvider<MindDo
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src ${cspSource}; style-src ${cspSource} 'unsafe-inline'; img-src ${cspSource} data:; font-src ${cspSource};">
   <link rel="stylesheet" href="${styleUri}">
-  <title>MindDoc</title>
+  <title>MindCtx</title>
 </head>
 <body>
   <div id="root"></div>
@@ -1432,8 +1432,8 @@ cd packages/vscode && npx tsc --noEmit
 - [ ] **Step 3: Commit**
 
 ```bash
-git add packages/vscode/src/MindDocEditorProvider.ts
-git commit -m "feat(vscode): implement MindDocEditorProvider with multi-webview sync"
+git add packages/vscode/src/MindCtxEditorProvider.ts
+git commit -m "feat(vscode): implement MindCtxEditorProvider with multi-webview sync"
 ```
 
 ---
@@ -1447,19 +1447,19 @@ git commit -m "feat(vscode): implement MindDocEditorProvider with multi-webview 
 
 ```typescript
 import * as vscode from 'vscode';
-import { MindDocEditorProvider } from './MindDocEditorProvider.js';
-import { exportOPML, exportJSON, copyAsAIContext, importOPML, importFreeMind, parse, serialize } from '@minddoc/core';
+import { MindCtxEditorProvider } from './MindCtxEditorProvider.js';
+import { exportOPML, exportJSON, copyAsAIContext, importOPML, importFreeMind, parse, serialize } from '@mindctx/core';
 
 export function activate(context: vscode.ExtensionContext): void {
   // Register custom editor
-  context.subscriptions.push(MindDocEditorProvider.register(context));
+  context.subscriptions.push(MindCtxEditorProvider.register(context));
 
   // Register commands
   context.subscriptions.push(
-    vscode.commands.registerCommand('minddoc.create', createNewFile),
-    vscode.commands.registerCommand('minddoc.openAs', openWithMindDoc),
-    vscode.commands.registerCommand('minddoc.import.opml', () => importFile('opml')),
-    vscode.commands.registerCommand('minddoc.import.freemind', () => importFile('freemind')),
+    vscode.commands.registerCommand('mindctx.create', createNewFile),
+    vscode.commands.registerCommand('mindctx.openAs', openWithMindCtx),
+    vscode.commands.registerCommand('mindctx.import.opml', () => importFile('opml')),
+    vscode.commands.registerCommand('mindctx.import.freemind', () => importFile('freemind')),
   );
 }
 
@@ -1467,20 +1467,20 @@ export function deactivate(): void {}
 
 async function createNewFile(): Promise<void> {
   const uri = await vscode.window.showSaveDialog({
-    filters: { 'MindDoc': ['mind.md'] },
+    filters: { 'MindCtx': ['mind.md'] },
     defaultUri: vscode.workspace.workspaceFolders?.[0]?.uri,
   });
   if (!uri) return;
 
-  const template = `---\nminddoc: true\nheading-depth: 3\n---\n\n# New Document\n\n## Section 1\n\n- Item 1\n- Item 2\n`;
+  const template = `---\nmindctx: true\nheading-depth: 3\n---\n\n# New Document\n\n## Section 1\n\n- Item 1\n- Item 2\n`;
   await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(template));
-  await vscode.commands.executeCommand('vscode.openWith', uri, 'minddoc.editor');
+  await vscode.commands.executeCommand('vscode.openWith', uri, 'mindctx.editor');
 }
 
-async function openWithMindDoc(): Promise<void> {
+async function openWithMindCtx(): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
-  await vscode.commands.executeCommand('vscode.openWith', editor.document.uri, 'minddoc.editor');
+  await vscode.commands.executeCommand('vscode.openWith', editor.document.uri, 'mindctx.editor');
 }
 
 async function importFile(format: 'opml' | 'freemind'): Promise<void> {
@@ -1503,13 +1503,13 @@ async function importFile(format: 'opml' | 'freemind'): Promise<void> {
   }
 
   const destUri = await vscode.window.showSaveDialog({
-    filters: { 'MindDoc': ['mind.md'] },
+    filters: { 'MindCtx': ['mind.md'] },
     defaultUri: vscode.workspace.workspaceFolders?.[0]?.uri,
   });
   if (!destUri) return;
 
   await vscode.workspace.fs.writeFile(destUri, new TextEncoder().encode(markdown));
-  await vscode.commands.executeCommand('vscode.openWith', destUri, 'minddoc.editor');
+  await vscode.commands.executeCommand('vscode.openWith', destUri, 'mindctx.editor');
   vscode.window.showInformationMessage(`Imported ${fileName} successfully.`);
 }
 ```
@@ -1538,8 +1538,8 @@ git commit -m "feat(vscode): implement extension entry point with commands"
 
 ```typescript
 import { signal, type Signal } from '@preact/signals';
-import type { MindDocTree, PartialOperation } from '@minddoc/core';
-import type { ExtToWebview, WebviewToExt, MindDocSettings, ThemeColors, PersistedViewState, TransientViewState, WebviewCommand } from '../types/messages.js';
+import type { MindCtxTree, PartialOperation } from '@mindctx/core';
+import type { ExtToWebview, WebviewToExt, MindCtxSettings, ThemeColors, PersistedViewState, TransientViewState, WebviewCommand } from '../types/messages.js';
 
 declare function acquireVsCodeApi(): {
   postMessage(msg: unknown): void;
@@ -1551,8 +1551,8 @@ const vscode = acquireVsCodeApi();
 let operationCounter = 0;
 
 export class WebviewBridge {
-  readonly tree: Signal<MindDocTree | null> = signal(null);
-  readonly settings: Signal<MindDocSettings> = signal({
+  readonly tree: Signal<MindCtxTree | null> = signal(null);
+  readonly settings: Signal<MindCtxSettings> = signal({
     defaultView: 'outline',
     headingDepth: 3,
     autoSaveDelay: 300,
@@ -1642,7 +1642,7 @@ export class WebviewBridge {
         break;
 
       case 'error':
-        console.warn('[MindDoc] Operation error:', msg.message);
+        console.warn('[MindCtx] Operation error:', msg.message);
         break;
     }
   }
@@ -1696,7 +1696,7 @@ export function App() {
   }
 
   return (
-    <div class="minddoc-root">
+    <div class="mindctx-root">
       <div class="placeholder">
         <h1>{tree.root.title}</h1>
         <p>Nodes: {tree.metadata.nodeCount} | Depth: {tree.metadata.maxDepth}</p>
@@ -1845,7 +1845,7 @@ cd packages/vscode
 code --extensionDevelopmentPath=$(pwd) --new-window
 ```
 
-Expected: VSCode opens. Creating a `.mind.md` file shows the MindDoc placeholder UI with document title and node count.
+Expected: VSCode opens. Creating a `.mind.md` file shows the MindCtx placeholder UI with document title and node count.
 
 - [ ] **Step 5: Final commit**
 
@@ -1860,7 +1860,7 @@ git commit -m "feat(vscode): complete Phase 0-1 - monorepo + extension skeleton"
 
 After completing this plan:
 - Project is restructured as a pnpm monorepo
-- `@minddoc/core` is a standalone package with all shared logic
+- `@mindctx/core` is a standalone package with all shared logic
 - `packages/obsidian` consumes core and builds as before (artifact structure unchanged)
 - `packages/vscode` has a working Custom Editor that:
   - Opens `.mind.md` files

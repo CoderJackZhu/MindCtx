@@ -1,8 +1,8 @@
 import { test, expect } from 'vitest';
-import { parse } from '@minddoc/core';
+import { parse } from '@mindctx/core';
 
 test('5000+ line Markdown parsing < 2000ms', () => {
-  let bigMd = '---\nminddoc: true\n---\n\n';
+  let bigMd = '---\nmindctx: true\n---\n\n';
   for (let i = 0; i < 400; i++) {
     bigMd += '# Heading ' + i + '\n\n';
     bigMd += 'Some description for heading ' + i + '.\n\n';

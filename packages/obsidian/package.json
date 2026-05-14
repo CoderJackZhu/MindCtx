@@ -1,5 +1,5 @@
 {
-  "name": "@minddoc/obsidian",
+  "name": "@mindctx/obsidian",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@minddoc/core": "workspace:*",
+    "@mindctx/core": "workspace:*",
     "preact": "^10.19",
     "@preact/signals": "^1.2",
     "mind-elixir": "^4.0",

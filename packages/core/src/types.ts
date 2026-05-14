@@ -10,12 +10,12 @@ export interface SourceRange {
   endLine: number;
 }
 
-export interface MindDocNode {
+export interface MindCtxNode {
   id: string;
   title: string;
   note: string;
   blocks: ContentBlock[];
-  children: MindDocNode[];
+  children: MindCtxNode[];
   nodeType: 'heading' | 'list-item';
   headingLevel: number;
   listDepth: number;
@@ -28,13 +28,13 @@ export interface MindDocNode {
   subtreeDirty: boolean;
 }
 
-export interface MindDocTree {
+export interface MindCtxTree {
   version: 1;
   filePath: string;
   frontmatter: Record<string, unknown>;
   rawFrontmatter: string;
   headingDepth: number;
-  root: MindDocNode;
+  root: MindCtxNode;
   metadata: {
     parseTime: number;
     nodeCount: number;
@@ -57,8 +57,8 @@ export type PartialOperation =
 export type Operation =
   | { type: 'move'; nodeId: string; newParentId: string; index: number; oldParentId: string; oldIndex: number }
   | { type: 'rename'; nodeId: string; newTitle: string; oldTitle: string }
-  | { type: 'create'; parentId: string; index: number; node: MindDocNode }
-  | { type: 'delete'; nodeId: string; parentId: string; index: number; deletedNode: MindDocNode }
+  | { type: 'create'; parentId: string; index: number; node: MindCtxNode }
+  | { type: 'delete'; nodeId: string; parentId: string; index: number; deletedNode: MindCtxNode }
   | { type: 'indent'; nodeId: string; oldParentId: string; oldIndex: number }
   | { type: 'outdent'; nodeId: string; oldParentId: string; oldIndex: number; adoptedSiblingIds: string[] }
   | {
@@ -66,10 +66,10 @@ export type Operation =
       nodeId: string;
       oldValue: boolean | null;
       newValue?: boolean | null;
-      oldNodeType?: MindDocNode['nodeType'];
+      oldNodeType?: MindCtxNode['nodeType'];
       oldHeadingLevel?: number;
       oldListDepth?: number;
-      newNodeType?: MindDocNode['nodeType'];
+      newNodeType?: MindCtxNode['nodeType'];
       newHeadingLevel?: number;
       newListDepth?: number;
     }

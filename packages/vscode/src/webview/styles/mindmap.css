@@ -1,4 +1,4 @@
-.minddoc-mindmap-shell {
+.mindctx-mindmap-shell {
   position: relative;
   flex: 1;
   min-height: 0;
@@ -7,7 +7,7 @@
   background: var(--vscode-editor-background);
 }
 
-.minddoc-mindmap-focusbar {
+.mindctx-mindmap-focusbar {
   position: absolute;
   top: 8px;
   left: 8px;
@@ -23,7 +23,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.minddoc-mindmap-focusbar-label {
+.mindctx-mindmap-focusbar-label {
   min-width: 0;
   max-width: 320px;
   overflow: hidden;
@@ -33,7 +33,7 @@
   white-space: nowrap;
 }
 
-.minddoc-mindmap-focusbar-button {
+.mindctx-mindmap-focusbar-button {
   flex: 0 0 auto;
   padding: 2px 8px;
   border: 1px solid var(--vscode-panel-border);
@@ -44,11 +44,11 @@
   cursor: pointer;
 }
 
-.minddoc-mindmap-focusbar-button:hover {
+.mindctx-mindmap-focusbar-button:hover {
   background: var(--vscode-button-secondaryHoverBackground);
 }
 
-.minddoc-mindmap-zoom-controls {
+.mindctx-mindmap-zoom-controls {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -59,7 +59,7 @@
   gap: 8px;
 }
 
-.minddoc-mindmap-zoom-panel {
+.mindctx-mindmap-zoom-panel {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -71,7 +71,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.minddoc-mindmap-zoom-slider {
+.mindctx-mindmap-zoom-slider {
   width: 120px;
   height: 28px;
   margin: 0;
@@ -79,8 +79,8 @@
   cursor: pointer;
 }
 
-.minddoc-mindmap-zoom-value,
-.minddoc-mindmap-center-button {
+.mindctx-mindmap-zoom-value,
+.mindctx-mindmap-center-button {
   border: 1px solid var(--vscode-panel-border);
   border-radius: 4px;
   background: var(--vscode-editor-background);
@@ -89,14 +89,14 @@
   cursor: pointer;
 }
 
-.minddoc-mindmap-zoom-value {
+.mindctx-mindmap-zoom-value {
   min-width: 48px;
   height: 28px;
   padding: 0 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.minddoc-mindmap-center-button {
+.mindctx-mindmap-center-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -108,7 +108,7 @@
   box-shadow: none;
 }
 
-.minddoc-mindmap-center-icon {
+.mindctx-mindmap-center-icon {
   width: 16px;
   height: 16px;
   fill: none;
@@ -118,48 +118,48 @@
   stroke-linejoin: round;
 }
 
-.minddoc-mindmap-center-icon circle {
+.mindctx-mindmap-center-icon circle {
   fill: currentColor;
   stroke: none;
 }
 
-.minddoc-mindmap-zoom-value:hover,
-.minddoc-mindmap-center-button:hover {
+.mindctx-mindmap-zoom-value:hover,
+.mindctx-mindmap-center-button:hover {
   background: var(--vscode-button-secondaryHoverBackground);
 }
 
-.minddoc-mindmap-container {
+.mindctx-mindmap-container {
   flex: 1;
   min-height: 0;
   background: var(--vscode-editor-background);
   overflow: auto;
 }
 
-.minddoc-mindmap-container .context-menu #cm-summary,
-.minddoc-mindmap-container .map-container .context-menu #cm-summary,
+.mindctx-mindmap-container .context-menu #cm-summary,
+.mindctx-mindmap-container .map-container .context-menu #cm-summary,
 #cm-summary {
   display: none !important;
 }
 
-.minddoc-mindmap-container me-root {
+.mindctx-mindmap-container me-root {
   font-size: 18px;
   font-weight: 600;
   padding: 8px 16px;
   border-radius: 8px;
 }
 
-.minddoc-mindmap-container me-wrapper .node-content {
+.mindctx-mindmap-container me-wrapper .node-content {
   font-family: var(--vscode-font-family);
   font-size: 14px;
   padding: 4px 10px;
   border-radius: 4px;
 }
 
-.minddoc-mindmap-container me-tpc {
+.mindctx-mindmap-container me-tpc {
   position: relative;
 }
 
-.minddoc-mindmap-container me-tpc .minddoc-mindmap-add-child {
+.mindctx-mindmap-container me-tpc .mindctx-mindmap-add-child {
   position: absolute;
   top: 50%;
   right: -22px;
@@ -186,17 +186,17 @@
   z-index: 10;
 }
 
-.minddoc-mindmap-container .lhs me-tpc .minddoc-mindmap-add-child {
+.mindctx-mindmap-container .lhs me-tpc .mindctx-mindmap-add-child {
   right: auto;
   left: -22px;
 }
 
-.minddoc-mindmap-container me-tpc:hover .minddoc-mindmap-add-child,
-.minddoc-mindmap-container me-tpc.selected .minddoc-mindmap-add-child {
+.mindctx-mindmap-container me-tpc:hover .mindctx-mindmap-add-child,
+.mindctx-mindmap-container me-tpc.selected .mindctx-mindmap-add-child {
   opacity: 1;
 }
 
-.minddoc-mindmap-container me-tpc .minddoc-mindmap-add-child:hover {
+.mindctx-mindmap-container me-tpc .mindctx-mindmap-add-child:hover {
   background: var(--vscode-focusBorder);
   border-color: var(--vscode-focusBorder);
   color: #ffffff;

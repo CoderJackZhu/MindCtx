@@ -1,5 +1,5 @@
 ---
-minddoc: true
+mindctx: true
 version: 1
 default-view: outline
 heading-depth: 3

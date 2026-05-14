@@ -6,30 +6,30 @@ import {
   exportOPML,
   exportJSON,
   copyAsAIContext,
-} from '@minddoc/core';
-import type { MindDocNode } from '@minddoc/core';
-import { MINDDOC_VIEW_TYPE } from './constants.js';
-import { MindDocView } from './views/MindDocView.js';
-import { MindDocSettingTab, DEFAULT_SETTINGS } from './settings/settings.js';
+} from '@mindctx/core';
+import type { MindCtxNode } from '@mindctx/core';
+import { MINDCTX_VIEW_TYPE } from './constants.js';
+import { MindCtxView } from './views/MindCtxView.js';
+import { MindCtxSettingTab, DEFAULT_SETTINGS } from './settings/settings.js';
 import { registerEmbedProcessor } from './views/EmbedProcessor.js';
 import { exportPNG } from './exporters/image.js';
-import type { MindDocSettings } from './settings/settings.js';
+import type { MindCtxSettings } from './settings/settings.js';
 
-export default class MindDocPlugin extends Plugin {
-  settings!: MindDocSettings;
+export default class MindCtxPlugin extends Plugin {
+  settings!: MindCtxSettings;
   recentWrites = new Map<string, number>();
 
   async onload() {
     await this.loadSettings();
 
-    this.registerView(MINDDOC_VIEW_TYPE, (leaf) => new MindDocView(leaf, this));
+    this.registerView(MINDCTX_VIEW_TYPE, (leaf) => new MindCtxView(leaf, this));
 
     registerEmbedProcessor(this);
 
     this.registerEvent(
       this.app.workspace.on('file-open', (file) => {
-        if (file && this.isMindDocFile(file)) {
-          void this.activateMindDocView(file);
+        if (file && this.isMindCtxFile(file)) {
+          void this.activateMindCtxView(file);
         }
       })
     );
@@ -37,7 +37,7 @@ export default class MindDocPlugin extends Plugin {
     this.addCommand({
       id: 'create',
       name: '创建文件',
-      callback: () => { void this.createNewMindDoc(); },
+      callback: () => { void this.createNewMindCtx(); },
     });
 
     this.addCommand({
@@ -47,7 +47,7 @@ export default class MindDocPlugin extends Plugin {
         const file = this.app.workspace.getActiveFile();
         if (!file || !file.path.endsWith('.md')) return false;
         if (checking) return true;
-        void this.activateMindDocView(file);
+        void this.activateMindCtxView(file);
         return true;
       },
     });
@@ -56,7 +56,7 @@ export default class MindDocPlugin extends Plugin {
       id: 'expand-all',
       name: '展开全部节点',
       checkCallback: (checking) => {
-        const view = this.getActiveMindDocView();
+        const view = this.getActiveMindCtxView();
         if (!view) return false;
         if (checking) return true;
         view.collapsedIds.value = new Set();
@@ -68,11 +68,11 @@ export default class MindDocPlugin extends Plugin {
       id: 'collapse-all',
       name: '折叠全部节点',
       checkCallback: (checking) => {
-        const view = this.getActiveMindDocView();
+        const view = this.getActiveMindCtxView();
         if (!view?.tree) return false;
         if (checking) return true;
         const ids = new Set<string>();
-        function walk(node: MindDocNode) {
+        function walk(node: MindCtxNode) {
           if (node.children.length > 0) ids.add(node.id);
           node.children.forEach(walk);
         }
@@ -86,7 +86,7 @@ export default class MindDocPlugin extends Plugin {
       id: 'toggle-view',
       name: '切换视图（大纲 ↔ 脑图）',
       checkCallback: (checking) => {
-        const view = this.getActiveMindDocView();
+        const view = this.getActiveMindCtxView();
         if (!view) return false;
         if (checking) return true;
         view.switchView(view.currentViewSignal.value === 'outline' ? 'mindmap' : 'outline');
@@ -108,7 +108,7 @@ export default class MindDocPlugin extends Plugin {
             const fileName = file.name.replace(/\.(opml|xml)$/, '') + '.mind.md';
             const markdown = importOPML(text, fileName);
             const newFile = await this.app.vault.create(fileName, markdown);
-            await this.activateMindDocView(newFile);
+            await this.activateMindCtxView(newFile);
             new Notice(`已导入: ${fileName}`);
           });
         };
@@ -130,7 +130,7 @@ export default class MindDocPlugin extends Plugin {
             const fileName = file.name.replace(/\.mm$/, '') + '.mind.md';
             const markdown = importFreeMind(text, fileName);
             const newFile = await this.app.vault.create(fileName, markdown);
-            await this.activateMindDocView(newFile);
+            await this.activateMindCtxView(newFile);
             new Notice(`已导入: ${fileName}`);
           });
         };
@@ -142,7 +142,7 @@ export default class MindDocPlugin extends Plugin {
       id: 'export-opml',
       name: '导出为 opml',
       checkCallback: (checking) => {
-        const view = this.getActiveMindDocView();
+        const view = this.getActiveMindCtxView();
         if (!view?.tree) return false;
         if (checking) return true;
         const opml = exportOPML(view.tree);
@@ -155,7 +155,7 @@ export default class MindDocPlugin extends Plugin {
       id: 'export-json',
       name: '导出为 JSON',
       checkCallback: (checking) => {
-        const view = this.getActiveMindDocView();
+        const view = this.getActiveMindCtxView();
         if (!view?.tree) return false;
         if (checking) return true;
         const json = exportJSON(view.tree);
@@ -168,10 +168,10 @@ export default class MindDocPlugin extends Plugin {
       id: 'export-png',
       name: '导出为 PNG',
       checkCallback: (checking) => {
-        const view = this.getActiveMindDocView();
+        const view = this.getActiveMindCtxView();
         if (!view?.tree || view.currentViewSignal.value !== 'mindmap') return false;
         if (checking) return true;
-        const container = view.containerEl.querySelector('.minddoc-mindmap-container') as HTMLElement;
+        const container = view.containerEl.querySelector('.mindctx-mindmap-container') as HTMLElement;
         if (!container) return false;
         void exportPNG(container).then((blob) => {
           this.saveExportBlob(blob, view.file!.basename + '.png');
@@ -184,7 +184,7 @@ export default class MindDocPlugin extends Plugin {
       id: 'copy-ai-context',
       name: '复制为 AI 上下文',
       checkCallback: (checking) => {
-        const view = this.getActiveMindDocView();
+        const view = this.getActiveMindCtxView();
         if (!view?.tree) return false;
         if (checking) return true;
         const text = copyAsAIContext(view.tree);
@@ -200,16 +200,16 @@ export default class MindDocPlugin extends Plugin {
           menu.addItem((item) => {
             item.setTitle('以大纲打开')
               .setIcon('list-tree')
-              .onClick(() => { void this.activateMindDocView(file, 'outline'); });
+              .onClick(() => { void this.activateMindCtxView(file, 'outline'); });
           });
           menu.addItem((item) => {
             item.setTitle('以脑图打开')
               .setIcon('git-fork')
-              .onClick(() => { void this.activateMindDocView(file, 'mindmap'); });
+              .onClick(() => { void this.activateMindCtxView(file, 'mindmap'); });
           });
         }
 
-        if (file instanceof TFile && this.isMindDocFile(file)) {
+        if (file instanceof TFile && this.isMindCtxFile(file)) {
           menu.addItem((item) => {
             item.setTitle('导出为 opml')
               .setIcon('download')
@@ -225,13 +225,13 @@ export default class MindDocPlugin extends Plugin {
       })
     );
 
-    this.addSettingTab(new MindDocSettingTab(this.app, this));
+    this.addSettingTab(new MindCtxSettingTab(this.app, this));
   }
 
-  isMindDocFile(file: TFile): boolean {
+  isMindCtxFile(file: TFile): boolean {
     if (file.path.endsWith('.mind.md')) return true;
     const cache = this.app.metadataCache.getFileCache(file);
-    return cache?.frontmatter?.minddoc === true;
+    return cache?.frontmatter?.mindctx === true;
   }
 
   async loadSettings() {
@@ -242,30 +242,30 @@ export default class MindDocPlugin extends Plugin {
     await this.saveData(this.settings);
   }
 
-  async activateMindDocView(file: TFile, view?: 'outline' | 'mindmap') {
-    const existing = this.app.workspace.getLeavesOfType(MINDDOC_VIEW_TYPE)
+  async activateMindCtxView(file: TFile, view?: 'outline' | 'mindmap') {
+    const existing = this.app.workspace.getLeavesOfType(MINDCTX_VIEW_TYPE)
       .find(leaf => {
         const v = leaf.view;
-        return v instanceof MindDocView && v.file?.path === file.path;
+        return v instanceof MindCtxView && v.file?.path === file.path;
       });
     if (existing) {
       await this.app.workspace.revealLeaf(existing);
-      if (view) (existing.view as MindDocView).switchView(view);
+      if (view) (existing.view as MindCtxView).switchView(view);
       return;
     }
     const leaf = this.app.workspace.getLeaf(false);
-    await leaf.setViewState({ type: MINDDOC_VIEW_TYPE, state: { file: file.path, view } });
+    await leaf.setViewState({ type: MINDCTX_VIEW_TYPE, state: { file: file.path, view } });
   }
 
-  async createNewMindDoc() {
+  async createNewMindCtx() {
     const fileName = `新建文档 ${Date.now()}.mind.md`;
-    const content = `---\nminddoc: true\ndefault-view: outline\n---\n\n# ${fileName.replace('.mind.md', '')}\n\n## 主题一\n\n## 主题二\n`;
+    const content = `---\nmindctx: true\ndefault-view: outline\n---\n\n# ${fileName.replace('.mind.md', '')}\n\n## 主题一\n\n## 主题二\n`;
     const file = await this.app.vault.create(fileName, content);
-    await this.activateMindDocView(file);
+    await this.activateMindCtxView(file);
   }
 
-  getActiveMindDocView(): MindDocView | null {
-    const view = this.app.workspace.getActiveViewOfType(MindDocView);
+  getActiveMindCtxView(): MindCtxView | null {
+    const view = this.app.workspace.getActiveViewOfType(MindCtxView);
     return view ?? null;
   }
 

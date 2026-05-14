@@ -4,7 +4,7 @@
 
 **Goal:** Build a pure-logic npm package (no UI) that parses Markdown into a tree AST, serializes it back with round-trip fidelity, and supports atomic edit operations with undo/redo.
 
-**Architecture:** Parser uses unified/remark to convert Markdown to mdast, then walks the mdast to build a MindDocTree. Serializer outputs rawText for unmodified nodes, regenerates from structured data for dirty nodes. Operations mutate the tree in-place, marking dirty flags, and return Operation records for undo. UndoManager maintains a 100-step stack of operation groups.
+**Architecture:** Parser uses unified/remark to convert Markdown to mdast, then walks the mdast to build a MindCtxTree. Serializer outputs rawText for unmodified nodes, regenerates from structured data for dirty nodes. Operations mutate the tree in-place, marking dirty flags, and return Operation records for undo. UndoManager maintains a 100-step stack of operation groups.
 
 **Tech Stack:** TypeScript (strict, ES2022), Vitest, unified + remark-parse + remark-frontmatter + remark-gfm + remark-math, yaml
 
@@ -18,7 +18,7 @@
 ## File Structure
 
 ```
-/Users/zhuyijie/Documents/Code/MindDoc/
+/Users/zhuyijie/Documents/Code/MindCtx/
 ├── package.json              — Project metadata + dependencies
 ├── tsconfig.json             — TypeScript strict config
 ├── vitest.config.ts          — Test runner config
@@ -26,8 +26,8 @@
 │   └── core/
 │       ├── types.ts          — All type definitions (interfaces + type unions)
 │       ├── hash.ts           — FNV-1a 64-bit hash + node ID generation
-│       ├── parser.ts         — Markdown text → MindDocTree
-│       ├── serializer.ts     — MindDocTree → Markdown text (round-trip fidelity)
+│       ├── parser.ts         — Markdown text → MindCtxTree
+│       ├── serializer.ts     — MindCtxTree → Markdown text (round-trip fidelity)
 │       ├── operations.ts     — Atomic tree operations (move, rename, create, delete, indent, outdent, etc.)
 │       └── undo.ts           — UndoManager class + invertOperation
 └── tests/
@@ -57,7 +57,7 @@
 
 ```json
 {
-  "name": "minddoc-core",
+  "name": "mindctx-core",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
@@ -155,12 +155,12 @@ export interface SourceRange {
   endLine: number;
 }
 
-export interface MindDocNode {
+export interface MindCtxNode {
   id: string;
   title: string;
   note: string;
   blocks: ContentBlock[];
-  children: MindDocNode[];
+  children: MindCtxNode[];
   nodeType: 'heading' | 'list-item';
   headingLevel: number;
   listDepth: number;
@@ -173,13 +173,13 @@ export interface MindDocNode {
   subtreeDirty: boolean;
 }
 
-export interface MindDocTree {
+export interface MindCtxTree {
   version: 1;
   filePath: string;
   frontmatter: Record<string, any>;
   rawFrontmatter: string;
   headingDepth: number;
-  root: MindDocNode;
+  root: MindCtxNode;
   metadata: {
     parseTime: number;
     nodeCount: number;
@@ -202,8 +202,8 @@ export type PartialOperation =
 export type Operation =
   | { type: 'move'; nodeId: string; newParentId: string; index: number; oldParentId: string; oldIndex: number }
   | { type: 'rename'; nodeId: string; newTitle: string; oldTitle: string }
-  | { type: 'create'; parentId: string; index: number; node: MindDocNode }
-  | { type: 'delete'; nodeId: string; parentId: string; index: number; deletedNode: MindDocNode }
+  | { type: 'create'; parentId: string; index: number; node: MindCtxNode }
+  | { type: 'delete'; nodeId: string; parentId: string; index: number; deletedNode: MindCtxNode }
   | { type: 'indent'; nodeId: string; oldParentId: string; oldIndex: number }
   | { type: 'outdent'; nodeId: string; oldParentId: string; oldIndex: number; adoptedSiblingIds: string[] }
   | { type: 'toggleCheck'; nodeId: string; oldValue: boolean | null }
@@ -316,7 +316,7 @@ git commit -m "feat: add core type definitions and hash utilities"
 
 ```markdown
 ---
-minddoc: true
+mindctx: true
 ---
 
 # 项目规划
@@ -336,7 +336,7 @@ minddoc: true
 
 ```markdown
 ---
-minddoc: true
+mindctx: true
 version: 1
 default-view: outline
 heading-depth: 3
@@ -407,7 +407,7 @@ Agent 工程能力体系主要包括工具调用、规划、记忆、RAG、评�
 
 ```markdown
 ---
-minddoc: true
+mindctx: true
 ---
 
 # 根节点
@@ -428,7 +428,7 @@ minddoc: true
 
 ```markdown
 ---
-minddoc: true
+mindctx: true
 ---
 
 - 没有标题的文档
@@ -442,7 +442,7 @@ minddoc: true
 
 ```markdown
 ---
-minddoc: true
+mindctx: true
 ---
 ```
 
@@ -472,7 +472,7 @@ git commit -m "feat: add test fixture files for parser/serializer"
 **Files:**
 - Create: `src/core/parser.ts`
 
-This is the most complex module. It uses unified/remark to parse Markdown into mdast, then walks the mdast to build a MindDocTree. Key challenges: list handling, rawText backfill, source range computation.
+This is the most complex module. It uses unified/remark to parse Markdown into mdast, then walks the mdast to build a MindCtxTree. Key challenges: list handling, rawText backfill, source range computation.
 
 - [ ] **Step 1: Create the parser module with imports and helpers**
 
@@ -484,10 +484,10 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { parse as parseYaml } from 'yaml';
 import type { Root, Content, Heading, List, ListItem, Paragraph, Code, Blockquote, ThematicBreak, Table, Image, Html, Math as MdastMath } from 'mdast';
-import type { MindDocNode, MindDocTree, ContentBlock, ParseOptions } from './types.js';
+import type { MindCtxNode, MindCtxTree, ContentBlock, ParseOptions } from './types.js';
 import { generateNodeId } from './hash.js';
 
-function createNode(partial: Partial<MindDocNode> & { title: string }): MindDocNode {
+function createNode(partial: Partial<MindCtxNode> & { title: string }): MindCtxNode {
   return {
     id: '',
     title: partial.title,
@@ -540,7 +540,7 @@ function paragraphToText(node: Paragraph): string {
 Continue in `src/core/parser.ts`:
 
 ```typescript
-export function parse(markdown: string, options?: ParseOptions): MindDocTree {
+export function parse(markdown: string, options?: ParseOptions): MindCtxTree {
   const startTime = performance.now();
   const lines = markdown.split('\n');
 
@@ -613,9 +613,9 @@ export function parse(markdown: string, options?: ParseOptions): MindDocTree {
 - [ ] **Step 3: Implement buildTree — heading and content block handling**
 
 ```typescript
-function buildTree(mdast: Root, root: MindDocNode, lines: string[]): void {
+function buildTree(mdast: Root, root: MindCtxNode, lines: string[]): void {
   // Stack tracks the current hierarchy: [root, h1, h2, ...]
-  const stack: MindDocNode[] = [root];
+  const stack: MindCtxNode[] = [root];
 
   for (const child of mdast.children) {
     if (child.type === 'yaml') continue; // Already handled
@@ -703,7 +703,7 @@ function buildTree(mdast: Root, root: MindDocNode, lines: string[]): void {
 - [ ] **Step 4: Implement processListNode for recursive list handling**
 
 ```typescript
-function processListNode(list: List, parent: MindDocNode, baseDepth: number, lines: string[]): void {
+function processListNode(list: List, parent: MindCtxNode, baseDepth: number, lines: string[]): void {
   const isOrdered = list.ordered ?? false;
 
   for (const item of list.children) {
@@ -714,7 +714,7 @@ function processListNode(list: List, parent: MindDocNode, baseDepth: number, lin
     let title = '';
     let note = '';
     const blocks: ContentBlock[] = [];
-    const children: MindDocNode[] = [];
+    const children: MindCtxNode[] = [];
 
     for (const itemChild of listItem.children) {
       if (itemChild.type === 'paragraph') {
@@ -773,9 +773,9 @@ function processListNode(list: List, parent: MindDocNode, baseDepth: number, lin
 - [ ] **Step 5: Implement rawText backfill logic**
 
 ```typescript
-function backfillRawText(root: MindDocNode, lines: string[], contentStart: number, totalLines: number): void {
+function backfillRawText(root: MindCtxNode, lines: string[], contentStart: number, totalLines: number): void {
   // Collect all nodes in document order with their start lines
-  const allNodes: { node: MindDocNode; startLine: number }[] = [];
+  const allNodes: { node: MindCtxNode; startLine: number }[] = [];
   collectNodesInOrder(root, allNodes);
 
   // Sort by startLine to establish document order
@@ -821,18 +821,18 @@ function backfillRawText(root: MindDocNode, lines: string[], contentStart: numbe
   }
 }
 
-function collectNodesInOrder(node: MindDocNode, result: { node: MindDocNode; startLine: number }[]): void {
+function collectNodesInOrder(node: MindCtxNode, result: { node: MindCtxNode; startLine: number }[]): void {
   for (const child of node.children) {
     result.push({ node: child, startLine: child.sourceRange.startLine });
     collectNodesInOrder(child, result);
   }
 }
 
-function getFirstDescendantStartLine(node: MindDocNode): number {
+function getFirstDescendantStartLine(node: MindCtxNode): number {
   return node.sourceRange.startLine;
 }
 
-function findNextNodeStart(allNodes: { node: MindDocNode; startLine: number }[], currentIdx: number, totalLines: number): number {
+function findNextNodeStart(allNodes: { node: MindCtxNode; startLine: number }[], currentIdx: number, totalLines: number): number {
   if (currentIdx + 1 < allNodes.length) {
     return allNodes[currentIdx + 1].startLine;
   }
@@ -843,7 +843,7 @@ function findNextNodeStart(allNodes: { node: MindDocNode; startLine: number }[],
 - [ ] **Step 6: Implement ID assignment and metadata helpers**
 
 ```typescript
-function assignIds(node: MindDocNode, parentPath: string[]): void {
+function assignIds(node: MindCtxNode, parentPath: string[]): void {
   const siblingCounts = new Map<string, number>();
 
   for (const child of node.children) {
@@ -857,7 +857,7 @@ function assignIds(node: MindDocNode, parentPath: string[]): void {
   }
 }
 
-function countNodes(node: MindDocNode): number {
+function countNodes(node: MindCtxNode): number {
   let count = 1;
   for (const child of node.children) {
     count += countNodes(child);
@@ -865,7 +865,7 @@ function countNodes(node: MindDocNode): number {
   return count;
 }
 
-function computeMaxDepth(node: MindDocNode, currentDepth: number): number {
+function computeMaxDepth(node: MindCtxNode, currentDepth: number): number {
   let max = currentDepth;
   for (const child of node.children) {
     max = Math.max(max, computeMaxDepth(child, currentDepth + 1));
@@ -1006,7 +1006,7 @@ describe('Parser', () => {
 
   test('frontmatter 正确提取', () => {
     const tree = parse(fixture('complex.mind.md'));
-    expect(tree.frontmatter['minddoc']).toBe(true);
+    expect(tree.frontmatter['mindctx']).toBe(true);
     expect(tree.frontmatter['version']).toBe(1);
     expect(tree.frontmatter['default-view']).toBe('outline');
     expect(tree.frontmatter['heading-depth']).toBe(3);
@@ -1083,9 +1083,9 @@ git commit -m "test: add comprehensive parser tests"
 - [ ] **Step 1: Implement the serializer**
 
 ```typescript
-import type { MindDocNode, MindDocTree, SerializeOptions } from './types.js';
+import type { MindCtxNode, MindCtxTree, SerializeOptions } from './types.js';
 
-export function serialize(tree: MindDocTree, options?: SerializeOptions): string {
+export function serialize(tree: MindCtxTree, options?: SerializeOptions): string {
   const headingDepth = options?.headingDepth ?? tree.headingDepth;
   let output = '';
 
@@ -1114,7 +1114,7 @@ export function serialize(tree: MindDocTree, options?: SerializeOptions): string
   return output;
 }
 
-function serializeNode(node: MindDocNode, headingDepth: number, absoluteDepth: number): string {
+function serializeNode(node: MindCtxNode, headingDepth: number, absoluteDepth: number): string {
   let output = '';
 
   if (!node.dirty && !node.subtreeDirty) {
@@ -1142,7 +1142,7 @@ function serializeNode(node: MindDocNode, headingDepth: number, absoluteDepth: n
   return output;
 }
 
-function serializeNodeRaw(node: MindDocNode): string {
+function serializeNodeRaw(node: MindCtxNode): string {
   let output = node.rawText;
   for (const child of node.children) {
     output += serializeNodeRaw(child);
@@ -1150,7 +1150,7 @@ function serializeNodeRaw(node: MindDocNode): string {
   return output;
 }
 
-function generateNodeContent(node: MindDocNode, headingDepth: number, absoluteDepth: number): string {
+function generateNodeContent(node: MindCtxNode, headingDepth: number, absoluteDepth: number): string {
   let output = '';
 
   if (absoluteDepth <= headingDepth) {
@@ -1198,7 +1198,7 @@ function generateNodeContent(node: MindDocNode, headingDepth: number, absoluteDe
   return output;
 }
 
-export function serializeSubtree(node: MindDocNode, headingDepth: number, baseDepth = 1): string {
+export function serializeSubtree(node: MindCtxNode, headingDepth: number, baseDepth = 1): string {
   let output = '';
 
   if (baseDepth <= headingDepth) {
@@ -1289,7 +1289,7 @@ describe('Serializer', () => {
   });
 
   test('frontmatter 正确输出', () => {
-    const md = '---\nminddoc: true\n---\n\n# Title\n\n';
+    const md = '---\nmindctx: true\n---\n\n# Title\n\n';
     const tree = parse(md);
     expect(serialize(tree)).toBe(md);
   });
@@ -1398,10 +1398,10 @@ git commit -m "test: add serializer and round-trip fidelity tests"
 - [ ] **Step 1: Implement helper functions**
 
 ```typescript
-import type { MindDocNode, MindDocTree, PartialOperation, Operation } from './types.js';
+import type { MindCtxNode, MindCtxTree, PartialOperation, Operation } from './types.js';
 import { generateNodeId } from './hash.js';
 
-export function findNode(root: MindDocNode, id: string): MindDocNode | null {
+export function findNode(root: MindCtxNode, id: string): MindCtxNode | null {
   if (root.id === id) return root;
   for (const child of root.children) {
     const found = findNode(child, id);
@@ -1410,7 +1410,7 @@ export function findNode(root: MindDocNode, id: string): MindDocNode | null {
   return null;
 }
 
-export function findParent(root: MindDocNode, id: string): MindDocNode | null {
+export function findParent(root: MindCtxNode, id: string): MindCtxNode | null {
   for (const child of root.children) {
     if (child.id === id) return root;
     const found = findParent(child, id);
@@ -1419,12 +1419,12 @@ export function findParent(root: MindDocNode, id: string): MindDocNode | null {
   return null;
 }
 
-export function findIndex(parent: MindDocNode, id: string): number {
+export function findIndex(parent: MindCtxNode, id: string): number {
   return parent.children.findIndex(c => c.id === id);
 }
 
-export function getAbsoluteDepth(root: MindDocNode, id: string): number {
-  function search(node: MindDocNode, depth: number): number {
+export function getAbsoluteDepth(root: MindCtxNode, id: string): number {
+  function search(node: MindCtxNode, depth: number): number {
     if (node.id === id) return depth;
     for (const child of node.children) {
       const result = search(child, depth + 1);
@@ -1435,7 +1435,7 @@ export function getAbsoluteDepth(root: MindDocNode, id: string): number {
   return search(root, 0);
 }
 
-export function recalculateNodeTypes(node: MindDocNode, absoluteDepth: number, headingDepth: number): void {
+export function recalculateNodeTypes(node: MindCtxNode, absoluteDepth: number, headingDepth: number): void {
   if (absoluteDepth <= headingDepth) {
     node.nodeType = 'heading';
     node.headingLevel = absoluteDepth;
@@ -1450,15 +1450,15 @@ export function recalculateNodeTypes(node: MindDocNode, absoluteDepth: number, h
   }
 }
 
-function markDirty(root: MindDocNode, nodeId: string): void {
+function markDirty(root: MindCtxNode, nodeId: string): void {
   const node = findNode(root, nodeId);
   if (node) node.dirty = true;
   bubbleSubtreeDirty(root, nodeId);
 }
 
-function bubbleSubtreeDirty(root: MindDocNode, nodeId: string): void {
+function bubbleSubtreeDirty(root: MindCtxNode, nodeId: string): void {
   // Walk from root to the node, marking subtreeDirty on each ancestor
-  function walkAndMark(current: MindDocNode): boolean {
+  function walkAndMark(current: MindCtxNode): boolean {
     if (current.id === nodeId) return true;
     for (const child of current.children) {
       if (walkAndMark(child)) {
@@ -1475,7 +1475,7 @@ function bubbleSubtreeDirty(root: MindDocNode, nodeId: string): void {
 - [ ] **Step 2: Implement applyOperation with move, rename, create, delete**
 
 ```typescript
-export function applyOperation(tree: MindDocTree, op: PartialOperation): Operation {
+export function applyOperation(tree: MindCtxTree, op: PartialOperation): Operation {
   const root = tree.root;
 
   switch (op.type) {
@@ -1512,7 +1512,7 @@ export function applyOperation(tree: MindDocTree, op: PartialOperation): Operati
       const insertIdx = op.index === -1 ? parent.children.length : op.index;
       const depth = getAbsoluteDepth(root, op.parentId) + 1;
 
-      const node: MindDocNode = {
+      const node: MindCtxNode = {
         id: generateNodeId([op.title], Date.now() % 1000),
         title: op.title,
         note: '',
@@ -1673,7 +1673,7 @@ git commit -m "feat: implement all tree operations (move, rename, create, delete
 - [ ] **Step 1: Implement invertOperation**
 
 ```typescript
-import type { MindDocTree, MindDocNode, Operation } from './types.js';
+import type { MindCtxTree, MindCtxNode, Operation } from './types.js';
 import { applyOperation } from './operations.js';
 
 export function invertOperation(op: Operation): Operation[] {
@@ -1745,7 +1745,7 @@ export class UndoManager {
     this.redoStack = [];
   }
 
-  undo(tree: MindDocTree): Operation[] | null {
+  undo(tree: MindCtxTree): Operation[] | null {
     const ops = this.undoStack.pop();
     if (!ops) return null;
 
@@ -1763,7 +1763,7 @@ export class UndoManager {
     return invertedOps;
   }
 
-  redo(tree: MindDocTree): Operation[] | null {
+  redo(tree: MindCtxTree): Operation[] | null {
     const ops = this.redoStack.pop();
     if (!ops) return null;
 
@@ -1791,7 +1791,7 @@ export class UndoManager {
   }
 }
 
-function executeOperation(tree: MindDocTree, op: Operation): Operation {
+function executeOperation(tree: MindCtxTree, op: Operation): Operation {
   const root = tree.root;
 
   switch (op.type) {
@@ -1903,10 +1903,10 @@ import { parse } from '../src/core/parser.js';
 import { serialize } from '../src/core/serializer.js';
 import { applyOperation, findNode, findParent, findIndex } from '../src/core/operations.js';
 import { UndoManager } from '../src/core/undo.js';
-import type { MindDocTree } from '../src/core/types.js';
+import type { MindCtxTree } from '../src/core/types.js';
 
 const simpleMd = `---
-minddoc: true
+mindctx: true
 ---
 
 # Root
@@ -1922,12 +1922,12 @@ minddoc: true
 - Item B1
 `;
 
-function makeTree(): MindDocTree {
+function makeTree(): MindCtxTree {
   return parse(simpleMd);
 }
 
 describe('Operations', () => {
-  let tree: MindDocTree;
+  let tree: MindCtxTree;
 
   beforeEach(() => {
     tree = makeTree();
@@ -2058,7 +2058,7 @@ describe('Operations', () => {
 });
 
 describe('Undo/Redo', () => {
-  let tree: MindDocTree;
+  let tree: MindCtxTree;
   let undoManager: UndoManager;
 
   beforeEach(() => {
@@ -2247,7 +2247,7 @@ Create and run a quick performance test inline:
 ```bash
 node --loader ts-node/esm -e "
 import { parse } from './src/core/parser.js';
-const bigMd = '---\nminddoc: true\n---\n\n' + Array.from({length: 500}, (_, i) => '# H' + i + '\n\n' + Array.from({length: 5}, (_, j) => '- item ' + j + '\n').join('') + '\n').join('');
+const bigMd = '---\nmindctx: true\n---\n\n' + Array.from({length: 500}, (_, i) => '# H' + i + '\n\n' + Array.from({length: 5}, (_, j) => '- item ' + j + '\n').join('') + '\n').join('');
 const start = performance.now();
 parse(bigMd);
 console.log('Parse time:', (performance.now() - start).toFixed(1) + 'ms');

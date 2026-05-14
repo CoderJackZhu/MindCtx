@@ -6,7 +6,7 @@ Phase 1 已完成，以下模块可用：
 
 ```
 src/core/types.ts        — 所有类型定义
-src/core/parser.ts       — parse(markdown) → MindDocTree
+src/core/parser.ts       — parse(markdown) → MindCtxTree
 src/core/serializer.ts   — serialize(tree) → markdown
 src/core/operations.ts   — applyOperation(tree, op) → Operation
 src/core/undo.ts         — UndoManager 类
@@ -34,8 +34,8 @@ src/
   main.ts                  # 插件入口
   constants.ts             # 常量定义
   views/
-    MindDocView.tsx        # Obsidian ItemView 子类（需要 .tsx 支持 JSX）
-    MindDocRoot.tsx        # 根 Preact 组件（包装 Toolbar + 视图，Phase 3 扩展视图切换）
+    MindCtxView.tsx        # Obsidian ItemView 子类（需要 .tsx 支持 JSX）
+    MindCtxRoot.tsx        # 根 Preact 组件（包装 Toolbar + 视图，Phase 3 扩展视图切换）
     OutlineView.tsx        # 大纲 Preact 组件（根）
     components/
       OutlineNode.tsx      # 单个节点组件
@@ -103,8 +103,8 @@ Phase 1 的 tsconfig.json 需要添加 JSX 支持，更新 `compilerOptions`：
 ```typescript
 // src/constants.ts
 
-export const MINDDOC_VIEW_TYPE = 'minddoc-view';
-export const PLUGIN_ID = 'minddoc';
+export const MINDCTX_VIEW_TYPE = 'mindctx-view';
+export const PLUGIN_ID = 'mindctx';
 ```
 
 ---
@@ -113,12 +113,12 @@ export const PLUGIN_ID = 'minddoc';
 
 ```json
 {
-  "id": "minddoc",
-  "name": "MindDoc",
+  "id": "mindctx",
+  "name": "MindCtx",
   "version": "0.1.0",
   "minAppVersion": "1.4.0",
   "description": "Markdown-first structured outline editor with mind map view",
-  "author": "MindDoc",
+  "author": "MindCtx",
   "isDesktopOnly": false
 }
 ```
@@ -140,12 +140,12 @@ export const PLUGIN_ID = 'minddoc';
 ```typescript
 import { Plugin, WorkspaceLeaf, TFile } from 'obsidian';
 
-const MINDDOC_VIEW_TYPE = 'minddoc-view';
+const MINDCTX_VIEW_TYPE = 'mindctx-view';
 
-export default class MindDocPlugin extends Plugin {
-  settings: MindDocSettings;
+export default class MindCtxPlugin extends Plugin {
+  settings: MindCtxSettings;
 
-  // 插件级写入标记：所有 MindDocView 实例共享
+  // 插件级写入标记：所有 MindCtxView 实例共享
   // 用于同一文件在多个视图中打开时，避免 View A 的写入触发 View B 的重载
   recentWrites = new Map<string, number>(); // filePath → timestamp
 
@@ -154,15 +154,15 @@ export default class MindDocPlugin extends Plugin {
     await this.loadSettings();
 
     // 2. 注册视图
-    this.registerView(MINDDOC_VIEW_TYPE, (leaf) => new MindDocView(leaf, this));
+    this.registerView(MINDCTX_VIEW_TYPE, (leaf) => new MindCtxView(leaf, this));
 
     // 3. 注册 .mind.md 扩展名关联
     //    注意：Obsidian 的 registerExtensions 需要不含点的扩展名
     //    但 .mind.md 是双扩展名，需要用 file-open 事件拦截
     this.registerEvent(
       this.app.workspace.on('file-open', (file) => {
-        if (file && this.isMindDocFile(file)) {
-          this.activateMindDocView(file);
+        if (file && this.isMindCtxFile(file)) {
+          this.activateMindCtxView(file);
         }
       })
     );
@@ -170,18 +170,18 @@ export default class MindDocPlugin extends Plugin {
     // 4. 注册命令
     this.addCommand({
       id: 'create',
-      name: '创建 MindDoc 文件',
-      callback: () => this.createNewMindDoc(),
+      name: '创建 MindCtx 文件',
+      callback: () => this.createNewMindCtx(),
     });
 
     this.addCommand({
-      id: 'open-as-minddoc',
-      name: '以 MindDoc 打开当前文件',
+      id: 'open-as-mindctx',
+      name: '以 MindCtx 打开当前文件',
       checkCallback: (checking) => {
         const file = this.app.workspace.getActiveFile();
         if (!file || !file.path.endsWith('.md')) return false;
         if (checking) return true;
-        this.activateMindDocView(file);
+        this.activateMindCtxView(file);
       },
     });
 
@@ -189,7 +189,7 @@ export default class MindDocPlugin extends Plugin {
       id: 'expand-all',
       name: '展开全部节点',
       checkCallback: (checking) => {
-        const view = this.getActiveMindDocView();
+        const view = this.getActiveMindCtxView();
         if (!view) return false;
         if (checking) return true;
         view.collapsedIds.value = new Set();
@@ -200,11 +200,11 @@ export default class MindDocPlugin extends Plugin {
       id: 'collapse-all',
       name: '折叠全部节点',
       checkCallback: (checking) => {
-        const view = this.getActiveMindDocView();
+        const view = this.getActiveMindCtxView();
         if (!view?.tree) return false;
         if (checking) return true;
         const ids = new Set<string>();
-        function walk(node: MindDocNode) {
+        function walk(node: MindCtxNode) {
           if (node.children.length > 0) ids.add(node.id);
           node.children.forEach(walk);
         }
@@ -214,15 +214,15 @@ export default class MindDocPlugin extends Plugin {
     });
 
     // 5. 设置页
-    this.addSettingTab(new MindDocSettingTab(this.app, this));
+    this.addSettingTab(new MindCtxSettingTab(this.app, this));
   }
 
-  isMindDocFile(file: TFile): boolean {
+  isMindCtxFile(file: TFile): boolean {
     // 方式一：文件名匹配
     if (file.path.endsWith('.mind.md')) return true;
     // 方式二：frontmatter 检查（需要读取缓存的 metadata）
     const cache = this.app.metadataCache.getFileCache(file);
-    return cache?.frontmatter?.minddoc === true;
+    return cache?.frontmatter?.mindctx === true;
   }
 
   async loadSettings() {
@@ -233,30 +233,30 @@ export default class MindDocPlugin extends Plugin {
     await this.saveData(this.settings);
   }
 
-  async activateMindDocView(file: TFile) {
-    // 查找已存在的 MindDoc 视图
-    const existing = this.app.workspace.getLeavesOfType(MINDDOC_VIEW_TYPE)
-      .find(leaf => (leaf.view as MindDocView).file?.path === file.path);
+  async activateMindCtxView(file: TFile) {
+    // 查找已存在的 MindCtx 视图
+    const existing = this.app.workspace.getLeavesOfType(MINDCTX_VIEW_TYPE)
+      .find(leaf => (leaf.view as MindCtxView).file?.path === file.path);
     if (existing) {
       this.app.workspace.setActiveLeaf(existing);
       return;
     }
     // 在当前 leaf 打开
     const leaf = this.app.workspace.getLeaf(false);
-    await leaf.setViewState({ type: MINDDOC_VIEW_TYPE, state: { file: file.path } });
+    await leaf.setViewState({ type: MINDCTX_VIEW_TYPE, state: { file: file.path } });
   }
 
-  async createNewMindDoc() {
+  async createNewMindCtx() {
     const fileName = `新建文档 ${Date.now()}.mind.md`;
-    const content = `---\nminddoc: true\ndefault-view: outline\n---\n\n# ${fileName.replace('.mind.md', '')}\n\n## 主题一\n\n## 主题二\n`;
+    const content = `---\nmindctx: true\ndefault-view: outline\n---\n\n# ${fileName.replace('.mind.md', '')}\n\n## 主题一\n\n## 主题二\n`;
     const file = await this.app.vault.create(fileName, content);
-    await this.activateMindDocView(file);
+    await this.activateMindCtxView(file);
   }
 
-  // 获取当前活跃的 MindDoc 视图实例（供命令注册 checkCallback 使用）
-  getActiveMindDocView(): MindDocView | null {
+  // 获取当前活跃的 MindCtx 视图实例（供命令注册 checkCallback 使用）
+  getActiveMindCtxView(): MindCtxView | null {
     const leaf = this.app.workspace.activeLeaf;
-    if (leaf?.view instanceof MindDocView) {
+    if (leaf?.view instanceof MindCtxView) {
       return leaf.view;
     }
     return null;
@@ -266,13 +266,13 @@ export default class MindDocPlugin extends Plugin {
 
 ---
 
-## 模块二：MindDocView.ts — Obsidian 视图容器
+## 模块二：MindCtxView.ts — Obsidian 视图容器
 
 ### 职责
 
 - 继承 Obsidian `ItemView`
 - 管理文件读取和写入
-- 持有 MindDocTree（当前 AST）
+- 持有 MindCtxTree（当前 AST）
 - 持有 UndoManager
 - 挂载 Preact 大纲组件
 - 处理外部文件修改事件
@@ -287,21 +287,21 @@ import { parse } from '../core/parser';
 import { serialize } from '../core/serializer';
 import { applyOperation } from '../core/operations';
 import { UndoManager } from '../core/undo';
-import type { MindDocTree, PartialOperation } from '../core/types';
+import type { MindCtxTree, PartialOperation } from '../core/types';
 
-export class MindDocView extends ItemView {
-  plugin: MindDocPlugin;             // 插件实例引用
+export class MindCtxView extends ItemView {
+  plugin: MindCtxPlugin;             // 插件实例引用
   file: TFile | null = null;
-  tree: MindDocTree | null = null;
+  tree: MindCtxTree | null = null;
   undoManager = new UndoManager();
 
-  constructor(leaf: WorkspaceLeaf, plugin: MindDocPlugin) {
+  constructor(leaf: WorkspaceLeaf, plugin: MindCtxPlugin) {
     super(leaf);
     this.plugin = plugin;
   }
 
   // 每个视图实例独立的 signals（避免多实例串扰）
-  treeSignal = signal<MindDocTree | null>(null);
+  treeSignal = signal<MindCtxTree | null>(null);
   collapsedIds = signal<Set<string>>(new Set());
   selectedNodeId = signal<string | null>(null);
   editingNodeId = signal<string | null>(null);
@@ -309,8 +309,8 @@ export class MindDocView extends ItemView {
   private preactMounted = false;
   private debouncedWrite: ReturnType<typeof debounce> | null = null;
 
-  getViewType() { return MINDDOC_VIEW_TYPE; }
-  getDisplayText() { return this.file?.basename ?? 'MindDoc'; }
+  getViewType() { return MINDCTX_VIEW_TYPE; }
+  getDisplayText() { return this.file?.basename ?? 'MindCtx'; }
   getIcon() { return 'list-tree'; }
 
   // 状态持久化：保存文件路径以便 Obsidian 重启后恢复
@@ -381,7 +381,7 @@ export class MindDocView extends ItemView {
   async writeFile() {
     if (!this.file || !this.tree) return;
     const content = serialize(this.tree);
-    // 插件级写入标记：所有 MindDocView 实例共享，防止 View A 写入触发 View B 重载
+    // 插件级写入标记：所有 MindCtxView 实例共享，防止 View A 写入触发 View B 重载
     this.plugin.recentWrites.set(this.file.path, Date.now());
     await this.app.vault.modify(this.file, content);
   }
@@ -414,7 +414,7 @@ export class MindDocView extends ItemView {
     // 只在首次挂载时 render，后续通过 signals 驱动更新
     if (!this.preactMounted) {
       render(
-        <MindDocRoot
+        <MindCtxRoot
           treeSignal={this.treeSignal}
           collapsedIds={this.collapsedIds}
           selectedNodeId={this.selectedNodeId}
@@ -426,7 +426,7 @@ export class MindDocView extends ItemView {
           onCollapseAll={() => {
             if (!this.tree) return;
             const ids = new Set<string>();
-            function walk(node: MindDocNode) {
+            function walk(node: MindCtxNode) {
               if (node.children.length > 0) ids.add(node.id);
               node.children.forEach(walk);
             }
@@ -442,26 +442,26 @@ export class MindDocView extends ItemView {
 }
 ```
 
-### MindDocRoot 包装组件
+### MindCtxRoot 包装组件
 
-Phase 2 中 `MindDocRoot` 仅包含大纲视图。Phase 3 会在此组件中添加视图切换逻辑和脑图视图的条件渲染，无需修改 `MindDocView.renderView()` 方法。
+Phase 2 中 `MindCtxRoot` 仅包含大纲视图。Phase 3 会在此组件中添加视图切换逻辑和脑图视图的条件渲染，无需修改 `MindCtxView.renderView()` 方法。
 
 ```typescript
-// src/views/MindDocRoot.tsx
+// src/views/MindCtxRoot.tsx
 
 import { h } from 'preact';
 import { OutlineToolbar } from './components/OutlineToolbar';
 import { OutlineView } from './OutlineView';
 
 // Phase 2 的 Props 定义。Phase 3 将扩展此接口添加 currentView、onSwitchView、onCollapsedChange 等字段
-interface MindDocRootProps extends OutlineViewProps {
+interface MindCtxRootProps extends OutlineViewProps {
   onExpandAll: () => void;
   onCollapseAll: () => void;
 }
 
-function MindDocRoot(props: MindDocRootProps) {
+function MindCtxRoot(props: MindCtxRootProps) {
   return (
-    <div class="minddoc-container">
+    <div class="mindctx-container">
       <OutlineToolbar
         onExpandAll={props.onExpandAll}
         onCollapseAll={props.onCollapseAll}
@@ -497,7 +497,7 @@ function MindDocRoot(props: MindDocRootProps) {
 import type { Signal } from '@preact/signals';
 
 interface OutlineViewProps {
-  treeSignal: Signal<MindDocTree | null>;
+  treeSignal: Signal<MindCtxTree | null>;
   collapsedIds: Signal<Set<string>>;
   selectedNodeId: Signal<string | null>;
   editingNodeId: Signal<string | null>;
@@ -507,9 +507,9 @@ interface OutlineViewProps {
 }
 ```
 
-### 状态管理（使用 @preact/signals，由 MindDocView 实例持有）
+### 状态管理（使用 @preact/signals，由 MindCtxView 实例持有）
 
-signals 由 `MindDocView` 实例创建并通过 props 传入组件，确保多个 MindDoc 视图实例之间状态完全隔离。
+signals 由 `MindCtxView` 实例创建并通过 props 传入组件，确保多个 MindCtx 视图实例之间状态完全隔离。
 
 ```typescript
 // 组件内的局部 UI 状态（不需要在视图间共享）
@@ -539,7 +539,7 @@ interface DragState {
 
 ```typescript
 interface OutlineNodeProps {
-  node: MindDocNode;
+  node: MindCtxNode;
   depth: number;           // 用于计算缩进
   isSelected: boolean;
   isEditing: boolean;
@@ -610,7 +610,7 @@ interface OutlineNodeProps {
 import { findNode, findParent, findIndex } from '../core/operations';
 import type { PartialOperation } from '../core/types';
 
-function handleDrop(draggedId: string, targetId: string, position: string, tree: MindDocTree, onOperation: (op: PartialOperation) => void) {
+function handleDrop(draggedId: string, targetId: string, position: string, tree: MindCtxTree, onOperation: (op: PartialOperation) => void) {
   const target = findNode(tree.root, targetId);
   const targetParent = findParent(tree.root, targetId);
 
@@ -661,9 +661,9 @@ function handleDrop(draggedId: string, targetId: string, position: string, tree:
 上/下方向键需要遍历"可见"节点（折叠节点的子节点不可见）：
 
 ```typescript
-function getVisibleNodes(root: MindDocNode, collapsedIds: Set<string>): MindDocNode[] {
-  const result: MindDocNode[] = [];
-  function walk(node: MindDocNode) {
+function getVisibleNodes(root: MindCtxNode, collapsedIds: Set<string>): MindCtxNode[] {
+  const result: MindCtxNode[] = [];
+  function walk(node: MindCtxNode) {
     result.push(node);
     if (!collapsedIds.has(node.id)) {
       for (const child of node.children) {
@@ -711,16 +711,16 @@ interface OutlineToolbarProps {
 
 export function OutlineToolbar({ onExpandAll, onCollapseAll }: OutlineToolbarProps) {
   return (
-    <div class="minddoc-toolbar">
+    <div class="mindctx-toolbar">
       <button
-        class="minddoc-toolbar-btn"
+        class="mindctx-toolbar-btn"
         onClick={onExpandAll}
         title="展开全部"
       >
         展开全部
       </button>
       <button
-        class="minddoc-toolbar-btn"
+        class="mindctx-toolbar-btn"
         onClick={onCollapseAll}
         title="折叠全部"
       >
@@ -735,7 +735,7 @@ export function OutlineToolbar({ onExpandAll, onCollapseAll }: OutlineToolbarPro
 
 ### 样式
 
-工具栏样式已在模块十 `styles.css` 中定义（`.minddoc-toolbar`）。
+工具栏样式已在模块十 `styles.css` 中定义（`.mindctx-toolbar`）。
 
 ---
 
@@ -766,7 +766,7 @@ function InlineEditor({ value, onConfirm, onCancel }) {
     <input
       ref={ref}
       value={value}
-      class="minddoc-inline-editor"
+      class="mindctx-inline-editor"
       onKeyDown={(e) => {
         if (e.key === 'Enter') { e.preventDefault(); onConfirm(e.currentTarget.value); }
         if (e.key === 'Escape') { e.preventDefault(); onCancel(); }
@@ -828,7 +828,7 @@ export function debounce<T extends (...args: any[]) => void>(
 ## 模块九：settings.ts
 
 ```typescript
-export interface MindDocSettings {
+export interface MindCtxSettings {
   defaultView: 'outline' | 'mindmap';
   defaultHeadingDepth: number;
   mindmapDirection: 'side' | 'right' | 'left';
@@ -841,7 +841,7 @@ export interface MindDocSettings {
   indentSize: number;               // px, 默认 24
 }
 
-export const DEFAULT_SETTINGS: MindDocSettings = {
+export const DEFAULT_SETTINGS: MindCtxSettings = {
   defaultView: 'outline',
   defaultHeadingDepth: 3,
   mindmapDirection: 'side',
@@ -864,10 +864,10 @@ Phase 2 只提供默认视图和自动保存延迟两个设置项。完整的设
 ```typescript
 import { PluginSettingTab, Setting, App } from 'obsidian';
 
-export class MindDocSettingTab extends PluginSettingTab {
-  plugin: MindDocPlugin;
+export class MindCtxSettingTab extends PluginSettingTab {
+  plugin: MindCtxPlugin;
 
-  constructor(app: App, plugin: MindDocPlugin) {
+  constructor(app: App, plugin: MindCtxPlugin) {
     super(app, plugin);
     this.plugin = plugin;
   }
@@ -875,11 +875,11 @@ export class MindDocSettingTab extends PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl('h2', { text: 'MindDoc 设置' });
+    containerEl.createEl('h2', { text: 'MindCtx 设置' });
 
     new Setting(containerEl)
       .setName('默认视图')
-      .setDesc('打开 MindDoc 文件时的默认视图')
+      .setDesc('打开 MindCtx 文件时的默认视图')
       .addDropdown((drop) => {
         drop.addOption('outline', '大纲');
         drop.addOption('mindmap', '思维导图');
@@ -917,16 +917,16 @@ export class MindDocSettingTab extends PluginSettingTab {
 
 ```css
 /* 根容器 */
-.minddoc-outline {
+.mindctx-outline {
   font-family: var(--font-text);
-  font-size: var(--minddoc-font-size, 14px);
+  font-size: var(--mindctx-font-size, 14px);
   padding: 8px;
   height: 100%;
   overflow-y: auto;
 }
 
 /* 节点行 */
-.minddoc-node {
+.mindctx-node {
   display: flex;
   align-items: center;
   height: 32px;
@@ -936,16 +936,16 @@ export class MindDocSettingTab extends PluginSettingTab {
   user-select: none;
 }
 
-.minddoc-node:hover {
+.mindctx-node:hover {
   background: var(--background-modifier-hover);
 }
 
-.minddoc-node.is-selected {
+.mindctx-node.is-selected {
   background: var(--background-modifier-active-hover);
 }
 
 /* 折叠箭头 */
-.minddoc-collapse-btn {
+.mindctx-collapse-btn {
   width: 20px;
   height: 20px;
   display: flex;
@@ -956,12 +956,12 @@ export class MindDocSettingTab extends PluginSettingTab {
   flex-shrink: 0;
 }
 
-.minddoc-collapse-btn:hover {
+.mindctx-collapse-btn:hover {
   color: var(--text-normal);
 }
 
 /* 拖拽手柄 */
-.minddoc-drag-handle {
+.mindctx-drag-handle {
   width: 16px;
   height: 16px;
   opacity: 0;
@@ -970,12 +970,12 @@ export class MindDocSettingTab extends PluginSettingTab {
   flex-shrink: 0;
 }
 
-.minddoc-node:hover .minddoc-drag-handle {
+.mindctx-node:hover .mindctx-drag-handle {
   opacity: 1;
 }
 
 /* 标题 */
-.minddoc-title {
+.mindctx-title {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -983,7 +983,7 @@ export class MindDocSettingTab extends PluginSettingTab {
 }
 
 /* Note 预览 */
-.minddoc-note-preview {
+.mindctx-note-preview {
   color: var(--text-faint);
   font-size: 12px;
   margin-left: 8px;
@@ -994,7 +994,7 @@ export class MindDocSettingTab extends PluginSettingTab {
 }
 
 /* 内联编辑器 */
-.minddoc-inline-editor {
+.mindctx-inline-editor {
   background: transparent;
   border: 1px solid var(--interactive-accent);
   border-radius: 2px;
@@ -1006,7 +1006,7 @@ export class MindDocSettingTab extends PluginSettingTab {
 }
 
 /* 拖拽指示器 */
-.minddoc-drop-line {
+.mindctx-drop-line {
   position: absolute;
   left: 0;
   right: 0;
@@ -1015,12 +1015,12 @@ export class MindDocSettingTab extends PluginSettingTab {
   pointer-events: none;
 }
 
-.minddoc-drop-highlight {
+.mindctx-drop-highlight {
   background: var(--background-modifier-active-hover) !important;
 }
 
 /* 工具栏 */
-.minddoc-toolbar {
+.mindctx-toolbar {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1076,8 +1076,8 @@ esbuild.build({
 ### 手动测试流程
 
 1. `npm run dev` 构建插件
-2. 将产出的 `main.js`, `manifest.json`, `styles.css` 复制到 Obsidian vault 的 `.obsidian/plugins/minddoc/` 目录
-3. 在 Obsidian 设置中启用 MindDoc 插件
+2. 将产出的 `main.js`, `manifest.json`, `styles.css` 复制到 Obsidian vault 的 `.obsidian/plugins/mindctx/` 目录
+3. 在 Obsidian 设置中启用 MindCtx 插件
 4. 创建或打开 `.mind.md` 文件
 5. 验证大纲正确显示
 6. 验证拖拽、键盘快捷键、编辑功能
@@ -1107,4 +1107,4 @@ esbuild.build({
 - 不要使用 `document.querySelector` 等全局 DOM 查询，始终从 `containerEl` 出发
 - 拖拽使用 HTML5 Drag and Drop API（`draggable`, `ondragstart`, `ondragover`, `ondrop`）
 - 写文件前通过 `this.plugin.recentWrites` 设置时间戳，避免 `vault.on('modify')` 触发重新解析
-- 所有快捷键需要检查当前焦点是否在 MindDoc 视图内，避免和 Obsidian 全局快捷键冲突
+- 所有快捷键需要检查当前焦点是否在 MindCtx 视图内，避免和 Obsidian 全局快捷键冲突

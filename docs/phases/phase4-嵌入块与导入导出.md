@@ -11,7 +11,7 @@ Phase 3 已完成，以下能力可用：
 
 ## 目标
 
-1. 支持在任意 Obsidian Markdown 文件中通过代码块嵌入 MindDoc 视图
+1. 支持在任意 Obsidian Markdown 文件中通过代码块嵌入 MindCtx 视图
 2. 实现 OPML 导入（支持从幕布迁移）
 3. 实现 OPML / JSON / PNG 导出
 4. 实现 "Copy as AI Context" 命令
@@ -40,14 +40,14 @@ src/
 
 ### 职责
 
-使用 Obsidian 的 `registerMarkdownCodeBlockProcessor` API 拦截 `minddoc` 代码块，将其渲染为交互式嵌入卡片。
+使用 Obsidian 的 `registerMarkdownCodeBlockProcessor` API 拦截 `mindctx` 代码块，将其渲染为交互式嵌入卡片。
 
 ### 代码块语法
 
 用户在任意 Markdown 文件中写：
 
 ````markdown
-```minddoc
+```mindctx
 file: [[文件名.mind.md]]
 mode: switchable
 height: 450
@@ -124,8 +124,8 @@ function parseEmbedConfig(source: string): EmbedConfig | { error: string } {
 ```typescript
 // src/views/EmbedProcessor.ts
 
-export function registerEmbedProcessor(plugin: MindDocPlugin) {
-  plugin.registerMarkdownCodeBlockProcessor('minddoc', async (source, el, ctx) => {
+export function registerEmbedProcessor(plugin: MindCtxPlugin) {
+  plugin.registerMarkdownCodeBlockProcessor('mindctx', async (source, el, ctx) => {
     const config = parseEmbedConfig(source);
 
     if ('error' in config) {
@@ -182,10 +182,10 @@ export function registerEmbedProcessor(plugin: MindDocPlugin) {
 // src/views/EmbedView.tsx
 
 interface EmbedViewProps {
-  tree: MindDocTree;
+  tree: MindCtxTree;
   config: EmbedConfig;
   file: TFile;
-  plugin: MindDocPlugin;
+  plugin: MindCtxPlugin;
 }
 
 function EmbedView({ tree, config, file, plugin }: EmbedViewProps) {
@@ -193,9 +193,9 @@ function EmbedView({ tree, config, file, plugin }: EmbedViewProps) {
   const [currentTree, setCurrentTree] = useState(tree);
 
   const handleOpen = () => {
-    // 在新 tab 中打开完整 MindDoc 视图（使用 getLeaf(true) 不替换当前页面）
+    // 在新 tab 中打开完整 MindCtx 视图（使用 getLeaf(true) 不替换当前页面）
     const leaf = plugin.app.workspace.getLeaf(true);
-    leaf.setViewState({ type: MINDDOC_VIEW_TYPE, state: { file: file.path } });
+    leaf.setViewState({ type: MINDCTX_VIEW_TYPE, state: { file: file.path } });
   };
 
   const handleRefresh = async () => {
@@ -205,10 +205,10 @@ function EmbedView({ tree, config, file, plugin }: EmbedViewProps) {
   };
 
   return (
-    <div class="minddoc-embed" style={{ height: `${config.height}px` }}>
-      <div class="minddoc-embed-header">
-        <span class="minddoc-embed-title">{file.basename}</span>
-        <div class="minddoc-embed-actions">
+    <div class="mindctx-embed" style={{ height: `${config.height}px` }}>
+      <div class="mindctx-embed-header">
+        <span class="mindctx-embed-title">{file.basename}</span>
+        <div class="mindctx-embed-actions">
           {config.mode === 'switchable' && (
             <>
               <button
@@ -225,7 +225,7 @@ function EmbedView({ tree, config, file, plugin }: EmbedViewProps) {
           <button onClick={handleRefresh} title="刷新">↻</button>
         </div>
       </div>
-      <div class="minddoc-embed-content">
+      <div class="mindctx-embed-content">
         {currentView === 'outline' ? (
           <ReadOnlyOutline tree={currentTree} maxDepth={config.maxDepth} collapsed={config.collapsed} />
         ) : (
@@ -247,7 +247,7 @@ function EmbedView({ tree, config, file, plugin }: EmbedViewProps) {
 
 ```typescript
 interface ReadOnlyOutlineProps {
-  tree: MindDocTree;
+  tree: MindCtxTree;
   maxDepth: number;        // 最大显示深度
   collapsed: boolean;      // 初始是否全部折叠
 }
@@ -277,7 +277,7 @@ function ReadOnlyOutline({ tree, maxDepth, collapsed }: ReadOnlyOutlineProps) {
   const collapsedIdsSignal = useMemo(() => {
     if (!collapsed) return signal(new Set<string>());
     const ids = new Set<string>();
-    function walk(node: MindDocNode) {
+    function walk(node: MindCtxNode) {
       if (node.children.length > 0) ids.add(node.id);
       node.children.forEach(walk);
     }
@@ -324,7 +324,7 @@ function ReadOnlyOutline({ tree, maxDepth, collapsed }: ReadOnlyOutlineProps) {
 
 ```typescript
 interface ReadOnlyMindMapProps {
-  tree: MindDocTree;
+  tree: MindCtxTree;
   maxDepth: number;        // 最大显示深度
 }
 ```
@@ -334,7 +334,7 @@ interface ReadOnlyMindMapProps {
 ### 嵌入块样式
 
 ```css
-.minddoc-embed {
+.mindctx-embed {
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
   overflow: hidden;
@@ -342,7 +342,7 @@ interface ReadOnlyMindMapProps {
   flex-direction: column;
 }
 
-.minddoc-embed-header {
+.mindctx-embed-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -351,18 +351,18 @@ interface ReadOnlyMindMapProps {
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.minddoc-embed-title {
+.mindctx-embed-title {
   font-weight: 500;
   font-size: 13px;
   color: var(--text-normal);
 }
 
-.minddoc-embed-actions {
+.mindctx-embed-actions {
   display: flex;
   gap: 4px;
 }
 
-.minddoc-embed-actions button {
+.mindctx-embed-actions button {
   padding: 2px 8px;
   font-size: 12px;
   border: none;
@@ -372,12 +372,12 @@ interface ReadOnlyMindMapProps {
   cursor: pointer;
 }
 
-.minddoc-embed-actions button.is-active {
+.mindctx-embed-actions button.is-active {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
 }
 
-.minddoc-embed-content {
+.mindctx-embed-content {
   flex: 1;
   overflow: auto;
 }
@@ -387,17 +387,17 @@ interface ReadOnlyMindMapProps {
 
 ```typescript
 function renderError(el: HTMLElement, message: string) {
-  el.createDiv({ cls: 'minddoc-embed-error' }, (div) => {
-    div.createSpan({ text: '⚠️ MindDoc: ' + message });
+  el.createDiv({ cls: 'mindctx-embed-error' }, (div) => {
+    div.createSpan({ text: '⚠️ MindCtx: ' + message });
   });
 }
 
-function renderFileNotFound(el: HTMLElement, fileName: string, plugin: MindDocPlugin, sourcePath: string) {
-  el.createDiv({ cls: 'minddoc-embed-error' }, (div) => {
+function renderFileNotFound(el: HTMLElement, fileName: string, plugin: MindCtxPlugin, sourcePath: string) {
+  el.createDiv({ cls: 'mindctx-embed-error' }, (div) => {
     div.createSpan({ text: `文件未找到: ${fileName}` });
     const btn = div.createEl('button', { text: '创建文件' });
     btn.addEventListener('click', async () => {
-      const content = `---\nminddoc: true\n---\n\n# ${fileName.replace('.mind.md', '')}\n`;
+      const content = `---\nmindctx: true\n---\n\n# ${fileName.replace('.mind.md', '')}\n`;
       await plugin.app.vault.create(fileName, content);
       // 触发重新渲染（Obsidian 会自动重新处理代码块）
     });
@@ -464,7 +464,7 @@ export function importOPML(opmlText: string, fileName: string): string {
   }
 
   // 构建 Markdown
-  let markdown = `---\nminddoc: true\ndefault-view: outline\nheading-depth: ${headingDepth}\n---\n\n`;
+  let markdown = `---\nmindctx: true\ndefault-view: outline\nheading-depth: ${headingDepth}\n---\n\n`;
   markdown += `# ${title}\n\n`;
 
   const topOutlines = Array.from(body.children).filter(c => c.tagName === 'outline');
@@ -473,7 +473,7 @@ export function importOPML(opmlText: string, fileName: string): string {
     // 单根节点：其子节点作为一级标题
     const root = topOutlines[0];
     const rootTitle = root.getAttribute('text') || title;
-    markdown = `---\nminddoc: true\ndefault-view: outline\nheading-depth: ${headingDepth}\n---\n\n`;
+    markdown = `---\nmindctx: true\ndefault-view: outline\nheading-depth: ${headingDepth}\n---\n\n`;
     markdown += `# ${rootTitle}\n\n`;
     for (const child of Array.from(root.children).filter(c => c.tagName === 'outline')) {
       markdown += convertOutline(child, 2);  // 从 H2 开始
@@ -506,7 +506,7 @@ this.addCommand({
       const fileName = file.name.replace(/\.(opml|xml)$/, '') + '.mind.md';
       const markdown = importOPML(text, fileName);
       const newFile = await this.app.vault.create(fileName, markdown);
-      await this.activateMindDocView(newFile);
+      await this.activateMindCtxView(newFile);
       new Notice(`已导入: ${fileName}`);
     };
     input.click();
@@ -527,7 +527,7 @@ this.addCommand({
       const fileName = file.name.replace(/\.mm$/, '') + '.mind.md';
       const markdown = importFreeMind(text, fileName);
       const newFile = await this.app.vault.create(fileName, markdown);
-      await this.activateMindDocView(newFile);
+      await this.activateMindCtxView(newFile);
       new Notice(`已导入: ${fileName}`);
     };
     input.click();
@@ -584,7 +584,7 @@ export function importFreeMind(xmlText: string, fileName: string): string {
     return output;
   }
 
-  let markdown = `---\nminddoc: true\ndefault-view: outline\nheading-depth: ${headingDepth}\n---\n\n`;
+  let markdown = `---\nmindctx: true\ndefault-view: outline\nheading-depth: ${headingDepth}\n---\n\n`;
   markdown += `# ${title}\n\n`;
   for (const child of Array.from(rootNode.children).filter(c => c.tagName === 'node')) {
     markdown += convert(child, 2);
@@ -603,8 +603,8 @@ export function importFreeMind(xmlText: string, fileName: string): string {
 ```typescript
 // src/exporters/opml.ts
 
-export function exportOPML(tree: MindDocTree): string {
-  function nodeToOutline(node: MindDocNode): string {
+export function exportOPML(tree: MindCtxTree): string {
+  function nodeToOutline(node: MindCtxNode): string {
     const escaped = escapeXml(node.title);
     const noteAttr = node.note ? ` _note="${escapeXml(node.note)}"` : '';
 
@@ -646,8 +646,8 @@ function escapeXml(str: string): string {
 ```typescript
 // src/exporters/json.ts
 
-export function exportJSON(tree: MindDocTree): string {
-  function simplify(node: MindDocNode): any {
+export function exportJSON(tree: MindCtxTree): string {
+  function simplify(node: MindCtxNode): any {
     const obj: any = { title: node.title };
     if (node.note) obj.note = node.note;
     if (node.tags.length > 0) obj.tags = node.tags;
@@ -707,10 +707,10 @@ export async function exportSVG(mindMapContainer: HTMLElement): Promise<string> 
 ```typescript
 // src/commands/aiCommands.ts
 
-export function copyAsAIContext(tree: MindDocTree): string {
+export function copyAsAIContext(tree: MindCtxTree): string {
   const headingDepth = tree.headingDepth;  // 使用文件的 headingDepth 而非硬编码
 
-  function nodeToMarkdown(node: MindDocNode, depth: number): string {
+  function nodeToMarkdown(node: MindCtxNode, depth: number): string {
     let output = '';
 
     if (depth === 0) {
@@ -750,7 +750,7 @@ this.addCommand({
   id: 'copy-ai-context',
   name: '复制为 AI 上下文',
   checkCallback: (checking) => {
-    const view = this.getActiveMindDocView();
+    const view = this.getActiveMindCtxView();
     if (!view?.tree) return false;
     if (checking) return true;
     const text = copyAsAIContext(view.tree);
@@ -763,7 +763,7 @@ this.addCommand({
   id: 'export-opml',
   name: '导出为 OPML',
   checkCallback: (checking) => {
-    const view = this.getActiveMindDocView();
+    const view = this.getActiveMindCtxView();
     if (!view?.tree) return false;
     if (checking) return true;
     const opml = exportOPML(view.tree);
@@ -775,7 +775,7 @@ this.addCommand({
   id: 'export-json',
   name: '导出为 JSON',
   checkCallback: (checking) => {
-    const view = this.getActiveMindDocView();
+    const view = this.getActiveMindCtxView();
     if (!view?.tree) return false;
     if (checking) return true;
     const json = exportJSON(view.tree);
@@ -787,10 +787,10 @@ this.addCommand({
   id: 'export-png',
   name: '导出为 PNG',
   checkCallback: (checking) => {
-    const view = this.getActiveMindDocView();
+    const view = this.getActiveMindCtxView();
     if (!view?.tree || view.currentViewSignal.value !== 'mindmap') return false;
     if (checking) return true;
-    const container = view.containerEl.querySelector('.minddoc-mindmap-container') as HTMLElement;
+    const container = view.containerEl.querySelector('.mindctx-mindmap-container') as HTMLElement;
     if (!container) return;
     exportPNG(container).then((blob) => {
       this.saveExportBlob(blob, view.file!.basename + '.png');
@@ -827,7 +827,7 @@ async saveExportBlob(blob: Blob, defaultName: string) {
 
 ### 嵌入块
 
-1. 在任意 Markdown 文件中写 `minddoc` 代码块，预览模式下正确渲染
+1. 在任意 Markdown 文件中写 `mindctx` 代码块，预览模式下正确渲染
 2. `file: [[xxx.mind.md]]` 语法正确解析链接
 3. 嵌入块可切换大纲/脑图视图
 4. "打开"按钮正确跳转到完整编辑视图
@@ -842,7 +842,7 @@ async saveExportBlob(blob: Blob, defaultName: string) {
 10. 从幕布导出的 OPML 能成功导入并生成正确的 .mind.md
 11. FreeMind .mm 文件能成功导入
 12. 导入时 heading-depth 转换正确（标题 vs 列表）
-13. 导入的文件可以直接在 MindDoc 中打开和编辑
+13. 导入的文件可以直接在 MindCtx 中打开和编辑
 
 ### 导出
 

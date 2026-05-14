@@ -1,7 +1,7 @@
-import type { MindDocTree, MindDocNode } from '../types.js';
+import type { MindCtxTree, MindCtxNode } from '../types.js';
 
-export function exportOPML(tree: MindDocTree): string {
-  function nodeToOutline(node: MindDocNode): string {
+export function exportOPML(tree: MindCtxTree): string {
+  function nodeToOutline(node: MindCtxNode): string {
     const escaped = escapeXml(node.title);
     const noteAttr = node.note ? ` _note="${escapeXml(node.note)}"` : '';
 

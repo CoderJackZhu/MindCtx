@@ -1,18 +1,18 @@
 {
-  "name": "vscode-minddoc",
-  "displayName": "MindDoc",
+  "name": "vscode-mindctx",
+  "displayName": "MindCtx",
   "description": "Markdown-first structured outline editor with mind map view. Write Markdown, see outlines, switch to mind maps.",
   "version": "0.1.0",
-  "publisher": "minddoc",
+  "publisher": "mindctx",
   "license": "MIT",
   "icon": "assets/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CoderJackZhu/MindDoc"
+    "url": "https://github.com/CoderJackZhu/MindCtx"
   },
-  "homepage": "https://github.com/CoderJackZhu/MindDoc#readme",
+  "homepage": "https://github.com/CoderJackZhu/MindCtx#readme",
   "bugs": {
-    "url": "https://github.com/CoderJackZhu/MindDoc/issues"
+    "url": "https://github.com/CoderJackZhu/MindCtx/issues"
   },
   "keywords": [
     "mindmap",
@@ -34,14 +34,14 @@
     "theme": "dark"
   },
   "activationEvents": [
-    "onCustomEditor:minddoc.editor"
+    "onCustomEditor:mindctx.editor"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "customEditors": [
       {
-        "viewType": "minddoc.editor",
-        "displayName": "MindDoc Editor",
+        "viewType": "mindctx.editor",
+        "displayName": "MindCtx Editor",
         "selector": [
           {
             "filenamePattern": "*.mind.md"
@@ -52,78 +52,78 @@
     ],
     "commands": [
       {
-        "command": "minddoc.create",
-        "title": "MindDoc: Create New File"
+        "command": "mindctx.create",
+        "title": "MindCtx: Create New File"
       },
       {
-        "command": "minddoc.openAs",
-        "title": "MindDoc: Open with MindDoc"
+        "command": "mindctx.openAs",
+        "title": "MindCtx: Open with MindCtx"
       },
       {
-        "command": "minddoc.toggleView",
-        "title": "MindDoc: Toggle View (Outline / Mind Map)",
+        "command": "mindctx.toggleView",
+        "title": "MindCtx: Toggle View (Outline / Mind Map)",
         "icon": "$(symbol-structure)",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.expandAll",
-        "title": "MindDoc: Expand All",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "command": "mindctx.expandAll",
+        "title": "MindCtx: Expand All",
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.collapseAll",
-        "title": "MindDoc: Collapse All",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "command": "mindctx.collapseAll",
+        "title": "MindCtx: Collapse All",
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.export.opml",
-        "title": "MindDoc: Export as OPML",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "command": "mindctx.export.opml",
+        "title": "MindCtx: Export as OPML",
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.export.json",
-        "title": "MindDoc: Export as JSON",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "command": "mindctx.export.json",
+        "title": "MindCtx: Export as JSON",
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.export.png",
-        "title": "MindDoc: Export as PNG",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "command": "mindctx.export.png",
+        "title": "MindCtx: Export as PNG",
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.import.opml",
-        "title": "MindDoc: Import OPML"
+        "command": "mindctx.import.opml",
+        "title": "MindCtx: Import OPML"
       },
       {
-        "command": "minddoc.import.freemind",
-        "title": "MindDoc: Import FreeMind"
+        "command": "mindctx.import.freemind",
+        "title": "MindCtx: Import FreeMind"
       },
       {
-        "command": "minddoc.copyAIContext",
-        "title": "MindDoc: Copy as AI Context",
-        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+        "command": "mindctx.copyAIContext",
+        "title": "MindCtx: Copy as AI Context",
+        "enablement": "activeCustomEditorId == 'mindctx.editor'"
       }
     ],
     "menus": {
       "editor/title": [
         {
-          "command": "minddoc.toggleView",
-          "when": "activeCustomEditorId == 'minddoc.editor'",
+          "command": "mindctx.toggleView",
+          "when": "activeCustomEditorId == 'mindctx.editor'",
           "group": "navigation"
         }
       ],
       "explorer/context": [
         {
-          "command": "minddoc.openAs",
+          "command": "mindctx.openAs",
           "when": "resourceExtname == .md",
           "group": "navigation"
         }
       ]
     },
     "configuration": {
-      "title": "MindDoc",
+      "title": "MindCtx",
       "properties": {
-        "minddoc.defaultView": {
+        "mindctx.defaultView": {
           "type": "string",
           "enum": [
             "outline",
@@ -132,33 +132,33 @@
           "default": "outline",
           "description": "Default view when opening a file"
         },
-        "minddoc.headingDepth": {
+        "mindctx.headingDepth": {
           "type": "number",
           "minimum": 1,
           "maximum": 6,
           "default": 3,
           "description": "Maximum heading depth (deeper nodes become list items)"
         },
-        "minddoc.autoSaveDelay": {
+        "mindctx.autoSaveDelay": {
           "type": "number",
           "minimum": 100,
           "maximum": 5000,
           "default": 300,
           "description": "Auto-save debounce delay in milliseconds"
         },
-        "minddoc.outlineFontSize": {
+        "mindctx.outlineFontSize": {
           "type": "number",
           "minimum": 10,
           "maximum": 24,
           "default": 14,
           "description": "Outline view font size in pixels"
         },
-        "minddoc.showNotePreview": {
+        "mindctx.showNotePreview": {
           "type": "boolean",
           "default": true,
           "description": "Show note preview next to node titles"
         },
-        "minddoc.mindmapDirection": {
+        "mindctx.mindmapDirection": {
           "type": "string",
           "enum": [
             "side",
@@ -172,22 +172,22 @@
     },
     "keybindings": [
       {
-        "command": "minddoc.toggleView",
+        "command": "mindctx.toggleView",
         "key": "ctrl+shift+m",
         "mac": "cmd+shift+m",
-        "when": "activeCustomEditorId == 'minddoc.editor'"
+        "when": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.expandAll",
+        "command": "mindctx.expandAll",
         "key": "ctrl+shift+e",
         "mac": "cmd+shift+e",
-        "when": "activeCustomEditorId == 'minddoc.editor'"
+        "when": "activeCustomEditorId == 'mindctx.editor'"
       },
       {
-        "command": "minddoc.collapseAll",
+        "command": "mindctx.collapseAll",
         "key": "ctrl+shift+c",
         "mac": "cmd+shift+c",
-        "when": "activeCustomEditorId == 'minddoc.editor'"
+        "when": "activeCustomEditorId == 'mindctx.editor'"
       }
     ]
   },
@@ -199,7 +199,7 @@
     "publish": "vsce publish --no-dependencies"
   },
   "devDependencies": {
-    "@minddoc/core": "workspace:*",
+    "@mindctx/core": "workspace:*",
     "@preact/signals": "^1.2",
     "@types/vscode": "^1.85.0",
     "esbuild": "^0.20",

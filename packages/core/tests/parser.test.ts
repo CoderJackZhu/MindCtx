@@ -2,7 +2,7 @@ import { describe, test, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { parse } from '@minddoc/core';
+import { parse } from '@mindctx/core';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const fixture = (name: string) => readFileSync(join(__dirname, 'fixtures', name), 'utf-8');
@@ -130,7 +130,7 @@ describe('Parser', () => {
 
   test('frontmatter 正确提取', () => {
     const tree = parse(fixture('complex.mind.md'));
-    expect(tree.frontmatter['minddoc']).toBe(true);
+    expect(tree.frontmatter['mindctx']).toBe(true);
     expect(tree.frontmatter['version']).toBe(1);
     expect(tree.frontmatter['default-view']).toBe('outline');
     expect(tree.frontmatter['heading-depth']).toBe(3);
@@ -213,7 +213,7 @@ describe('Parser', () => {
     const tree = parse(fixture('simple.mind.md'));
     const h1 = tree.root.children[0];
     expect(h1.sourceRange.startLine).toBeGreaterThanOrEqual(0);
-    // simple.mind.md: lines 0:--- 1:minddoc:true 2:--- 3:(empty) 4:# 项目规划
+    // simple.mind.md: lines 0:--- 1:mindctx:true 2:--- 3:(empty) 4:# 项目规划
     expect(h1.sourceRange.startLine).toBe(4);
   });
 

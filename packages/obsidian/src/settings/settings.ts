@@ -1,6 +1,6 @@
 import { PluginSettingTab, Setting, App, Plugin } from 'obsidian';
 
-export interface MindDocSettings {
+export interface MindCtxSettings {
   defaultView: 'outline' | 'mindmap';
   defaultHeadingDepth: number;
   mindmapDirection: 'side' | 'right' | 'left';
@@ -13,7 +13,7 @@ export interface MindDocSettings {
   indentSize: number;
 }
 
-export const DEFAULT_SETTINGS: MindDocSettings = {
+export const DEFAULT_SETTINGS: MindCtxSettings = {
   defaultView: 'outline',
   defaultHeadingDepth: 3,
   mindmapDirection: 'side',
@@ -26,10 +26,10 @@ export const DEFAULT_SETTINGS: MindDocSettings = {
   indentSize: 24,
 };
 
-export class MindDocSettingTab extends PluginSettingTab {
-  plugin: Plugin & { settings: MindDocSettings; saveSettings: () => Promise<void> };
+export class MindCtxSettingTab extends PluginSettingTab {
+  plugin: Plugin & { settings: MindCtxSettings; saveSettings: () => Promise<void> };
 
-  constructor(app: App, plugin: Plugin & { settings: MindDocSettings; saveSettings: () => Promise<void> }) {
+  constructor(app: App, plugin: Plugin & { settings: MindCtxSettings; saveSettings: () => Promise<void> }) {
     super(app, plugin);
     this.plugin = plugin;
   }
@@ -41,7 +41,7 @@ export class MindDocSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('默认视图')
-      .setDesc('打开 minddoc 文件时的默认视图')
+      .setDesc('打开 mindctx 文件时的默认视图')
       .addDropdown((drop) => {
         drop.addOption('outline', '大纲');
         drop.addOption('mindmap', '思维导图');

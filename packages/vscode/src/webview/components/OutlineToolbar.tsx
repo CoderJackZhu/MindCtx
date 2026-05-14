@@ -10,16 +10,16 @@ interface OutlineToolbarProps {
 
 export function OutlineToolbar({ onExpandAll, onCollapseAll, currentView, onSwitchView }: OutlineToolbarProps) {
   return (
-    <div class="minddoc-toolbar">
+    <div class="mindctx-toolbar">
       <button
-        class="minddoc-toolbar-btn"
+        class="mindctx-toolbar-btn"
         onClick={onExpandAll}
         title="Expand all"
       >
         Expand All
       </button>
       <button
-        class="minddoc-toolbar-btn"
+        class="mindctx-toolbar-btn"
         onClick={onCollapseAll}
         title="Collapse all"
       >

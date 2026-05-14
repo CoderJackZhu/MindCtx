@@ -3,19 +3,19 @@ import { useState, useRef, useEffect } from 'preact/hooks';
 import { TFile } from 'obsidian';
 import MindElixir from 'mind-elixir';
 import type { MindElixirInstance } from 'mind-elixir';
-import { parse } from '@minddoc/core';
-import { getMindElixirDirection, treeToMindElixirData } from '@minddoc/core/bridge';
-import type { MindDocTree, MindDocNode } from '@minddoc/core';
+import { parse } from '@mindctx/core';
+import { getMindElixirDirection, treeToMindElixirData } from '@mindctx/core/bridge';
+import type { MindCtxTree, MindCtxNode } from '@mindctx/core';
 import { getObsidianTheme, applyTheme } from '../bridge/mindElixirTheme.js';
-import { MINDDOC_VIEW_TYPE } from '../constants.js';
+import { MINDCTX_VIEW_TYPE } from '../constants.js';
 import type { EmbedConfig } from './EmbedProcessor.js';
-import type MindDocPlugin from '../main.js';
+import type MindCtxPlugin from '../main.js';
 
 interface EmbedViewProps {
-  tree: MindDocTree;
+  tree: MindCtxTree;
   config: EmbedConfig;
   file: TFile;
-  plugin: MindDocPlugin;
+  plugin: MindCtxPlugin;
 }
 
 export function EmbedView({ tree, config, file, plugin }: EmbedViewProps) {
@@ -24,7 +24,7 @@ export function EmbedView({ tree, config, file, plugin }: EmbedViewProps) {
 
   const handleOpen = () => {
     const leaf = plugin.app.workspace.getLeaf(true);
-    void leaf.setViewState({ type: MINDDOC_VIEW_TYPE, state: { file: file.path } });
+    void leaf.setViewState({ type: MINDCTX_VIEW_TYPE, state: { file: file.path } });
   };
 
   const handleRefresh = () => {
@@ -35,10 +35,10 @@ export function EmbedView({ tree, config, file, plugin }: EmbedViewProps) {
   };
 
   return (
-    <div class="minddoc-embed" style={{ height: `${config.height}px` }}>
-      <div class="minddoc-embed-header">
-        <span class="minddoc-embed-title">{file.basename}</span>
-        <div class="minddoc-embed-actions">
+    <div class="mindctx-embed" style={{ height: `${config.height}px` }}>
+      <div class="mindctx-embed-header">
+        <span class="mindctx-embed-title">{file.basename}</span>
+        <div class="mindctx-embed-actions">
           {config.mode === 'switchable' && (
             <>
               <button
@@ -55,7 +55,7 @@ export function EmbedView({ tree, config, file, plugin }: EmbedViewProps) {
           <button onClick={handleRefresh} title="刷新">↻</button>
         </div>
       </div>
-      <div class="minddoc-embed-content">
+      <div class="mindctx-embed-content">
         {currentView === 'outline' ? (
           <ReadOnlyOutline tree={currentTree} maxDepth={config.maxDepth} collapsed={config.collapsed} />
         ) : (
@@ -67,7 +67,7 @@ export function EmbedView({ tree, config, file, plugin }: EmbedViewProps) {
 }
 
 interface ReadOnlyOutlineProps {
-  tree: MindDocTree;
+  tree: MindCtxTree;
   maxDepth: number;
   collapsed: boolean;
 }
@@ -76,7 +76,7 @@ function ReadOnlyOutline({ tree, maxDepth, collapsed }: ReadOnlyOutlineProps) {
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(() => {
     if (!collapsed) return new Set();
     const ids = new Set<string>();
-    function walk(node: MindDocNode) {
+    function walk(node: MindCtxNode) {
       if (node.children.length > 0) ids.add(node.id);
       node.children.forEach(walk);
     }
@@ -91,27 +91,27 @@ function ReadOnlyOutline({ tree, maxDepth, collapsed }: ReadOnlyOutlineProps) {
     setCollapsedIds(newSet);
   }
 
-  function renderNode(node: MindDocNode, depth: number): h.JSX.Element | null {
+  function renderNode(node: MindCtxNode, depth: number): h.JSX.Element | null {
     if (depth >= maxDepth) return null;
     const hasChildren = node.children.length > 0;
     const isCollapsed = collapsedIds.has(node.id);
 
     return (
       <>
-        <div class="minddoc-node" style={{ paddingLeft: `${depth * 24}px` }}>
+        <div class="mindctx-node" style={{ paddingLeft: `${depth * 24}px` }}>
           <span
-            class="minddoc-collapse-btn"
+            class="mindctx-collapse-btn"
             onClick={() => toggleCollapse(node.id)}
           >
             {hasChildren ? (isCollapsed ? '▸' : '▾') : ' '}
           </span>
           {node.checked !== null ? (
-            <input type="checkbox" class="minddoc-checkbox" checked={node.checked} disabled />
+            <input type="checkbox" class="mindctx-checkbox" checked={node.checked} disabled />
           ) : (
-            <span class="minddoc-bullet" />
+            <span class="mindctx-bullet" />
           )}
-          <span class="minddoc-title">{node.title}</span>
-          {node.note && <span class="minddoc-note-preview">{node.note.slice(0, 50)}</span>}
+          <span class="mindctx-title">{node.title}</span>
+          {node.note && <span class="mindctx-note-preview">{node.note.slice(0, 50)}</span>}
         </div>
         {!isCollapsed && node.children.map(child => renderNode(child, depth + 1))}
       </>
@@ -119,15 +119,15 @@ function ReadOnlyOutline({ tree, maxDepth, collapsed }: ReadOnlyOutlineProps) {
   }
 
   return (
-    <div class="minddoc-outline minddoc-readonly">
+    <div class="mindctx-outline mindctx-readonly">
       {tree.root.children.map(child => renderNode(child, 0))}
     </div>
   );
 }
 
 interface ReadOnlyMindMapProps {
-  tree: MindDocTree;
-  direction: MindDocPlugin['settings']['mindmapDirection'];
+  tree: MindCtxTree;
+  direction: MindCtxPlugin['settings']['mindmapDirection'];
 }
 
 function ReadOnlyMindMap({ tree, direction }: ReadOnlyMindMapProps) {
@@ -164,7 +164,7 @@ function ReadOnlyMindMap({ tree, direction }: ReadOnlyMindMapProps) {
   return (
     <div
       ref={containerRef}
-      class="minddoc-mindmap-container"
+      class="mindctx-mindmap-container"
       style={{ width: '100%', height: '100%' }}
     />
   );

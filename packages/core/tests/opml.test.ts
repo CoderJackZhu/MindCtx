@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { exportOPML, importOPML, parse } from '@minddoc/core';
-import type { MindDocNode, MindDocTree } from '@minddoc/core';
+import { exportOPML, importOPML, parse } from '@mindctx/core';
+import type { MindCtxNode, MindCtxTree } from '@mindctx/core';
 
 class TestElement {
   tagName: string;
@@ -148,10 +148,10 @@ function decodeXml(source: string): string {
     .replace(/&amp;/g, '&');
 }
 
-function makeTree(root: NodeInput): MindDocTree {
+function makeTree(root: NodeInput): MindCtxTree {
   let id = 0;
 
-  function makeNode(input: NodeInput, headingLevel: number): MindDocNode {
+  function makeNode(input: NodeInput, headingLevel: number): MindCtxNode {
     return {
       id: String(id++),
       title: input.title,
@@ -232,7 +232,7 @@ describe('exportOPML', () => {
 });
 
 describe('importOPML', () => {
-  test('parses OPML outlines into MindDoc markdown with notes', () => {
+  test('parses OPML outlines into MindCtx markdown with notes', () => {
     const markdown = importOPML(`<?xml version="1.0"?>
 <opml version="2.0">
   <head><title>Fallback</title></head>
@@ -243,7 +243,7 @@ describe('importOPML', () => {
   </body>
 </opml>`, 'fallback.mind.md');
 
-    expect(markdown).toContain('minddoc: true');
+    expect(markdown).toContain('mindctx: true');
     expect(markdown).toContain('# Root');
     expect(markdown).toContain('## Child');
     expect(markdown).toContain('Child note');

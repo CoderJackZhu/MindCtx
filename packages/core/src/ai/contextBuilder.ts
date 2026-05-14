@@ -1,9 +1,9 @@
-import type { MindDocTree, MindDocNode } from '../types.js';
+import type { MindCtxTree, MindCtxNode } from '../types.js';
 
-export function copyAsAIContext(tree: MindDocTree): string {
+export function copyAsAIContext(tree: MindCtxTree): string {
   const headingDepth = tree.headingDepth;
 
-  function nodeToMarkdown(node: MindDocNode, depth: number): string {
+  function nodeToMarkdown(node: MindCtxNode, depth: number): string {
     let output = '';
 
     if (depth === 0) {

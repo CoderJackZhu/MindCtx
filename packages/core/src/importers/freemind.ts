@@ -25,7 +25,7 @@ export function importFreeMind(xmlText: string, fileName: string): string {
     return output;
   }
 
-  let markdown = `---\nminddoc: true\ndefault-view: outline\nheading-depth: ${headingDepth}\n---\n\n`;
+  let markdown = `---\nmindctx: true\ndefault-view: outline\nheading-depth: ${headingDepth}\n---\n\n`;
   markdown += `# ${title}\n\n`;
   const children = Array.from(rootNode.children).filter(c => c.tagName === 'node');
   for (const child of children) {

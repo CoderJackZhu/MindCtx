@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { parse as parseYaml } from 'yaml';
 import type { Root, Heading, List, Paragraph, Code, Image, RootContent } from 'mdast';
-import type { MindDocNode, MindDocTree, ContentBlock, ParseOptions } from './types.js';
+import type { MindCtxNode, MindCtxTree, ContentBlock, ParseOptions } from './types.js';
 import { generateNodeId } from './hash.js';
 
 interface InlineNode {
@@ -70,9 +70,9 @@ function normalizeHeadingDepth(value: unknown, fallback: number): number {
 }
 
 /**
- * Create a blank MindDocNode with defaults.
+ * Create a blank MindCtxNode with defaults.
  */
-function createNode(overrides: Partial<MindDocNode> = {}): MindDocNode {
+function createNode(overrides: Partial<MindCtxNode> = {}): MindCtxNode {
   return {
     id: '',
     title: '',
@@ -143,14 +143,14 @@ function isBlockNode(node: RootContent): boolean {
 }
 
 /**
- * Process a list and return an array of MindDocNodes (one per list item).
+ * Process a list and return an array of MindCtxNodes (one per list item).
  */
 function processList(
   listNode: List,
   lines: string[],
   listDepth: number,
-): MindDocNode[] {
-  const nodes: MindDocNode[] = [];
+): MindCtxNode[] {
+  const nodes: MindCtxNode[] = [];
 
   for (const item of listNode.children) {
     if (item.type !== 'listItem') continue;
@@ -195,9 +195,9 @@ function processList(
 }
 
 /**
- * Parse a Markdown string into a MindDocTree.
+ * Parse a Markdown string into a MindCtxTree.
  */
-export function parse(markdown: string, options?: ParseOptions): MindDocTree {
+export function parse(markdown: string, options?: ParseOptions): MindCtxTree {
   const startTime = performance.now();
 
   const lines = markdown.split('\n');
@@ -262,10 +262,10 @@ export function parse(markdown: string, options?: ParseOptions): MindDocTree {
 
   // Step 4: Walk mdast children with a stack
   // Stack: each element tracks a node and its heading level for hierarchy
-  const stack: { node: MindDocNode; level: number }[] = [{ node: root, level: 0 }];
+  const stack: { node: MindCtxNode; level: number }[] = [{ node: root, level: 0 }];
 
   // The "current node" is the top of stack for appending notes/blocks
-  function currentNode(): MindDocNode {
+  function currentNode(): MindCtxNode {
     return stack[stack.length - 1].node;
   }
 
@@ -315,8 +315,8 @@ export function parse(markdown: string, options?: ParseOptions): MindDocTree {
 
   // Step 5: Backfill sourceRange and rawText
   // Collect all nodes (excluding root) in document order sorted by startLine
-  const allNodes: MindDocNode[] = [];
-  function collectNodes(node: MindDocNode) {
+  const allNodes: MindCtxNode[] = [];
+  function collectNodes(node: MindCtxNode) {
     for (const child of node.children) {
       allNodes.push(child);
       collectNodes(child);
@@ -403,7 +403,7 @@ export function parse(markdown: string, options?: ParseOptions): MindDocTree {
   }
 
   // Step 6: Generate node IDs
-  function assignIds(node: MindDocNode, titlePath: string[]) {
+  function assignIds(node: MindCtxNode, titlePath: string[]) {
     for (let i = 0; i < node.children.length; i++) {
       const child = node.children[i];
       const childPath = [...titlePath, child.title];
@@ -417,7 +417,7 @@ export function parse(markdown: string, options?: ParseOptions): MindDocTree {
   let nodeCount = 0;
   let maxDepth = 0;
 
-  function computeMeta(node: MindDocNode, depth: number) {
+  function computeMeta(node: MindCtxNode, depth: number) {
     nodeCount++;
     if (depth > maxDepth) maxDepth = depth;
     for (const child of node.children) {

@@ -1,4 +1,4 @@
-import type { MindDocTree, MindDocNode, PartialOperation, MindMapDirection } from '../types.js';
+import type { MindCtxTree, MindCtxNode, PartialOperation, MindMapDirection } from '../types.js';
 import MindElixir from 'mind-elixir';
 import type { NodeObj, MindElixirData, MindElixirInstance, Operation as MEOperation } from 'mind-elixir';
 
@@ -18,15 +18,15 @@ export function getMindElixirDirection(direction: MindMapDirection): number {
 }
 
 export function treeToMindElixirData(
-  tree: MindDocTree,
+  tree: MindCtxTree,
   collapsedIds: Set<string>,
   direction: MindMapDirection,
   focusNodeId?: string | null
 ): MindElixirData {
-  function findMindDocNode(node: MindDocNode, id: string): MindDocNode | null {
+  function findMindCtxNode(node: MindCtxNode, id: string): MindCtxNode | null {
     if (node.id === id) return node;
     for (const child of node.children) {
-      const found = findMindDocNode(child, id);
+      const found = findMindCtxNode(child, id);
       if (found) return found;
     }
     return null;
@@ -44,7 +44,7 @@ export function treeToMindElixirData(
     }
   }
 
-  function convert(node: MindDocNode, isTopLevel: boolean, index: number): NodeObj {
+  function convert(node: MindCtxNode, isTopLevel: boolean, index: number): NodeObj {
     const data: NodeObj = {
       id: node.id,
       topic: node.title || '(空节点)',
@@ -64,7 +64,7 @@ export function treeToMindElixirData(
     return data;
   }
 
-  const focusNode = focusNodeId ? findMindDocNode(tree.root, focusNodeId) : null;
+  const focusNode = focusNodeId ? findMindCtxNode(tree.root, focusNodeId) : null;
   if (focusNode) {
     return {
       direction: getMindElixirDirection(direction),
@@ -100,11 +100,11 @@ export function syncMindElixirAddChildButtons(
     if (!topic.nodeObj && topic.parentElement?.tagName === 'ME-ROOT') {
       topic.nodeObj = instance.nodeData;
     }
-    if (!topic.nodeObj || topic.querySelector(':scope > .minddoc-mindmap-add-child')) return;
+    if (!topic.nodeObj || topic.querySelector(':scope > .mindctx-mindmap-add-child')) return;
 
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'minddoc-mindmap-add-child';
+    button.className = 'mindctx-mindmap-add-child';
     button.textContent = '+';
     button.setAttribute('aria-label', '添加子节点');
     button.setAttribute('title', '添加子节点');

@@ -1,4 +1,4 @@
-import type { MindDocTree, MindDocNode } from '../types.js';
+import type { MindCtxTree, MindCtxNode } from '../types.js';
 
 interface SimplifiedNode {
   title: string;
@@ -8,8 +8,8 @@ interface SimplifiedNode {
   children?: SimplifiedNode[];
 }
 
-export function exportJSON(tree: MindDocTree): string {
-  function simplify(node: MindDocNode): SimplifiedNode {
+export function exportJSON(tree: MindCtxTree): string {
+  function simplify(node: MindCtxNode): SimplifiedNode {
     const obj: SimplifiedNode = { title: node.title };
     if (node.note) obj.note = node.note;
     if (node.tags.length > 0) obj.tags = node.tags;

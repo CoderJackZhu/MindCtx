@@ -1,3 +1,3 @@
 ---
-minddoc: true
+mindctx: true
 ---

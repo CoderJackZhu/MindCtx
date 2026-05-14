@@ -2,19 +2,19 @@ import { h } from 'preact';
 import { render } from 'preact';
 import { signal } from '@preact/signals';
 import { ItemView, WorkspaceLeaf, TFile } from 'obsidian';
-import { parse, serialize, applyOperation, UndoManager, debounce } from '@minddoc/core';
-import type { MindDocTree, MindDocNode, PartialOperation } from '@minddoc/core';
-import { MINDDOC_VIEW_TYPE } from '../constants.js';
-import { MindDocRoot } from './MindDocRoot.js';
-import type MindDocPlugin from '../main.js';
+import { parse, serialize, applyOperation, UndoManager, debounce } from '@mindctx/core';
+import type { MindCtxTree, MindCtxNode, PartialOperation } from '@mindctx/core';
+import { MINDCTX_VIEW_TYPE } from '../constants.js';
+import { MindCtxRoot } from './MindCtxRoot.js';
+import type MindCtxPlugin from '../main.js';
 
-export class MindDocView extends ItemView {
-  plugin: MindDocPlugin;
+export class MindCtxView extends ItemView {
+  plugin: MindCtxPlugin;
   file: TFile | null = null;
-  tree: MindDocTree | null = null;
+  tree: MindCtxTree | null = null;
   undoManager = new UndoManager();
 
-  treeSignal = signal<MindDocTree | null>(null);
+  treeSignal = signal<MindCtxTree | null>(null);
   collapsedIds = signal<Set<string>>(new Set());
   selectedNodeId = signal<string | null>(null);
   editingNodeId = signal<string | null>(null);
@@ -23,13 +23,13 @@ export class MindDocView extends ItemView {
   private preactMounted = false;
   private debouncedWrite: ReturnType<typeof debounce> | null = null;
 
-  constructor(leaf: WorkspaceLeaf, plugin: MindDocPlugin) {
+  constructor(leaf: WorkspaceLeaf, plugin: MindCtxPlugin) {
     super(leaf);
     this.plugin = plugin;
   }
 
-  getViewType() { return MINDDOC_VIEW_TYPE; }
-  getDisplayText() { return this.file?.basename ?? 'MindDoc'; }
+  getViewType() { return MINDCTX_VIEW_TYPE; }
+  getDisplayText() { return this.file?.basename ?? 'MindCtx'; }
   getIcon() { return 'list-tree'; }
 
   getState() {
@@ -132,7 +132,7 @@ export class MindDocView extends ItemView {
 
     if (!this.preactMounted) {
       render(
-        h(MindDocRoot, {
+        h(MindCtxRoot, {
           treeSignal: this.treeSignal,
           collapsedIds: this.collapsedIds,
           selectedNodeId: this.selectedNodeId,
@@ -147,7 +147,7 @@ export class MindDocView extends ItemView {
           onCollapseAll: () => {
             if (!this.tree) return;
             const ids = new Set<string>();
-            function walk(node: MindDocNode) {
+            function walk(node: MindCtxNode) {
               if (node.children.length > 0) ids.add(node.id);
               node.children.forEach(walk);
             }

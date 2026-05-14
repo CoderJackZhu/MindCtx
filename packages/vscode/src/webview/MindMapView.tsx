@@ -8,9 +8,9 @@ import {
   treeToMindElixirData,
   setupMindElixirEvents,
   syncMindElixirAddChildButtons,
-} from '@minddoc/core/bridge';
-import { findNode } from '@minddoc/core';
-import type { MindDocTree, PartialOperation, MindMapDirection } from '@minddoc/core';
+} from '@mindctx/core/bridge';
+import { findNode } from '@mindctx/core';
+import type { MindCtxTree, PartialOperation, MindMapDirection } from '@mindctx/core';
 import type { WebviewBridge } from './WebviewBridge.js';
 import { getVSCodeTheme, applyTheme } from './bridge/mindElixirTheme.js';
 
@@ -47,14 +47,14 @@ function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
 
   return (
     <div
-      class="minddoc-mindmap-zoom-controls"
+      class="mindctx-mindmap-zoom-controls"
       onMouseLeave={() => setIsOpen(false)}
     >
       {isOpen && (
-        <div class="minddoc-mindmap-zoom-panel">
+        <div class="mindctx-mindmap-zoom-panel">
           <input
             type="range"
-            class="minddoc-mindmap-zoom-slider"
+            class="mindctx-mindmap-zoom-slider"
             min="10"
             max="400"
             value={String(percentage)}
@@ -66,13 +66,13 @@ function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
       )}
       <button
         type="button"
-        class="minddoc-mindmap-center-button"
+        class="mindctx-mindmap-center-button"
         onClick={onCenter}
         title="Center on root"
         aria-label="Center on root"
       >
         <svg
-          class="minddoc-mindmap-center-icon"
+          class="mindctx-mindmap-center-icon"
           viewBox="0 0 24 24"
           aria-hidden="true"
           focusable="false"
@@ -86,7 +86,7 @@ function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
       </button>
       <button
         type="button"
-        class="minddoc-mindmap-zoom-value"
+        class="mindctx-mindmap-zoom-value"
         onClick={onCenter}
         onMouseEnter={() => setIsOpen(true)}
         aria-expanded={isOpen}
@@ -289,13 +289,13 @@ export function MindMapView({ bridge, collapsedIds }: MindMapViewProps) {
   const focusedNode = tree && focusNodeId ? findNode(tree.root, focusNodeId) : null;
 
   return (
-    <div class="minddoc-mindmap-shell">
+    <div class="mindctx-mindmap-shell">
       {focusedNode && (
-        <div class="minddoc-mindmap-focusbar">
-          <span class="minddoc-mindmap-focusbar-label">Focused: {focusedNode.title || '(empty)'}</span>
+        <div class="mindctx-mindmap-focusbar">
+          <span class="mindctx-mindmap-focusbar-label">Focused: {focusedNode.title || '(empty)'}</span>
           <button
             type="button"
-            class="minddoc-mindmap-focusbar-button"
+            class="mindctx-mindmap-focusbar-button"
             onClick={() => setFocusNodeId(null)}
           >
             Exit Focus
@@ -309,7 +309,7 @@ export function MindMapView({ bridge, collapsedIds }: MindMapViewProps) {
       />
       <div
         ref={containerRef}
-        class="minddoc-mindmap-container"
+        class="mindctx-mindmap-container"
         style={{ width: '100%', height: '100%' }}
         tabIndex={0}
         onKeyDown={handleKeyDown}

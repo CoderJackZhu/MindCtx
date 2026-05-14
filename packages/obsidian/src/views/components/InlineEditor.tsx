@@ -18,7 +18,7 @@ export function InlineEditor({ value, onConfirm, onCancel }: InlineEditorProps) 
   return (
     <input
       ref={ref}
-      class="minddoc-inline-editor"
+      class="mindctx-inline-editor"
       value={value}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {

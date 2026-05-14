@@ -1,9 +1,9 @@
 import { h } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
-import type { MindDocNode } from '@minddoc/core';
+import type { MindCtxNode } from '@mindctx/core';
 
 interface DetailPanelProps {
-  node: MindDocNode | null;
+  node: MindCtxNode | null;
   onUpdateNote: (nodeId: string, newNote: string) => void;
 }
 
@@ -17,8 +17,8 @@ export function DetailPanel({ node, onUpdateNote }: DetailPanelProps) {
   }, [node.id, node.note]);
 
   return (
-    <div class="minddoc-detail-panel">
-      <div class="minddoc-detail-note">
+    <div class="mindctx-detail-panel">
+      <div class="mindctx-detail-note">
         <textarea
           value={localNote}
           placeholder="Add note..."
@@ -31,9 +31,9 @@ export function DetailPanel({ node, onUpdateNote }: DetailPanelProps) {
         />
       </div>
       {node.blocks.length > 0 && (
-        <div class="minddoc-detail-blocks">
+        <div class="mindctx-detail-blocks">
           {node.blocks.map((block, i) => (
-            <pre key={i} class={`minddoc-block minddoc-block-${block.type}`}>
+            <pre key={i} class={`mindctx-block mindctx-block-${block.type}`}>
               <code>{block.raw}</code>
             </pre>
           ))}

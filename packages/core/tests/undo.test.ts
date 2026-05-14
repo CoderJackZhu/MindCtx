@@ -1,9 +1,9 @@
 import { describe, test, expect, beforeEach } from 'vitest';
-import { UndoManager, invertOperation, parse } from '@minddoc/core';
-import type { Operation, MindDocNode } from '@minddoc/core';
+import { UndoManager, invertOperation, parse } from '@mindctx/core';
+import type { Operation, MindCtxNode } from '@mindctx/core';
 
 const simpleMd = `---
-minddoc: true
+mindctx: true
 ---
 
 # Root
@@ -23,7 +23,7 @@ function makeTree(): ReturnType<typeof parse> {
   return parse(simpleMd);
 }
 
-function makeNode(overrides: Partial<MindDocNode> = {}): MindDocNode {
+function makeNode(overrides: Partial<MindCtxNode> = {}): MindCtxNode {
   return {
     id: 'new-node',
     title: 'New Node',
@@ -47,10 +47,10 @@ function makeNode(overrides: Partial<MindDocNode> = {}): MindDocNode {
 describe('UndoManager', () => {
   let tree: ReturnType<typeof parse>;
   let undoManager: UndoManager;
-  let childA: MindDocNode;
-  let childB: MindDocNode;
-  let item1: MindDocNode;
-  let item2: MindDocNode;
+  let childA: MindCtxNode;
+  let childB: MindCtxNode;
+  let item1: MindCtxNode;
+  let item2: MindCtxNode;
 
   beforeEach(() => {
     tree = makeTree();

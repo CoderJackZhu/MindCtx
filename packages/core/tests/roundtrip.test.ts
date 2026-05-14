@@ -2,7 +2,7 @@ import { describe, test, expect } from 'vitest';
 import { readdirSync, readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { parse, serialize } from '@minddoc/core';
+import { parse, serialize } from '@mindctx/core';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const fixturesDir = join(__dirname, 'fixtures');

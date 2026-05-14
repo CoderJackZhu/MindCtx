@@ -1,10 +1,10 @@
-.minddoc-container {
+.mindctx-container {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.minddoc-toolbar {
+.mindctx-toolbar {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -12,7 +12,7 @@
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.minddoc-toolbar-btn {
+.mindctx-toolbar-btn {
   padding: 4px 8px;
   border-radius: 4px;
   border: none;
@@ -22,19 +22,19 @@
   font-size: 12px;
 }
 
-.minddoc-toolbar-btn:hover {
+.mindctx-toolbar-btn:hover {
   background: var(--interactive-hover);
 }
 
-.minddoc-outline {
+.mindctx-outline {
   font-family: var(--font-text);
-  font-size: var(--minddoc-font-size, 14px);
+  font-size: var(--mindctx-font-size, 14px);
   padding: 8px;
   flex: 1;
   overflow-y: auto;
 }
 
-.minddoc-node {
+.mindctx-node {
   display: flex;
   align-items: center;
   height: 32px;
@@ -45,15 +45,15 @@
   position: relative;
 }
 
-.minddoc-node:hover {
+.mindctx-node:hover {
   background: var(--background-modifier-hover);
 }
 
-.minddoc-node.is-selected {
+.mindctx-node.is-selected {
   background: var(--background-modifier-active-hover);
 }
 
-.minddoc-collapse-btn {
+.mindctx-collapse-btn {
   width: 20px;
   height: 20px;
   display: flex;
@@ -67,11 +67,11 @@
   padding: 0;
 }
 
-.minddoc-collapse-btn:hover {
+.mindctx-collapse-btn:hover {
   color: var(--text-normal);
 }
 
-.minddoc-drag-handle {
+.mindctx-drag-handle {
   width: 16px;
   height: 16px;
   opacity: 0;
@@ -84,11 +84,11 @@
   font-size: 10px;
 }
 
-.minddoc-node:hover .minddoc-drag-handle {
+.mindctx-node:hover .mindctx-drag-handle {
   opacity: 1;
 }
 
-.minddoc-bullet {
+.mindctx-bullet {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -97,19 +97,19 @@
   flex-shrink: 0;
 }
 
-.minddoc-checkbox {
+.mindctx-checkbox {
   margin: 0 4px;
   flex-shrink: 0;
 }
 
-.minddoc-title {
+.mindctx-title {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.minddoc-note-preview {
+.mindctx-note-preview {
   color: var(--text-faint);
   font-size: 12px;
   margin-left: 8px;
@@ -119,7 +119,7 @@
   max-width: 200px;
 }
 
-.minddoc-inline-editor {
+.mindctx-inline-editor {
   background: transparent;
   border: 1px solid var(--interactive-accent);
   border-radius: 2px;
@@ -130,7 +130,7 @@
   outline: none;
 }
 
-.minddoc-drop-line {
+.mindctx-drop-line {
   position: absolute;
   left: 0;
   right: 0;
@@ -139,20 +139,20 @@
   pointer-events: none;
 }
 
-.minddoc-drop-line.before {
+.mindctx-drop-line.before {
   top: 0;
 }
 
-.minddoc-drop-line.after {
+.mindctx-drop-line.after {
   bottom: 0;
 }
 
-.minddoc-node.drop-highlight {
+.mindctx-node.drop-highlight {
   background: var(--background-modifier-active-hover) !important;
 }
 
 /* View Switcher */
-.minddoc-view-switcher {
+.mindctx-view-switcher {
   display: flex;
   gap: 2px;
   padding: 2px;
@@ -160,7 +160,7 @@
   border-radius: 6px;
 }
 
-.minddoc-switch-btn {
+.mindctx-switch-btn {
   padding: 4px 12px;
   border: none;
   border-radius: 4px;
@@ -170,14 +170,14 @@
   font-size: 12px;
 }
 
-.minddoc-switch-btn.is-active {
+.mindctx-switch-btn.is-active {
   background: var(--background-primary);
   color: var(--text-normal);
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 /* Mind Map */
-.minddoc-mindmap-shell {
+.mindctx-mindmap-shell {
   position: relative;
   flex: 1;
   min-height: 0;
@@ -186,7 +186,7 @@
   background: var(--background-primary);
 }
 
-.minddoc-mindmap-focusbar {
+.mindctx-mindmap-focusbar {
   position: absolute;
   top: 8px;
   left: 8px;
@@ -202,7 +202,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.minddoc-mindmap-focusbar-label {
+.mindctx-mindmap-focusbar-label {
   min-width: 0;
   max-width: 320px;
   overflow: hidden;
@@ -212,7 +212,7 @@
   white-space: nowrap;
 }
 
-.minddoc-mindmap-focusbar-button {
+.mindctx-mindmap-focusbar-button {
   flex: 0 0 auto;
   padding: 2px 8px;
   border: 1px solid var(--background-modifier-border);
@@ -223,11 +223,11 @@
   cursor: pointer;
 }
 
-.minddoc-mindmap-focusbar-button:hover {
+.mindctx-mindmap-focusbar-button:hover {
   background: var(--interactive-hover);
 }
 
-.minddoc-mindmap-zoom-controls {
+.mindctx-mindmap-zoom-controls {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -238,7 +238,7 @@
   gap: 8px;
 }
 
-.minddoc-mindmap-zoom-panel {
+.mindctx-mindmap-zoom-panel {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -250,7 +250,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.minddoc-mindmap-zoom-slider {
+.mindctx-mindmap-zoom-slider {
   width: 120px;
   height: 28px;
   margin: 0;
@@ -258,8 +258,8 @@
   cursor: pointer;
 }
 
-.minddoc-mindmap-zoom-value,
-.minddoc-mindmap-center-button {
+.mindctx-mindmap-zoom-value,
+.mindctx-mindmap-center-button {
   border: 1px solid var(--background-modifier-border);
   border-radius: 4px;
   background: var(--background-primary);
@@ -268,14 +268,14 @@
   cursor: pointer;
 }
 
-.minddoc-mindmap-zoom-value {
+.mindctx-mindmap-zoom-value {
   min-width: 48px;
   height: 28px;
   padding: 0 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.minddoc-mindmap-center-button {
+.mindctx-mindmap-center-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -287,7 +287,7 @@
   box-shadow: none;
 }
 
-.minddoc-mindmap-center-icon {
+.mindctx-mindmap-center-icon {
   width: 16px;
   height: 16px;
   fill: none;
@@ -297,48 +297,48 @@
   stroke-linejoin: round;
 }
 
-.minddoc-mindmap-center-icon circle {
+.mindctx-mindmap-center-icon circle {
   fill: currentColor;
   stroke: none;
 }
 
-.minddoc-mindmap-zoom-value:hover,
-.minddoc-mindmap-center-button:hover {
+.mindctx-mindmap-zoom-value:hover,
+.mindctx-mindmap-center-button:hover {
   background: var(--interactive-hover);
 }
 
-.minddoc-mindmap-container {
+.mindctx-mindmap-container {
   flex: 1;
   min-height: 0;
   background: var(--background-primary);
   overflow: hidden;
 }
 
-.minddoc-mindmap-container .context-menu #cm-summary,
-.minddoc-mindmap-container .map-container .context-menu #cm-summary,
+.mindctx-mindmap-container .context-menu #cm-summary,
+.mindctx-mindmap-container .map-container .context-menu #cm-summary,
 #cm-summary {
   display: none !important;
 }
 
-.minddoc-mindmap-container me-root {
+.mindctx-mindmap-container me-root {
   font-size: 18px;
   font-weight: 600;
   padding: 8px 16px;
   border-radius: 8px;
 }
 
-.minddoc-mindmap-container me-wrapper .node-content {
+.mindctx-mindmap-container me-wrapper .node-content {
   font-family: var(--font-text);
   font-size: 14px;
   padding: 4px 10px;
   border-radius: 4px;
 }
 
-.minddoc-mindmap-container me-tpc {
+.mindctx-mindmap-container me-tpc {
   position: relative;
 }
 
-.minddoc-mindmap-container me-tpc .minddoc-mindmap-add-child {
+.mindctx-mindmap-container me-tpc .mindctx-mindmap-add-child {
   position: absolute;
   top: 50%;
   right: -22px;
@@ -365,23 +365,23 @@
   z-index: 10;
 }
 
-.minddoc-mindmap-container .lhs me-tpc .minddoc-mindmap-add-child {
+.mindctx-mindmap-container .lhs me-tpc .mindctx-mindmap-add-child {
   right: auto;
   left: -22px;
 }
 
-.minddoc-mindmap-container me-tpc:hover .minddoc-mindmap-add-child,
-.minddoc-mindmap-container me-tpc.selected .minddoc-mindmap-add-child {
+.mindctx-mindmap-container me-tpc:hover .mindctx-mindmap-add-child,
+.mindctx-mindmap-container me-tpc.selected .mindctx-mindmap-add-child {
   opacity: 1;
 }
 
-.minddoc-mindmap-container me-tpc .minddoc-mindmap-add-child:hover {
+.mindctx-mindmap-container me-tpc .mindctx-mindmap-add-child:hover {
   background: var(--interactive-accent);
   border-color: var(--interactive-accent);
   color: var(--text-on-accent);
 }
 
-.minddoc-loading {
+.mindctx-loading {
   flex: 1;
   display: flex;
   align-items: center;
@@ -390,7 +390,7 @@
 }
 
 /* Embed Block */
-.minddoc-embed {
+.mindctx-embed {
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
   overflow: hidden;
@@ -398,7 +398,7 @@
   flex-direction: column;
 }
 
-.minddoc-embed-header {
+.mindctx-embed-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -407,18 +407,18 @@
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.minddoc-embed-title {
+.mindctx-embed-title {
   font-weight: 500;
   font-size: 13px;
   color: var(--text-normal);
 }
 
-.minddoc-embed-actions {
+.mindctx-embed-actions {
   display: flex;
   gap: 4px;
 }
 
-.minddoc-embed-actions button {
+.mindctx-embed-actions button {
   padding: 2px 8px;
   font-size: 12px;
   border: none;
@@ -428,23 +428,23 @@
   cursor: pointer;
 }
 
-.minddoc-embed-actions button.is-active {
+.mindctx-embed-actions button.is-active {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
 }
 
-.minddoc-embed-content {
+.mindctx-embed-content {
   flex: 1;
   overflow: auto;
 }
 
-.minddoc-embed-error {
+.mindctx-embed-error {
   padding: 12px;
   color: var(--text-error);
   font-size: 13px;
 }
 
-.minddoc-embed-error button {
+.mindctx-embed-error button {
   margin-left: 8px;
   padding: 2px 8px;
   font-size: 12px;
@@ -455,16 +455,16 @@
   cursor: pointer;
 }
 
-.minddoc-readonly .minddoc-node {
+.mindctx-readonly .mindctx-node {
   cursor: default;
 }
 
-.minddoc-readonly .minddoc-node:hover {
+.mindctx-readonly .mindctx-node:hover {
   background: transparent;
 }
 
 /* Main area (flex child between toolbar and detail panel) */
-.minddoc-main-area {
+.mindctx-main-area {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -472,7 +472,7 @@
 }
 
 /* Search Bar */
-.minddoc-search-bar {
+.mindctx-search-bar {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -481,7 +481,7 @@
   background: var(--background-secondary);
 }
 
-.minddoc-search-input {
+.mindctx-search-input {
   flex: 1;
   border: 1px solid var(--background-modifier-border);
   border-radius: 4px;
@@ -492,17 +492,17 @@
   outline: none;
 }
 
-.minddoc-search-input:focus {
+.mindctx-search-input:focus {
   border-color: var(--interactive-accent);
 }
 
-.minddoc-search-count {
+.mindctx-search-count {
   font-size: 12px;
   color: var(--text-muted);
   white-space: nowrap;
 }
 
-.minddoc-search-close {
+.mindctx-search-close {
   border: none;
   background: none;
   color: var(--text-muted);
@@ -511,20 +511,20 @@
   padding: 2px 4px;
 }
 
-.minddoc-highlight {
+.mindctx-highlight {
   background: var(--text-highlight-bg, rgba(255, 208, 0, 0.4));
   border-radius: 2px;
 }
 
 /* Detail Panel */
-.minddoc-detail-panel {
+.mindctx-detail-panel {
   border-top: 1px solid var(--background-modifier-border);
   padding: 12px;
   max-height: 200px;
   overflow-y: auto;
 }
 
-.minddoc-detail-note textarea {
+.mindctx-detail-note textarea {
   width: 100%;
   min-height: 60px;
   border: none;
@@ -537,7 +537,7 @@
   color: var(--text-normal);
 }
 
-.minddoc-detail-blocks pre {
+.mindctx-detail-blocks pre {
   background: var(--background-secondary);
   padding: 8px;
   border-radius: 4px;

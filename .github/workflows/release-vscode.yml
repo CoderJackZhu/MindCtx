@@ -22,7 +22,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter vscode-minddoc build
+      - run: pnpm --filter vscode-mindctx build
 
       - name: Get version from tag
         id: tag

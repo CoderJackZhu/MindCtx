@@ -4,15 +4,15 @@
 
 Phase 2 已完成，以下能力可用：
 
-- 插件框架已搭建，`MindDocView` 可以显示内容
+- 插件框架已搭建，`MindCtxView` 可以显示内容
 - 大纲视图完整可用
-- `MindDocTree` AST 可正确解析和序列化
+- `MindCtxTree` AST 可正确解析和序列化
 - `applyOperation` 和 `UndoManager` 可用
 - `scheduleWrite` 文件回写管线可用
 
 ## 目标
 
-1. 集成 Mind Elixir 脑图库，在 MindDoc 视图中显示思维导图
+1. 集成 Mind Elixir 脑图库，在 MindCtx 视图中显示思维导图
 2. 实现大纲 ↔ 脑图视图一键切换
 3. 脑图中的编辑操作（拖拽、编辑、增删）同步回写 Markdown
 4. 视觉风格适配 Obsidian 主题
@@ -46,7 +46,7 @@ src/
 
 ### 职责
 
-1. `MindDocTree` → Mind Elixir 数据格式（用于渲染）
+1. `MindCtxTree` → Mind Elixir 数据格式（用于渲染）
 2. Mind Elixir 事件 → `Operation`（用于回写）
 
 ### Mind Elixir 数据格式
@@ -74,10 +74,10 @@ interface MindElixirData {
 ```typescript
 // src/bridge/mindElixirBridge.ts
 
-import { MindDocTree, MindDocNode } from '../core/types';
+import { MindCtxTree, MindCtxNode } from '../core/types';
 
-export function treeToMindElixirData(tree: MindDocTree, collapsedIds: Set<string>): MindElixirData {
-  function convert(node: MindDocNode, index: number, isTopLevel: boolean): MindElixirNodeData {
+export function treeToMindElixirData(tree: MindCtxTree, collapsedIds: Set<string>): MindElixirData {
+  function convert(node: MindCtxNode, index: number, isTopLevel: boolean): MindElixirNodeData {
     const data: MindElixirNodeData = {
       id: node.id,
       topic: node.title || '(空节点)',
@@ -177,7 +177,7 @@ export function setupMindElixirEvents(
   instance.bus.addListener('removeNode', onRemoveNode);
   handlers.push(() => instance.bus.removeListener('removeNode', onRemoveNode));
 
-  // 折叠/展开同步到 MindDocView
+  // 折叠/展开同步到 MindCtxView
   const onExpandNode = (info: { node: any }) => {
     const newCollapsed = new Set(getCollapsedIds());
     newCollapsed.delete(info.node.id);
@@ -253,7 +253,7 @@ import { treeToMindElixirData, setupMindElixirEvents } from '../bridge/mindElixi
 import { getObsidianTheme, applyTheme } from '../bridge/mindElixirTheme';
 
 interface MindMapViewProps {
-  tree: MindDocTree | null;          // 由父组件从 signal 解包后传入普通值
+  tree: MindCtxTree | null;          // 由父组件从 signal 解包后传入普通值
   collapsedIds: Set<string>;         // 同上，从 signal 解包
   onOperation: (op: PartialOperation) => void;
   onUndo: () => void;
@@ -262,7 +262,7 @@ interface MindMapViewProps {
 }
 ```
 
-**说明**：MindMapView 接收普通值（非 Signal），由父组件 `MindDocRoot` 从 signals 中取值后传入。这是因为 Mind Elixir 是命令式 API，需要通过 `useEffect` 的依赖数组感知变化来触发 `refresh()`，signals 的自动订阅机制在此场景不适用。
+**说明**：MindMapView 接收普通值（非 Signal），由父组件 `MindCtxRoot` 从 signals 中取值后传入。这是因为 Mind Elixir 是命令式 API，需要通过 `useEffect` 的依赖数组感知变化来触发 `refresh()`，signals 的自动订阅机制在此场景不适用。
 
 ```typescript
 
@@ -310,7 +310,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       contextMenu: false,
       toolBar: false,
       nodeMenu: false,
-      keypress: false,          // 禁用内置快捷键，统一由 MindDoc 处理以保证操作经过 UndoManager
+      keypress: false,          // 禁用内置快捷键，统一由 MindCtx 处理以保证操作经过 UndoManager
       locale: 'zh_CN',
     });
 
@@ -404,7 +404,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
   return (
     <div
       ref={containerRef}
-      class="minddoc-mindmap-container"
+      class="mindctx-mindmap-container"
       style={{ width: '100%', height: '100%' }}
       tabIndex={0}
       onKeyDown={handleKeyDown}
@@ -439,16 +439,16 @@ interface ViewSwitcherProps {
 
 export function ViewSwitcher({ currentView, onSwitch }: ViewSwitcherProps) {
   return (
-    <div class="minddoc-view-switcher">
+    <div class="mindctx-view-switcher">
       <button
-        class={`minddoc-switch-btn ${currentView === 'outline' ? 'is-active' : ''}`}
+        class={`mindctx-switch-btn ${currentView === 'outline' ? 'is-active' : ''}`}
         onClick={() => onSwitch('outline')}
         title="大纲视图"
       >
         大纲
       </button>
       <button
-        class={`minddoc-switch-btn ${currentView === 'mindmap' ? 'is-active' : ''}`}
+        class={`mindctx-switch-btn ${currentView === 'mindmap' ? 'is-active' : ''}`}
         onClick={() => onSwitch('mindmap')}
         title="思维导图"
       >
@@ -462,7 +462,7 @@ export function ViewSwitcher({ currentView, onSwitch }: ViewSwitcherProps) {
 ### 样式
 
 ```css
-.minddoc-view-switcher {
+.mindctx-view-switcher {
   display: flex;
   gap: 2px;
   padding: 2px;
@@ -470,7 +470,7 @@ export function ViewSwitcher({ currentView, onSwitch }: ViewSwitcherProps) {
   border-radius: 6px;
 }
 
-.minddoc-switch-btn {
+.mindctx-switch-btn {
   padding: 4px 12px;
   border: none;
   border-radius: 4px;
@@ -480,7 +480,7 @@ export function ViewSwitcher({ currentView, onSwitch }: ViewSwitcherProps) {
   font-size: 12px;
 }
 
-.minddoc-switch-btn.is-active {
+.mindctx-switch-btn.is-active {
   background: var(--background-primary);
   color: var(--text-normal);
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
@@ -489,14 +489,14 @@ export function ViewSwitcher({ currentView, onSwitch }: ViewSwitcherProps) {
 
 ---
 
-## 模块五：MindDocView.ts 更新
+## 模块五：MindCtxView.ts 更新
 
 ### 新增视图切换逻辑
 
-Phase 2 建立了 signals 驱动的渲染模式（Preact 只挂载一次，后续通过 signals 驱动更新），且已使用 `MindDocRoot` 包装组件。Phase 3 沿用此模式：新增一个 `currentViewSignal` 控制视图切换，在 `MindDocRoot` 中通过 signal 值条件渲染大纲或脑图。
+Phase 2 建立了 signals 驱动的渲染模式（Preact 只挂载一次，后续通过 signals 驱动更新），且已使用 `MindCtxRoot` 包装组件。Phase 3 沿用此模式：新增一个 `currentViewSignal` 控制视图切换，在 `MindCtxRoot` 中通过 signal 值条件渲染大纲或脑图。
 
 ```typescript
-// 在 MindDocView 类中添加：
+// 在 MindCtxView 类中添加：
 
 // 新增 signal（与 Phase 2 的其他 signals 同级）
 currentViewSignal = signal<'outline' | 'mindmap'>('outline');
@@ -505,12 +505,12 @@ switchView(view: 'outline' | 'mindmap') {
   this.currentViewSignal.value = view;
 }
 
-// renderView() 保持 Phase 2 的模式不变（已使用 MindDocRoot），仅需为 MindDocRoot 增加新 props
+// renderView() 保持 Phase 2 的模式不变（已使用 MindCtxRoot），仅需为 MindCtxRoot 增加新 props
 renderView() {
   const container = this.containerEl.children[1];
   if (!this.preactMounted) {
     render(
-      <MindDocRoot
+      <MindCtxRoot
         treeSignal={this.treeSignal}
         collapsedIds={this.collapsedIds}
         selectedNodeId={this.selectedNodeId}
@@ -525,7 +525,7 @@ renderView() {
         onCollapseAll={() => {
           if (!this.tree) return;
           const ids = new Set<string>();
-          function walk(node: MindDocNode) {
+          function walk(node: MindCtxNode) {
             if (node.children.length > 0) ids.add(node.id);
             node.children.forEach(walk);
           }
@@ -540,18 +540,18 @@ renderView() {
 }
 ```
 
-### MindDocRoot 组件（Phase 3 替换 Phase 2 版本）
+### MindCtxRoot 组件（Phase 3 替换 Phase 2 版本）
 
-Phase 3 扩展 `MindDocRoot`，在 Phase 2 的 `OutlineToolbar + OutlineView` 基础上新增视图切换和脑图视图。同时需要修改 `OutlineToolbar` 组件，添加 `ViewSwitcher` 渲染位置（传入 `currentView` 和 `onSwitchView` props）。
+Phase 3 扩展 `MindCtxRoot`，在 Phase 2 的 `OutlineToolbar + OutlineView` 基础上新增视图切换和脑图视图。同时需要修改 `OutlineToolbar` 组件，添加 `ViewSwitcher` 渲染位置（传入 `currentView` 和 `onSwitchView` props）。
 
 ```typescript
 // 根组件：根据 currentView signal 条件渲染
-function MindDocRoot(props) {
+function MindCtxRoot(props) {
   const tree = props.treeSignal.value;
   const view = props.currentView.value;
 
   return (
-    <div class="minddoc-container">
+    <div class="mindctx-container">
       <OutlineToolbar
         currentView={view}
         onSwitchView={props.onSwitchView}
@@ -570,7 +570,7 @@ function MindDocRoot(props) {
           onCollapsedChange={props.onCollapsedChange}
         />
       ) : (
-        <div class="minddoc-loading">加载中...</div>
+        <div class="mindctx-loading">加载中...</div>
       )}
     </div>
   );
@@ -601,9 +601,9 @@ interface OutlineToolbarProps {
 
 export function OutlineToolbar({ onExpandAll, onCollapseAll, currentView, onSwitchView }: OutlineToolbarProps) {
   return (
-    <div class="minddoc-toolbar">
-      <button class="minddoc-toolbar-btn" onClick={onExpandAll} title="展开全部">展开全部</button>
-      <button class="minddoc-toolbar-btn" onClick={onCollapseAll} title="折叠全部">折叠全部</button>
+    <div class="mindctx-toolbar">
+      <button class="mindctx-toolbar-btn" onClick={onExpandAll} title="展开全部">展开全部</button>
+      <button class="mindctx-toolbar-btn" onClick={onCollapseAll} title="折叠全部">折叠全部</button>
       <div style={{ flex: 1 }} />
       {currentView && onSwitchView && (
         <ViewSwitcher currentView={currentView} onSwitch={onSwitchView} />
@@ -617,7 +617,7 @@ export function OutlineToolbar({ onExpandAll, onCollapseAll, currentView, onSwit
 
 ### 视图切换时的数据一致性
 
-切换视图时不需要重新解析文件，因为两个视图共享同一个 `MindDocTree` AST（通过 `treeSignal`）。切换只是 signal 值变化触发条件渲染。
+切换视图时不需要重新解析文件，因为两个视图共享同一个 `MindCtxTree` AST（通过 `treeSignal`）。切换只是 signal 值变化触发条件渲染。
 
 ### 注册 toggle-view 命令
 
@@ -628,7 +628,7 @@ this.addCommand({
   id: 'toggle-view',
   name: '切换视图（大纲 ↔ 脑图）',
   checkCallback: (checking) => {
-    const view = this.getActiveMindDocView();
+    const view = this.getActiveMindCtxView();
     if (!view) return false;
     if (checking) return true;
     view.switchView(view.currentViewSignal.value === 'outline' ? 'mindmap' : 'outline');
@@ -644,35 +644,35 @@ this.addCommand({
 
 ```css
 /* 脑图容器 */
-.minddoc-mindmap-container {
+.mindctx-mindmap-container {
   background: var(--background-primary);
 }
 
 /* 覆盖 Mind Elixir 默认样式 */
-.minddoc-mindmap-container .mind-elixir-node {
+.mindctx-mindmap-container .mind-elixir-node {
   font-family: var(--font-text);
   font-size: 14px;
 }
 
-.minddoc-mindmap-container .mind-elixir-root {
+.mindctx-mindmap-container .mind-elixir-root {
   font-size: 18px;
   font-weight: 600;
   padding: 8px 16px;
   border-radius: 8px;
 }
 
-.minddoc-mindmap-container .mind-elixir-node .node-content {
+.mindctx-mindmap-container .mind-elixir-node .node-content {
   padding: 4px 10px;
   border-radius: 4px;
 }
 
 /* 选中状态 */
-.minddoc-mindmap-container .mind-elixir-node.selected .node-content {
+.mindctx-mindmap-container .mind-elixir-node.selected .node-content {
   outline: 2px solid var(--interactive-accent);
 }
 
 /* 连接线 */
-.minddoc-mindmap-container svg path {
+.mindctx-mindmap-container svg path {
   stroke: var(--text-faint);
   stroke-width: 2;
 }

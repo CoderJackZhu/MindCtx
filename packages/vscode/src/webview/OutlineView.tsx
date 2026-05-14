@@ -1,8 +1,8 @@
 import { h, Fragment } from 'preact';
 import { useState, useCallback, useMemo } from 'preact/hooks';
 import type { Signal } from '@preact/signals';
-import { findNode, findParent, findIndex } from '@minddoc/core';
-import type { MindDocTree, MindDocNode, PartialOperation } from '@minddoc/core';
+import { findNode, findParent, findIndex } from '@mindctx/core';
+import type { MindCtxTree, MindCtxNode, PartialOperation } from '@mindctx/core';
 import { OutlineNode } from './components/OutlineNode.js';
 import { SearchBar } from './components/SearchBar.js';
 import type { WebviewBridge } from './WebviewBridge.js';
@@ -20,9 +20,9 @@ interface DragState {
   position: 'before' | 'after' | 'child' | null;
 }
 
-function getVisibleNodes(root: MindDocNode, collapsedIds: Set<string>): MindDocNode[] {
-  const result: MindDocNode[] = [];
-  function walk(node: MindDocNode) {
+function getVisibleNodes(root: MindCtxNode, collapsedIds: Set<string>): MindCtxNode[] {
+  const result: MindCtxNode[] = [];
+  function walk(node: MindCtxNode) {
     result.push(node);
     if (!collapsedIds.has(node.id)) {
       for (const child of node.children) {
@@ -36,11 +36,11 @@ function getVisibleNodes(root: MindDocNode, collapsedIds: Set<string>): MindDocN
   return result;
 }
 
-function filterTree(root: MindDocNode, query: string): Set<string> {
+function filterTree(root: MindCtxNode, query: string): Set<string> {
   const visibleIds = new Set<string>();
   const lowerQuery = query.toLowerCase();
 
-  function walk(node: MindDocNode, ancestors: string[]): boolean {
+  function walk(node: MindCtxNode, ancestors: string[]): boolean {
     const matches = node.title.toLowerCase().includes(lowerQuery);
     let hasMatchingDescendant = false;
 
@@ -63,10 +63,10 @@ function filterTree(root: MindDocNode, query: string): Set<string> {
   return visibleIds;
 }
 
-function countMatches(root: MindDocNode, query: string): number {
+function countMatches(root: MindCtxNode, query: string): number {
   const lowerQuery = query.toLowerCase();
   let count = 0;
-  function walk(node: MindDocNode) {
+  function walk(node: MindCtxNode) {
     if (node.title.toLowerCase().includes(lowerQuery)) count++;
     node.children.forEach(walk);
   }
@@ -74,10 +74,10 @@ function countMatches(root: MindDocNode, query: string): number {
   return count;
 }
 
-function isDescendant(root: MindDocNode, ancestorId: string, nodeId: string): boolean {
+function isDescendant(root: MindCtxNode, ancestorId: string, nodeId: string): boolean {
   const ancestor = findNode(root, ancestorId);
   if (!ancestor) return false;
-  function check(node: MindDocNode): boolean {
+  function check(node: MindCtxNode): boolean {
     if (node.id === nodeId) return true;
     return node.children.some(check);
   }
@@ -104,7 +104,7 @@ export function OutlineView({
   const [showSearch, setShowSearch] = useState(false);
 
   const tree = bridge.tree.value;
-  if (!tree) return <div class="minddoc-outline">Loading...</div>;
+  if (!tree) return <div class="mindctx-outline">Loading...</div>;
 
   const filterIds = useMemo(
     () => searchQuery ? filterTree(tree.root, searchQuery) : null,
@@ -227,7 +227,7 @@ export function OutlineView({
     }
   }, [tree, bridge]);
 
-  function renderNode(node: MindDocNode, depth: number): h.JSX.Element | null {
+  function renderNode(node: MindCtxNode, depth: number): h.JSX.Element | null {
     if (filterIds && !filterIds.has(node.id)) return null;
 
     const isCollapsed = collapsedIds.value.has(node.id);
@@ -295,7 +295,7 @@ export function OutlineView({
 
   return (
     <div
-      class="minddoc-outline"
+      class="mindctx-outline"
       onKeyDown={handleKeyDown}
       onDragEnd={() => setDragState(null)}
       tabIndex={-1}

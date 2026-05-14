@@ -1,4 +1,4 @@
-import type MindDocPlugin from './main.js';
+import type MindCtxPlugin from './main.js';
 
 interface PluginState {
   collapsedNodes: {
@@ -8,7 +8,7 @@ interface PluginState {
 
 const STATE_FILE = 'state.json';
 
-export async function loadState(plugin: MindDocPlugin): Promise<PluginState> {
+export async function loadState(plugin: MindCtxPlugin): Promise<PluginState> {
   const path = `${plugin.manifest.dir}/${STATE_FILE}`;
   try {
     const data = await plugin.app.vault.adapter.read(path);
@@ -18,7 +18,7 @@ export async function loadState(plugin: MindDocPlugin): Promise<PluginState> {
   }
 }
 
-export async function saveState(plugin: MindDocPlugin, state: PluginState): Promise<void> {
+export async function saveState(plugin: MindCtxPlugin, state: PluginState): Promise<void> {
   const path = `${plugin.manifest.dir}/${STATE_FILE}`;
   await plugin.app.vault.adapter.write(path, JSON.stringify(state, null, 2));
 }

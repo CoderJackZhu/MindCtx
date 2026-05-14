@@ -1,5 +1,5 @@
 ---
-minddoc: true
+mindctx: true
 ---
 
 - 没有标题的文档

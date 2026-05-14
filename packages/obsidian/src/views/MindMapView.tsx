@@ -7,15 +7,15 @@ import {
   treeToMindElixirData,
   setupMindElixirEvents,
   syncMindElixirAddChildButtons,
-} from '@minddoc/core/bridge';
+} from '@mindctx/core/bridge';
 import {
   findNode,
-} from '@minddoc/core';
-import type { MindDocTree, PartialOperation, MindMapDirection } from '@minddoc/core';
+} from '@mindctx/core';
+import type { MindCtxTree, PartialOperation, MindMapDirection } from '@mindctx/core';
 import { getObsidianTheme, applyTheme } from '../bridge/mindElixirTheme.js';
 
 interface MindMapViewProps {
-  tree: MindDocTree | null;
+  tree: MindCtxTree | null;
   collapsedIds: Set<string>;
   onOperation: (op: PartialOperation) => void;
   onUndo: () => void;
@@ -52,20 +52,20 @@ function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
 
   return (
     <div
-      class="minddoc-mindmap-zoom-controls"
+      class="mindctx-mindmap-zoom-controls"
       onMouseLeave={() => setIsOpen(false)}
     >
       {isOpen && (
-        <div class="minddoc-mindmap-zoom-panel">
+        <div class="mindctx-mindmap-zoom-panel">
           <button
             type="button"
-            class="minddoc-mindmap-center-button"
+            class="mindctx-mindmap-center-button"
             onClick={onCenter}
             title="定位到中心主题"
             aria-label="定位到中心主题"
           >
             <svg
-              class="minddoc-mindmap-center-icon"
+              class="mindctx-mindmap-center-icon"
               viewBox="0 0 24 24"
               aria-hidden="true"
               focusable="false"
@@ -79,7 +79,7 @@ function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
           </button>
           <input
             type="range"
-            class="minddoc-mindmap-zoom-slider"
+            class="mindctx-mindmap-zoom-slider"
             min="10"
             max="400"
             value={String(percentage)}
@@ -91,7 +91,7 @@ function ZoomControls({ scale, onScaleChange, onCenter }: ZoomControlsProps) {
       )}
       <button
         type="button"
-        class="minddoc-mindmap-zoom-value"
+        class="mindctx-mindmap-zoom-value"
         onMouseEnter={() => setIsOpen(true)}
         aria-expanded={isOpen}
       >
@@ -290,13 +290,13 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
   const focusedNode = tree && focusNodeId ? findNode(tree.root, focusNodeId) : null;
 
   return (
-    <div class="minddoc-mindmap-shell">
+    <div class="mindctx-mindmap-shell">
       {focusedNode && (
-        <div class="minddoc-mindmap-focusbar">
-          <span class="minddoc-mindmap-focusbar-label">当前聚焦：{focusedNode.title || '(空节点)'}</span>
+        <div class="mindctx-mindmap-focusbar">
+          <span class="mindctx-mindmap-focusbar-label">当前聚焦：{focusedNode.title || '(空节点)'}</span>
           <button
             type="button"
-            class="minddoc-mindmap-focusbar-button"
+            class="mindctx-mindmap-focusbar-button"
             onClick={() => setFocusNodeId(null)}
           >
             退出聚焦
@@ -310,7 +310,7 @@ export function MindMapView({ tree, collapsedIds, onOperation, onUndo, onRedo, o
       />
       <div
         ref={containerRef}
-        class="minddoc-mindmap-container"
+        class="mindctx-mindmap-container"
         style={{ width: '100%', height: '100%' }}
         tabIndex={0}
         onKeyDown={handleKeyDown}

@@ -1,6 +1,6 @@
 import { signal, type Signal } from '@preact/signals';
-import type { MindDocTree, PartialOperation } from '@minddoc/core';
-import type { ExtToWebview, WebviewToExt, MindDocSettings, ThemeColors, TransientViewState, WebviewCommand, PersistedViewState } from '../types/messages.js';
+import type { MindCtxTree, PartialOperation } from '@mindctx/core';
+import type { ExtToWebview, WebviewToExt, MindCtxSettings, ThemeColors, TransientViewState, WebviewCommand, PersistedViewState } from '../types/messages.js';
 
 declare function acquireVsCodeApi(): {
   postMessage(msg: unknown): void;
@@ -12,8 +12,8 @@ const vscode = acquireVsCodeApi();
 let operationCounter = 0;
 
 export class WebviewBridge {
-  readonly tree: Signal<MindDocTree | null> = signal(null);
-  readonly settings: Signal<MindDocSettings> = signal({
+  readonly tree: Signal<MindCtxTree | null> = signal(null);
+  readonly settings: Signal<MindCtxSettings> = signal({
     defaultView: 'outline',
     headingDepth: 3,
     autoSaveDelay: 300,
@@ -100,7 +100,7 @@ export class WebviewBridge {
         }
         break;
       case 'error':
-        console.warn('[MindDoc] Operation error:', msg.message);
+        console.warn('[MindCtx] Operation error:', msg.message);
         break;
     }
   }

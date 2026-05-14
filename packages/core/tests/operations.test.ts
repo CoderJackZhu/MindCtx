@@ -1,9 +1,9 @@
 import { describe, test, expect, beforeEach } from 'vitest';
-import { parse, applyOperation, findNode, findParent, findIndex, recalculateNodeTypes, getAbsoluteDepth, serialize, UndoManager } from '@minddoc/core';
-import type { MindDocTree } from '@minddoc/core';
+import { parse, applyOperation, findNode, findParent, findIndex, recalculateNodeTypes, getAbsoluteDepth, serialize, UndoManager } from '@mindctx/core';
+import type { MindCtxTree } from '@mindctx/core';
 
 const simpleMd = `---
-minddoc: true
+mindctx: true
 ---
 
 # Root
@@ -19,12 +19,12 @@ minddoc: true
 - Item B1
 `;
 
-function makeTree(): MindDocTree {
+function makeTree(): MindCtxTree {
   return parse(simpleMd);
 }
 
 describe('Operations', () => {
-  let tree: MindDocTree;
+  let tree: MindCtxTree;
 
   beforeEach(() => { tree = makeTree(); });
 
@@ -239,7 +239,7 @@ describe('Operations', () => {
 
     applyOperation(tree, { type: 'toggleCheck', nodeId: h1.id });
 
-    expect(serialize(tree).startsWith('---\nminddoc: true\n---\n\n- [ ] Root\n')).toBe(true);
+    expect(serialize(tree).startsWith('---\nmindctx: true\n---\n\n- [ ] Root\n')).toBe(true);
   });
 
   test('操作后节点 dirty=true', () => {
@@ -394,7 +394,7 @@ describe('Operations', () => {
 });
 
 describe('Undo/Redo', () => {
-  let tree: MindDocTree;
+  let tree: MindCtxTree;
   let undoManager: UndoManager;
 
   beforeEach(() => {

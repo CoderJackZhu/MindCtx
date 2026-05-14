@@ -1,35 +1,35 @@
 import * as vscode from 'vscode';
-import { MindDocDocument } from './MindDocDocument';
+import { MindCtxDocument } from './MindCtxDocument';
 import type {
   ExtToWebview,
   WebviewToExt,
-  MindDocSettings,
+  MindCtxSettings,
   ThemeColors,
   PersistedViewState,
 } from './types/messages';
 
 /**
- * MindDocEditorProvider implements the CustomEditorProvider for `.mind.md` files.
+ * MindCtxEditorProvider implements the CustomEditorProvider for `.mind.md` files.
  *
- * It manages the lifecycle of MindDocDocument instances, webview panels,
+ * It manages the lifecycle of MindCtxDocument instances, webview panels,
  * multi-webview synchronization, theme detection, and file watching.
  */
-export class MindDocEditorProvider
-  implements vscode.CustomEditorProvider<MindDocDocument>
+export class MindCtxEditorProvider
+  implements vscode.CustomEditorProvider<MindCtxDocument>
 {
-  static readonly viewType = 'minddoc.editor';
+  static readonly viewType = 'mindctx.editor';
 
   /** Maps a document to the set of webview panels displaying it. */
-  private readonly _documentPanels = new Map<MindDocDocument, Set<vscode.WebviewPanel>>();
+  private readonly _documentPanels = new Map<MindCtxDocument, Set<vscode.WebviewPanel>>();
 
   /** Maps a document to its file system watcher. */
-  private readonly _watchers = new Map<MindDocDocument, vscode.FileSystemWatcher>();
+  private readonly _watchers = new Map<MindCtxDocument, vscode.FileSystemWatcher>();
 
   /** Disposables owned by this provider. */
   private readonly _disposables: vscode.Disposable[] = [];
 
   private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<
-    vscode.CustomDocumentEditEvent<MindDocDocument>
+    vscode.CustomDocumentEditEvent<MindCtxDocument>
   >();
   readonly onDidChangeCustomDocument = this._onDidChangeCustomDocument.event;
 
@@ -49,7 +49,7 @@ export class MindDocEditorProvider
     // Listen for configuration changes
     this._disposables.push(
       vscode.workspace.onDidChangeConfiguration((e) => {
-        if (e.affectsConfiguration('minddoc')) {
+        if (e.affectsConfiguration('mindctx')) {
           const settings = this._getSettings();
           for (const [, panels] of this._documentPanels) {
             for (const panel of panels) {
@@ -68,10 +68,10 @@ export class MindDocEditorProvider
    * Static helper to register this provider with the extension context.
    * Returns a Disposable that can be added to the extension subscriptions.
    */
-  static register(context: vscode.ExtensionContext): { disposable: vscode.Disposable; provider: MindDocEditorProvider } {
-    const provider = new MindDocEditorProvider(context);
+  static register(context: vscode.ExtensionContext): { disposable: vscode.Disposable; provider: MindCtxEditorProvider } {
+    const provider = new MindCtxEditorProvider(context);
     const registration = vscode.window.registerCustomEditorProvider(
-      MindDocEditorProvider.viewType,
+      MindCtxEditorProvider.viewType,
       provider,
       {
         webviewOptions: { retainContextWhenHidden: true },
@@ -84,7 +84,7 @@ export class MindDocEditorProvider
     return { disposable, provider };
   }
 
-  getActiveDocument(): MindDocDocument | undefined {
+  getActiveDocument(): MindCtxDocument | undefined {
     for (const [doc, panels] of this._documentPanels) {
       for (const panel of panels) {
         if (panel.active) return doc;
@@ -93,7 +93,7 @@ export class MindDocEditorProvider
     return undefined;
   }
 
-  sendCommandToActivePanel(document: MindDocDocument, name: 'expandAll' | 'collapseAll' | 'toggleView' | 'export.png'): void {
+  sendCommandToActivePanel(document: MindCtxDocument, name: 'expandAll' | 'collapseAll' | 'toggleView' | 'export.png'): void {
     const panels = this._documentPanels.get(document);
     if (!panels) return;
     for (const panel of panels) {
@@ -110,8 +110,8 @@ export class MindDocEditorProvider
     uri: vscode.Uri,
     _openContext: vscode.CustomDocumentOpenContext,
     _token: vscode.CancellationToken
-  ): Promise<MindDocDocument> {
-    const document = await MindDocDocument.create(uri);
+  ): Promise<MindCtxDocument> {
+    const document = await MindCtxDocument.create(uri);
 
     // Set up file system watcher for external changes
     const watcher = vscode.workspace.createFileSystemWatcher(
@@ -170,7 +170,7 @@ export class MindDocEditorProvider
   }
 
   async resolveCustomEditor(
-    document: MindDocDocument,
+    document: MindCtxDocument,
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken
   ): Promise<void> {
@@ -209,14 +209,14 @@ export class MindDocEditorProvider
   }
 
   async saveCustomDocument(
-    document: MindDocDocument,
+    document: MindCtxDocument,
     cancellation: vscode.CancellationToken
   ): Promise<void> {
     await document.save(cancellation);
   }
 
   async saveCustomDocumentAs(
-    document: MindDocDocument,
+    document: MindCtxDocument,
     destination: vscode.Uri,
     _cancellation: vscode.CancellationToken
   ): Promise<void> {
@@ -224,14 +224,14 @@ export class MindDocEditorProvider
   }
 
   async revertCustomDocument(
-    document: MindDocDocument,
+    document: MindCtxDocument,
     _cancellation: vscode.CancellationToken
   ): Promise<void> {
     await document.revert();
   }
 
   async backupCustomDocument(
-    document: MindDocDocument,
+    document: MindCtxDocument,
     context: vscode.CustomDocumentBackupContext,
     _cancellation: vscode.CancellationToken
   ): Promise<vscode.CustomDocumentBackup> {
@@ -263,7 +263,7 @@ export class MindDocEditorProvider
   // --- Message handling ---
 
   private async _handleWebviewMessage(
-    document: MindDocDocument,
+    document: MindCtxDocument,
     panel: vscode.WebviewPanel,
     message: WebviewToExt
   ): Promise<void> {
@@ -342,7 +342,7 @@ export class MindDocEditorProvider
   // --- PNG export ---
 
   private async _handlePngExport(
-    document: MindDocDocument,
+    document: MindCtxDocument,
     dataUrl: string
   ): Promise<void> {
     // dataUrl format: "data:image/png;base64,<base64data>"
@@ -377,19 +377,19 @@ export class MindDocEditorProvider
   // --- State persistence ---
 
   private _getPersistedState(uri: vscode.Uri): PersistedViewState | null {
-    const key = `minddoc:viewState:${uri.fsPath}`;
+    const key = `mindctx:viewState:${uri.fsPath}`;
     return this._context.workspaceState.get<PersistedViewState>(key) ?? null;
   }
 
   private _persistState(uri: vscode.Uri, state: PersistedViewState): void {
-    const key = `minddoc:viewState:${uri.fsPath}`;
+    const key = `mindctx:viewState:${uri.fsPath}`;
     this._context.workspaceState.update(key, state);
   }
 
   // --- Settings ---
 
-  private _getSettings(): MindDocSettings {
-    const config = vscode.workspace.getConfiguration('minddoc');
+  private _getSettings(): MindCtxSettings {
+    const config = vscode.workspace.getConfiguration('mindctx');
     return {
       defaultView: config.get<'outline' | 'mindmap'>('defaultView', 'outline'),
       headingDepth: config.get<number>('headingDepth', 3),
@@ -461,7 +461,7 @@ export class MindDocEditorProvider
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src ${cspSource}; style-src ${cspSource} 'unsafe-inline'; img-src ${cspSource} data:; font-src ${cspSource};">
   <link rel="stylesheet" href="${styleUri}">
-  <title>MindDoc</title>
+  <title>MindCtx</title>
 </head>
 <body>
   <div id="root"></div>

@@ -1,10 +1,10 @@
 {
-  "name": "minddoc",
+  "name": "mindctx",
   "private": true,
   "scripts": {
     "build": "pnpm -r build",
-    "test": "pnpm --filter @minddoc/core test",
-    "test:watch": "pnpm --filter @minddoc/core test:watch",
+    "test": "pnpm --filter @mindctx/core test",
+    "test:watch": "pnpm --filter @mindctx/core test:watch",
     "typecheck": "pnpm -r typecheck",
     "release:obsidian": "node scripts/bump-version.mjs obsidian",
     "release:vscode": "node scripts/bump-version.mjs vscode"

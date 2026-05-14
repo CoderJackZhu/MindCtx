@@ -1,8 +1,8 @@
-import type { MindDocTree, PartialOperation } from '@minddoc/core';
+import type { MindCtxTree, PartialOperation } from '@mindctx/core';
 
 // --- Settings passed to Webview ---
 
-export interface MindDocSettings {
+export interface MindCtxSettings {
   defaultView: 'outline' | 'mindmap';
   headingDepth: number;
   autoSaveDelay: number;
@@ -48,10 +48,10 @@ export type WebviewCommand =
 // --- Extension → Webview messages ---
 
 export type ExtToWebview =
-  | { type: 'init'; tree: MindDocTree; settings: MindDocSettings; state: PersistedViewState | null }
-  | { type: 'treeUpdated'; tree: MindDocTree; reason: 'self' | 'peerEdit' | 'undo' | 'redo' | 'externalChange' }
+  | { type: 'init'; tree: MindCtxTree; settings: MindCtxSettings; state: PersistedViewState | null }
+  | { type: 'treeUpdated'; tree: MindCtxTree; reason: 'self' | 'peerEdit' | 'undo' | 'redo' | 'externalChange' }
   | { type: 'themeChanged'; colors: ThemeColors }
-  | { type: 'settingsChanged'; settings: Partial<MindDocSettings> }
+  | { type: 'settingsChanged'; settings: Partial<MindCtxSettings> }
   | { type: 'command'; command: WebviewCommand }
   | { type: 'error'; message: string; operationId?: string };
 

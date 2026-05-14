@@ -1,13 +1,13 @@
-import type { MindDocNode, MindDocTree, SerializeOptions } from './types.js';
+import type { MindCtxNode, MindCtxTree, SerializeOptions } from './types.js';
 
 /**
- * Serialize a MindDocTree back to Markdown text.
+ * Serialize a MindCtxTree back to Markdown text.
  *
  * Round-trip fidelity: for unmodified trees, serialize(parse(text)) === text.
  * This is achieved by outputting rawText verbatim for clean nodes (dirty === false),
  * and only regenerating content from structured data for dirty nodes.
  */
-export function serialize(tree: MindDocTree, options?: SerializeOptions): string {
+export function serialize(tree: MindCtxTree, options?: SerializeOptions): string {
   const headingDepth = options?.headingDepth ?? tree.headingDepth;
   let output = '';
 
@@ -39,7 +39,7 @@ export function serialize(tree: MindDocTree, options?: SerializeOptions): string
 /**
  * Serialize a single node and its subtree.
  */
-function serializeNode(node: MindDocNode, headingDepth: number, absoluteDepth: number): string {
+function serializeNode(node: MindCtxNode, headingDepth: number, absoluteDepth: number): string {
   let output = '';
 
   // Fast path: node and entire subtree are clean — skip dirty checks entirely
@@ -70,7 +70,7 @@ function serializeNode(node: MindDocNode, headingDepth: number, absoluteDepth: n
  * Collect rawText from an entire clean subtree without checking dirty flags.
  * Used as an optimization when subtreeDirty === false.
  */
-function collectRawText(node: MindDocNode): string {
+function collectRawText(node: MindCtxNode): string {
   let output = node.rawText;
   for (const child of node.children) {
     output += collectRawText(child);
@@ -78,7 +78,7 @@ function collectRawText(node: MindDocNode): string {
   return output;
 }
 
-function shouldSerializeAsHeading(node: MindDocNode, absoluteDepth: number, headingDepth: number): boolean {
+function shouldSerializeAsHeading(node: MindCtxNode, absoluteDepth: number, headingDepth: number): boolean {
   return node.nodeType === 'heading' && absoluteDepth <= headingDepth;
 }
 
@@ -93,7 +93,7 @@ function reindentRawBlock(raw: string, indent: string): string {
     .join('\n');
 }
 
-function getListIndentDepth(node: MindDocNode, absoluteDepth: number, headingDepth: number): number {
+function getListIndentDepth(node: MindCtxNode, absoluteDepth: number, headingDepth: number): number {
   if (node.nodeType === 'list-item') {
     return Math.max(0, node.listDepth - 1);
   }
@@ -104,7 +104,7 @@ function getListIndentDepth(node: MindDocNode, absoluteDepth: number, headingDep
  * Regenerate node content from structured data when dirty.
  * This is used after operations modify the tree (rename, create, etc.).
  */
-function generateNodeContent(node: MindDocNode, headingDepth: number, absoluteDepth: number): string {
+function generateNodeContent(node: MindCtxNode, headingDepth: number, absoluteDepth: number): string {
   let output = '';
 
   if (shouldSerializeAsHeading(node, absoluteDepth, headingDepth)) {
@@ -155,7 +155,7 @@ function generateNodeContent(node: MindDocNode, headingDepth: number, absoluteDe
  * Serialize a subtree as independent Markdown (for "copy as markdown" etc.).
  * This always regenerates from structured data regardless of dirty state.
  */
-export function serializeSubtree(node: MindDocNode, headingDepth: number, baseDepth = 1): string {
+export function serializeSubtree(node: MindCtxNode, headingDepth: number, baseDepth = 1): string {
   let output = '';
 
   if (shouldSerializeAsHeading(node, baseDepth, headingDepth)) {

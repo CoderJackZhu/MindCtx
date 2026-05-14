@@ -1,29 +1,29 @@
 import * as vscode from 'vscode';
-import { MindDocEditorProvider } from './MindDocEditorProvider.js';
-import { exportOPML, exportJSON, copyAsAIContext } from '@minddoc/core';
+import { MindCtxEditorProvider } from './MindCtxEditorProvider.js';
+import { exportOPML, exportJSON, copyAsAIContext } from '@mindctx/core';
 
-let provider: MindDocEditorProvider;
+let provider: MindCtxEditorProvider;
 
 export function activate(context: vscode.ExtensionContext): void {
-  const registration = MindDocEditorProvider.register(context);
+  const registration = MindCtxEditorProvider.register(context);
   provider = registration.provider;
   context.subscriptions.push(registration.disposable);
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('minddoc.create', createNewFile),
-    vscode.commands.registerCommand('minddoc.openAs', openWithMindDoc),
-    vscode.commands.registerCommand('minddoc.import.opml', () => importFile('opml')),
-    vscode.commands.registerCommand('minddoc.import.freemind', () => importFile('freemind')),
+    vscode.commands.registerCommand('mindctx.create', createNewFile),
+    vscode.commands.registerCommand('mindctx.openAs', openWithMindCtx),
+    vscode.commands.registerCommand('mindctx.import.opml', () => importFile('opml')),
+    vscode.commands.registerCommand('mindctx.import.freemind', () => importFile('freemind')),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('minddoc.export.opml', () => exportFromEditor('opml')),
-    vscode.commands.registerCommand('minddoc.export.json', () => exportFromEditor('json')),
-    vscode.commands.registerCommand('minddoc.export.png', () => exportPngFromEditor()),
-    vscode.commands.registerCommand('minddoc.copyAIContext', copyAIContextFromEditor),
-    vscode.commands.registerCommand('minddoc.toggleView', () => sendWebviewCommand('toggleView')),
-    vscode.commands.registerCommand('minddoc.expandAll', () => sendWebviewCommand('expandAll')),
-    vscode.commands.registerCommand('minddoc.collapseAll', () => sendWebviewCommand('collapseAll')),
+    vscode.commands.registerCommand('mindctx.export.opml', () => exportFromEditor('opml')),
+    vscode.commands.registerCommand('mindctx.export.json', () => exportFromEditor('json')),
+    vscode.commands.registerCommand('mindctx.export.png', () => exportPngFromEditor()),
+    vscode.commands.registerCommand('mindctx.copyAIContext', copyAIContextFromEditor),
+    vscode.commands.registerCommand('mindctx.toggleView', () => sendWebviewCommand('toggleView')),
+    vscode.commands.registerCommand('mindctx.expandAll', () => sendWebviewCommand('expandAll')),
+    vscode.commands.registerCommand('mindctx.collapseAll', () => sendWebviewCommand('collapseAll')),
   );
 }
 
@@ -31,24 +31,24 @@ export function deactivate(): void {}
 
 async function createNewFile(): Promise<void> {
   const uri = await vscode.window.showSaveDialog({
-    filters: { 'MindDoc': ['mind.md'] },
+    filters: { 'MindCtx': ['mind.md'] },
     defaultUri: vscode.workspace.workspaceFolders?.[0]?.uri,
   });
   if (!uri) return;
 
-  const template = `---\nminddoc: true\nheading-depth: 3\n---\n\n# New Document\n\n## Section 1\n\n- Item 1\n- Item 2\n`;
+  const template = `---\nmindctx: true\nheading-depth: 3\n---\n\n# New Document\n\n## Section 1\n\n- Item 1\n- Item 2\n`;
   await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(template));
-  await vscode.commands.executeCommand('vscode.openWith', uri, 'minddoc.editor');
+  await vscode.commands.executeCommand('vscode.openWith', uri, 'mindctx.editor');
 }
 
-async function openWithMindDoc(): Promise<void> {
+async function openWithMindCtx(): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
-  await vscode.commands.executeCommand('vscode.openWith', editor.document.uri, 'minddoc.editor');
+  await vscode.commands.executeCommand('vscode.openWith', editor.document.uri, 'mindctx.editor');
 }
 
 async function importFile(format: 'opml' | 'freemind'): Promise<void> {
-  const { importOPML, importFreeMind } = await import('@minddoc/core');
+  const { importOPML, importFreeMind } = await import('@mindctx/core');
 
   const filters: Record<string, string[]> = format === 'opml'
     ? { 'OPML': ['opml', 'xml'] }
@@ -69,20 +69,20 @@ async function importFile(format: 'opml' | 'freemind'): Promise<void> {
   }
 
   const destUri = await vscode.window.showSaveDialog({
-    filters: { 'MindDoc': ['mind.md'] },
+    filters: { 'MindCtx': ['mind.md'] },
     defaultUri: vscode.workspace.workspaceFolders?.[0]?.uri,
   });
   if (!destUri) return;
 
   await vscode.workspace.fs.writeFile(destUri, new TextEncoder().encode(markdown));
-  await vscode.commands.executeCommand('vscode.openWith', destUri, 'minddoc.editor');
+  await vscode.commands.executeCommand('vscode.openWith', destUri, 'mindctx.editor');
   vscode.window.showInformationMessage(`Imported ${fileName} successfully.`);
 }
 
 async function exportFromEditor(format: 'opml' | 'json'): Promise<void> {
   const doc = provider.getActiveDocument();
   if (!doc) {
-    vscode.window.showWarningMessage('No active MindDoc editor.');
+    vscode.window.showWarningMessage('No active MindCtx editor.');
     return;
   }
 
@@ -110,7 +110,7 @@ async function exportFromEditor(format: 'opml' | 'json'): Promise<void> {
 async function exportPngFromEditor(): Promise<void> {
   const doc = provider.getActiveDocument();
   if (!doc) {
-    vscode.window.showWarningMessage('No active MindDoc editor.');
+    vscode.window.showWarningMessage('No active MindCtx editor.');
     return;
   }
   provider.sendCommandToActivePanel(doc, 'export.png');
@@ -119,7 +119,7 @@ async function exportPngFromEditor(): Promise<void> {
 async function copyAIContextFromEditor(): Promise<void> {
   const doc = provider.getActiveDocument();
   if (!doc) {
-    vscode.window.showWarningMessage('No active MindDoc editor.');
+    vscode.window.showWarningMessage('No active MindCtx editor.');
     return;
   }
 

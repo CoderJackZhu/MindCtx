@@ -9,10 +9,10 @@ interface SearchBarProps {
 
 export function SearchBar({ value, onChange, onClose, matchCount }: SearchBarProps) {
   return (
-    <div class="minddoc-search-bar">
+    <div class="mindctx-search-bar">
       <input
         type="text"
-        class="minddoc-search-input"
+        class="mindctx-search-input"
         placeholder="Search nodes..."
         value={value}
         onInput={(e) => onChange((e.target as HTMLInputElement).value)}
@@ -20,9 +20,9 @@ export function SearchBar({ value, onChange, onClose, matchCount }: SearchBarPro
         autoFocus
       />
       {value && (
-        <span class="minddoc-search-count">{matchCount} matches</span>
+        <span class="mindctx-search-count">{matchCount} matches</span>
       )}
-      <button class="minddoc-search-close" onClick={onClose} title="Close search">×</button>
+      <button class="mindctx-search-close" onClick={onClose} title="Close search">×</button>
     </div>
   );
 }

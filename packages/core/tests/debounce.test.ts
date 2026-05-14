@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { debounce } from '@minddoc/core';
+import { debounce } from '@mindctx/core';
 
 describe('debounce', () => {
   beforeEach(() => {
@@ -75,9 +75,9 @@ describe('debounce', () => {
     const fn = vi.fn();
     const debounced = debounce(fn, 100);
 
-    debounced('minddoc', 42);
+    debounced('mindctx', 42);
     await vi.advanceTimersByTimeAsync(100);
 
-    expect(fn).toHaveBeenCalledWith('minddoc', 42);
+    expect(fn).toHaveBeenCalledWith('mindctx', 42);
   });
 });

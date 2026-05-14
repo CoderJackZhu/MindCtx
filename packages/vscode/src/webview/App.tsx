@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { signal, effect } from '@preact/signals';
-import { findNode } from '@minddoc/core';
+import { findNode } from '@mindctx/core';
 import { toPng } from 'html-to-image';
 import { WebviewBridge } from './WebviewBridge.js';
 import { OutlineToolbar } from './components/OutlineToolbar.js';
@@ -54,7 +54,7 @@ bridge.onCommand((cmd) => {
       break;
     }
     case 'export.png': {
-      const container = document.querySelector('.minddoc-mindmap-container') as HTMLElement | null;
+      const container = document.querySelector('.mindctx-mindmap-container') as HTMLElement | null;
       if (container) {
         toPng(container, {
           backgroundColor: getComputedStyle(container).backgroundColor,
@@ -73,13 +73,13 @@ export function App() {
   const view = bridge.activeView.value;
 
   if (!tree) {
-    return <div class="minddoc-loading">Loading...</div>;
+    return <div class="mindctx-loading">Loading...</div>;
   }
 
   const selectedNode = selectedNodeId.value ? findNode(tree.root, selectedNodeId.value) : null;
 
   return (
-    <div class="minddoc-container">
+    <div class="mindctx-container">
       <OutlineToolbar
         currentView={view}
         onSwitchView={(v) => {
@@ -91,7 +91,7 @@ export function App() {
           collapsedIds.value = new Set(getAllNodeIds(tree.root));
         }}
       />
-      <div class="minddoc-main-area">
+      <div class="mindctx-main-area">
         {view === 'outline' ? (
           <OutlineView
             bridge={bridge}

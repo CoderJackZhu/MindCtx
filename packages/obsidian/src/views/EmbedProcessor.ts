@@ -1,8 +1,8 @@
 import { h } from 'preact';
 import { render } from 'preact';
-import { parse } from '@minddoc/core';
+import { parse } from '@mindctx/core';
 import { EmbedView } from './EmbedView.js';
-import type MindDocPlugin from '../main.js';
+import type MindCtxPlugin from '../main.js';
 
 export interface EmbedConfig {
   file: string;
@@ -64,8 +64,8 @@ export function parseEmbedConfig(source: string): EmbedConfig | { error: string 
   };
 }
 
-export function registerEmbedProcessor(plugin: MindDocPlugin) {
-  plugin.registerMarkdownCodeBlockProcessor('minddoc', async (source, el, ctx) => {
+export function registerEmbedProcessor(plugin: MindCtxPlugin) {
+  plugin.registerMarkdownCodeBlockProcessor('mindctx', async (source, el, ctx) => {
     const config = parseEmbedConfig(source);
 
     if ('error' in config) {
@@ -96,16 +96,16 @@ export function registerEmbedProcessor(plugin: MindDocPlugin) {
 }
 
 function renderError(el: HTMLElement, message: string) {
-  const div = el.createDiv({ cls: 'minddoc-embed-error' });
-  div.createSpan({ text: '⚠️ MindDoc: ' + message });
+  const div = el.createDiv({ cls: 'mindctx-embed-error' });
+  div.createSpan({ text: '⚠️ MindCtx: ' + message });
 }
 
-function renderFileNotFound(el: HTMLElement, fileName: string, plugin: MindDocPlugin) {
-  const div = el.createDiv({ cls: 'minddoc-embed-error' });
+function renderFileNotFound(el: HTMLElement, fileName: string, plugin: MindCtxPlugin) {
+  const div = el.createDiv({ cls: 'mindctx-embed-error' });
   div.createSpan({ text: `文件未找到: ${fileName}` });
   const btn = div.createEl('button', { text: '创建文件' });
   btn.addEventListener('click', () => {
-    const content = `---\nminddoc: true\n---\n\n# ${fileName.replace(/\.mind\.md$/, '').replace(/\.md$/, '')}\n`;
+    const content = `---\nmindctx: true\n---\n\n# ${fileName.replace(/\.mind\.md$/, '').replace(/\.md$/, '')}\n`;
     void plugin.app.vault.create(fileName.endsWith('.md') ? fileName : fileName + '.mind.md', content);
   });
 }

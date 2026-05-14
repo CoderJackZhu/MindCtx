@@ -5,21 +5,21 @@ import {
   applyOperation,
   invertOperation,
   fnv1a64,
-  type MindDocTree,
+  type MindCtxTree,
   type PartialOperation,
   type Operation,
-} from '@minddoc/core';
+} from '@mindctx/core';
 
 /**
- * MindDocDocument is the CustomDocument implementation for MindDoc.
+ * MindCtxDocument is the CustomDocument implementation for MindCtx.
  *
  * It holds file content, parsed tree, and integrates with VSCode's
  * undo/redo system via CustomDocumentEditEvent.
  */
-export class MindDocDocument implements vscode.CustomDocument {
+export class MindCtxDocument implements vscode.CustomDocument {
   readonly uri: vscode.Uri;
 
-  private _tree: MindDocTree;
+  private _tree: MindCtxTree;
   private _contentHash: string;
   private _saveTimeout: ReturnType<typeof setTimeout> | null = null;
   private _pendingSave = false;
@@ -28,10 +28,10 @@ export class MindDocDocument implements vscode.CustomDocument {
   private readonly _onDidDispose = new vscode.EventEmitter<void>();
   readonly onDidDispose = this._onDidDispose.event;
 
-  private readonly _onDidChangeContent = new vscode.EventEmitter<vscode.CustomDocumentEditEvent<MindDocDocument>>();
+  private readonly _onDidChangeContent = new vscode.EventEmitter<vscode.CustomDocumentEditEvent<MindCtxDocument>>();
   readonly onDidChangeContent = this._onDidChangeContent.event;
 
-  private readonly _onDidChangeTree = new vscode.EventEmitter<{ tree: MindDocTree; reason: 'self' | 'undo' | 'redo' | 'externalChange' }>();
+  private readonly _onDidChangeTree = new vscode.EventEmitter<{ tree: MindCtxTree; reason: 'self' | 'undo' | 'redo' | 'externalChange' }>();
   readonly onDidChangeTree = this._onDidChangeTree.event;
 
   private constructor(uri: vscode.Uri, content: string) {
@@ -41,13 +41,13 @@ export class MindDocDocument implements vscode.CustomDocument {
   }
 
   /** Factory: create a document from a URI by reading its file content. */
-  static async create(uri: vscode.Uri): Promise<MindDocDocument> {
-    const content = await MindDocDocument.readFile(uri);
-    return new MindDocDocument(uri, content);
+  static async create(uri: vscode.Uri): Promise<MindCtxDocument> {
+    const content = await MindCtxDocument.readFile(uri);
+    return new MindCtxDocument(uri, content);
   }
 
   /** The current parsed tree. */
-  get tree(): MindDocTree {
+  get tree(): MindCtxTree {
     return this._tree;
   }
 
@@ -129,7 +129,7 @@ export class MindDocDocument implements vscode.CustomDocument {
    */
   async revert(): Promise<void> {
     this._cancelScheduledSave();
-    const content = await MindDocDocument.readFile(this.uri);
+    const content = await MindCtxDocument.readFile(this.uri);
     this._tree = parse(content, { filePath: this.uri.fsPath });
     this._contentHash = fnv1a64(content);
     this._onDidChangeTree.fire({ tree: this._tree, reason: 'externalChange' });
@@ -146,7 +146,7 @@ export class MindDocDocument implements vscode.CustomDocument {
     this._saveTimeout = setTimeout(() => {
       this._saveTimeout = null;
       this.save().catch(err => {
-        console.error('[MindDoc] Auto-save failed:', err);
+        console.error('[MindCtx] Auto-save failed:', err);
       });
     }, delayMs);
   }
@@ -157,13 +157,13 @@ export class MindDocDocument implements vscode.CustomDocument {
    * Returns null if there's a pending save (we ignore self-triggered events).
    * Otherwise, re-reads and re-parses the file, returning the new tree.
    */
-  async handleExternalChange(): Promise<MindDocTree | null> {
+  async handleExternalChange(): Promise<MindCtxTree | null> {
     // Ignore watcher events triggered by our own saves
     if (this._pendingSave || this._saveTimeout !== null) {
       return null;
     }
 
-    const content = await MindDocDocument.readFile(this.uri);
+    const content = await MindCtxDocument.readFile(this.uri);
     const newHash = fnv1a64(content);
 
     // No actual change

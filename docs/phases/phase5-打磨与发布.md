@@ -42,7 +42,7 @@ src/
 
 ### 行为规范
 
-- 搜索框快捷键：`Ctrl/Cmd+F`（焦点在 MindDoc 视图内时）
+- 搜索框快捷键：`Ctrl/Cmd+F`（焦点在 MindCtx 视图内时）
 - 输入文字后实时筛选（debounce 150ms）
 - 匹配规则：节点 title 包含关键词（不区分大小写）
 - 显示逻辑：匹配的节点及其所有祖先节点显示，其他隐藏
@@ -54,12 +54,12 @@ src/
 
 ```typescript
 // 筛选算法
-function filterTree(root: MindDocNode, query: string): Set<string> {
+function filterTree(root: MindCtxNode, query: string): Set<string> {
   // 返回需要显示的节点 ID 集合
   const visibleIds = new Set<string>();
   const lowerQuery = query.toLowerCase();
 
-  function walk(node: MindDocNode, ancestors: string[]): boolean {
+  function walk(node: MindCtxNode, ancestors: string[]): boolean {
     const matches = node.title.toLowerCase().includes(lowerQuery);
     let hasMatchingDescendant = false;
 
@@ -139,7 +139,7 @@ function VirtualOutlineTree({ nodes, rowHeight, containerHeight }) {
 
   return (
     <div
-      class="minddoc-scroll-container"
+      class="mindctx-scroll-container"
       style={{ height: containerHeight, overflow: 'auto' }}
       onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
     >
@@ -200,12 +200,12 @@ function handleDragOverWithAutoScroll(e: DragEvent, scrollContainer: HTMLElement
 import { Menu } from 'obsidian';
 import { findParent, findIndex } from '../core/operations';
 import { serializeSubtree } from '../core/serializer';
-import type { MindDocNode, MindDocTree, PartialOperation } from '../core/types';
+import type { MindCtxNode, MindCtxTree, PartialOperation } from '../core/types';
 
 function showNodeContextMenu(
   event: MouseEvent,
-  node: MindDocNode,
-  tree: MindDocTree,
+  node: MindCtxNode,
+  tree: MindCtxTree,
   onOperation: (op: PartialOperation) => void
 ) {
   const menu = new Menu();
@@ -291,24 +291,24 @@ function showNodeContextMenu(
 
 ## 模块四：设置页面（替换 Phase 2 精简版）
 
-Phase 2 实现了仅包含"默认视图"和"自动保存延迟"两项的精简设置页。本阶段用以下完整版替换 Phase 2 中 `settings.ts` 的 `MindDocSettingTab.display()` 方法，无需修改 `main.ts` 中的注册代码。
+Phase 2 实现了仅包含"默认视图"和"自动保存延迟"两项的精简设置页。本阶段用以下完整版替换 Phase 2 中 `settings.ts` 的 `MindCtxSettingTab.display()` 方法，无需修改 `main.ts` 中的注册代码。
 
 ### 使用 Obsidian Setting API
 
 ```typescript
 import { PluginSettingTab, Setting } from 'obsidian';
 
-export class MindDocSettingTab extends PluginSettingTab {
-  plugin: MindDocPlugin;
+export class MindCtxSettingTab extends PluginSettingTab {
+  plugin: MindCtxPlugin;
 
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl('h2', { text: 'MindDoc 设置' });
+    containerEl.createEl('h2', { text: 'MindCtx 设置' });
 
     new Setting(containerEl)
       .setName('默认视图')
-      .setDesc('打开 MindDoc 文件时的默认视图')
+      .setDesc('打开 MindCtx 文件时的默认视图')
       .addDropdown((drop) => {
         drop.addOption('outline', '大纲');
         drop.addOption('mindmap', '思维导图');
@@ -438,13 +438,13 @@ this.registerEvent(
   this.app.workspace.on('file-menu', (menu, file) => {
     if (file instanceof TFile && file.path.endsWith('.md')) {
       menu.addItem((item) => {
-        item.setTitle('以 MindDoc 打开')
+        item.setTitle('以 MindCtx 打开')
           .setIcon('list-tree')
-          .onClick(() => this.activateMindDocView(file));
+          .onClick(() => this.activateMindCtxView(file));
       });
     }
 
-    if (file instanceof TFile && this.isMindDocFile(file)) {
+    if (file instanceof TFile && this.isMindCtxFile(file)) {
       menu.addItem((item) => {
         item.setTitle('导出为 OPML')
           .setIcon('download')
@@ -481,7 +481,7 @@ this.registerEvent(
 
 ```typescript
 interface DetailPanelProps {
-  node: MindDocNode | null;
+  node: MindCtxNode | null;
   onUpdateNote: (nodeId: string, newNote: string) => void;
 }
 
@@ -496,8 +496,8 @@ function DetailPanel({ node, onUpdateNote }: DetailPanelProps) {
   }, [node.id, node.note]);
 
   return (
-    <div class="minddoc-detail-panel">
-      <div class="minddoc-detail-note">
+    <div class="mindctx-detail-panel">
+      <div class="mindctx-detail-note">
         <textarea
           value={localNote}
           placeholder="添加备注..."
@@ -510,9 +510,9 @@ function DetailPanel({ node, onUpdateNote }: DetailPanelProps) {
         />
       </div>
       {node.blocks.length > 0 && (
-        <div class="minddoc-detail-blocks">
+        <div class="mindctx-detail-blocks">
           {node.blocks.map((block, i) => (
-            <pre key={i} class={`minddoc-block minddoc-block-${block.type}`}>
+            <pre key={i} class={`mindctx-block mindctx-block-${block.type}`}>
               <code>{block.raw}</code>
             </pre>
           ))}
@@ -526,14 +526,14 @@ function DetailPanel({ node, onUpdateNote }: DetailPanelProps) {
 ### 样式
 
 ```css
-.minddoc-detail-panel {
+.mindctx-detail-panel {
   border-top: 1px solid var(--background-modifier-border);
   padding: 12px;
   max-height: 200px;
   overflow-y: auto;
 }
 
-.minddoc-detail-note textarea {
+.mindctx-detail-note textarea {
   width: 100%;
   min-height: 60px;
   border: none;
@@ -545,7 +545,7 @@ function DetailPanel({ node, onUpdateNote }: DetailPanelProps) {
   resize: vertical;
 }
 
-.minddoc-detail-blocks pre {
+.mindctx-detail-blocks pre {
   background: var(--background-secondary);
   padding: 8px;
   border-radius: 4px;
@@ -572,7 +572,7 @@ interface PluginState {
 
 const STATE_FILE = 'state.json';
 
-export async function loadState(plugin: MindDocPlugin): Promise<PluginState> {
+export async function loadState(plugin: MindCtxPlugin): Promise<PluginState> {
   const path = `${plugin.manifest.dir}/${STATE_FILE}`;
   try {
     const data = await plugin.app.vault.adapter.read(path);
@@ -582,13 +582,13 @@ export async function loadState(plugin: MindDocPlugin): Promise<PluginState> {
   }
 }
 
-export async function saveState(plugin: MindDocPlugin, state: PluginState): Promise<void> {
+export async function saveState(plugin: MindCtxPlugin, state: PluginState): Promise<void> {
   const path = `${plugin.manifest.dir}/${STATE_FILE}`;
   await plugin.app.vault.adapter.write(path, JSON.stringify(state, null, 2));
 }
 ```
 
-在 `MindDocView.onOpen()` 中加载折叠状态，在 `onClose()` 中保存。
+在 `MindCtxView.onOpen()` 中加载折叠状态，在 `onClose()` 中保存。
 
 ---
 
@@ -636,13 +636,13 @@ navigator.clipboard.writeText(subtreeMarkdown);
 
 ```json
 {
-  "id": "minddoc",
-  "name": "MindDoc",
+  "id": "mindctx",
+  "name": "MindCtx",
   "version": "1.0.0",
   "minAppVersion": "1.4.0",
   "description": "Markdown-first structured outline editor with mind map view. Write Markdown, see outlines, switch to mind maps.",
-  "author": "MindDoc",
-  "authorUrl": "https://github.com/minddoc",
+  "author": "MindCtx",
+  "authorUrl": "https://github.com/mindctx",
   "isDesktopOnly": false
 }
 ```

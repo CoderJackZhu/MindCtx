@@ -2,20 +2,20 @@
 
 ## 背景
 
-MindDoc 是一个 Obsidian 插件，将标准 Markdown 文件解析为树形结构，提供大纲和思维导图两种视图。本阶段只做纯逻辑层，不涉及任何 UI，产出是一个可独立测试的 npm 包。
+MindCtx 是一个 Obsidian 插件，将标准 Markdown 文件解析为树形结构，提供大纲和思维导图两种视图。本阶段只做纯逻辑层，不涉及任何 UI，产出是一个可独立测试的 npm 包。
 
 ## 目标
 
 实现以下核心模块，全部通过单元测试：
 
-1. **Parser**：Markdown 文本 → MindDocTree（内部 AST）
-2. **Serializer**：MindDocTree → Markdown 文本
+1. **Parser**：Markdown 文本 → MindCtxTree（内部 AST）
+2. **Serializer**：MindCtxTree → Markdown 文本
 3. **Operations**：对 AST 的所有原子编辑操作
 4. **Undo/Redo**：操作历史管理
 
 ## 项目初始化
 
-在 `/Users/zhuyijie/Documents/Code/MindDoc` 目录下创建以下结构：
+在 `/Users/zhuyijie/Documents/Code/MindCtx` 目录下创建以下结构：
 
 ```
 package.json
@@ -47,7 +47,7 @@ tests/
 
 ```json
 {
-  "name": "minddoc-core",
+  "name": "mindctx-core",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
@@ -123,12 +123,12 @@ export interface SourceRange {
   endLine: number;    // 不含
 }
 
-export interface MindDocNode {
+export interface MindCtxNode {
   id: string;
   title: string;
   note: string;                    // 段落说明文本
   blocks: ContentBlock[];          // 附属内容块
-  children: MindDocNode[];
+  children: MindCtxNode[];
   nodeType: 'heading' | 'list-item';
   headingLevel: number;            // 1-6 for heading, 0 for list-item
   listDepth: number;               // 0 for heading, 0+ for list-item (嵌套层级)
@@ -141,13 +141,13 @@ export interface MindDocNode {
   subtreeDirty: boolean;           // 子树中是否有 dirty 节点（性能优化，可跳过子树递归检查）
 }
 
-export interface MindDocTree {
+export interface MindCtxTree {
   version: 1;
   filePath: string;
   frontmatter: Record<string, any>;
   rawFrontmatter: string;          // 原始 frontmatter 文本（含 --- 分隔符和尾部换行），用于往返保真
   headingDepth: number;            // 标题最大深度，默认 3
-  root: MindDocNode;               // 虚拟根节点
+  root: MindCtxNode;               // 虚拟根节点
   metadata: {
     parseTime: number;
     nodeCount: number;
@@ -172,8 +172,8 @@ export type PartialOperation =
 export type Operation =
   | { type: 'move'; nodeId: string; newParentId: string; index: number; oldParentId: string; oldIndex: number }
   | { type: 'rename'; nodeId: string; newTitle: string; oldTitle: string }
-  | { type: 'create'; parentId: string; index: number; node: MindDocNode }
-  | { type: 'delete'; nodeId: string; parentId: string; index: number; deletedNode: MindDocNode }
+  | { type: 'create'; parentId: string; index: number; node: MindCtxNode }
+  | { type: 'delete'; nodeId: string; parentId: string; index: number; deletedNode: MindCtxNode }
   | { type: 'indent'; nodeId: string; oldParentId: string; oldIndex: number }
   | { type: 'outdent'; nodeId: string; oldParentId: string; oldIndex: number; adoptedSiblingIds: string[] }
   | { type: 'toggleCheck'; nodeId: string; oldValue: boolean | null }
@@ -232,11 +232,11 @@ export function generateNodeId(titlePath: string[], siblingIndex: number): strin
 
 ### 核心职责
 
-将 Markdown 文本解析为 `MindDocTree`。
+将 Markdown 文本解析为 `MindCtxTree`。
 
 ### 解析规则（必须严格遵守）
 
-1. **Frontmatter**：提取 YAML frontmatter，解析 `minddoc`, `version`, `default-view`, `heading-depth` 字段
+1. **Frontmatter**：提取 YAML frontmatter，解析 `mindctx`, `version`, `default-view`, `heading-depth` 字段
 2. **Heading → 节点**：`# title` 到 `###### title` 映射为深度 1-6 的 heading 节点
 3. **List → 子节点**：无序/有序/任务列表的每一项都是一个 list-item 节点，嵌套缩进增加 listDepth。有序列表设 `ordered: true`，无序列表设 `ordered: false`
 4. **段落 → note**：紧跟在标题或列表项后的段落文本归属为该节点的 note（包括列表项的后续段落）
@@ -269,7 +269,7 @@ export function generateNodeId(titlePath: string[], siblingIndex: number): strin
      - heading 节点：
        a. 记录该 heading 的 startLine
        b. 弹出栈中 depth >= 当前 heading depth 的所有节点
-       c. 创建 MindDocNode，push 到栈顶节点的 children
+       c. 创建 MindCtxNode，push 到栈顶节点的 children
        d. 将新节点 push 入栈
      - list 节点：
        a. 递归处理每个 listItem
@@ -285,7 +285,7 @@ export function generateNodeId(titlePath: string[], siblingIndex: number): strin
   5. 遍历完成后，回填每个节点的 sourceRange 和 rawText
   6. 生成节点 ID
   7. 计算 metadata
-输出：MindDocTree
+输出：MindCtxTree
 ```
 
 ### sourceRange 和 rawText 回填逻辑
@@ -309,7 +309,7 @@ export function generateNodeId(titlePath: string[], siblingIndex: number): strin
 ### 接口
 
 ```typescript
-export function parse(markdown: string, options?: ParseOptions): MindDocTree;
+export function parse(markdown: string, options?: ParseOptions): MindCtxTree;
 ```
 
 ---
@@ -318,7 +318,7 @@ export function parse(markdown: string, options?: ParseOptions): MindDocTree;
 
 ### 核心职责
 
-将 `MindDocTree` 序列化回 Markdown 文本。
+将 `MindCtxTree` 序列化回 Markdown 文本。
 
 ### 关键原则：往返保真
 
@@ -359,17 +359,17 @@ else:
 ### 接口
 
 ```typescript
-export function serialize(tree: MindDocTree, options?: SerializeOptions): string;
+export function serialize(tree: MindCtxTree, options?: SerializeOptions): string;
 
 // 序列化子树：将任意节点及其子树输出为独立的 Markdown 片段
 // 用于"复制为 Markdown"等场景，baseDepth 控制输出的起始标题层级
-export function serializeSubtree(node: MindDocNode, headingDepth: number, baseDepth?: number): string;
+export function serializeSubtree(node: MindCtxNode, headingDepth: number, baseDepth?: number): string;
 ```
 
 ### serializeSubtree 实现逻辑
 
 ```typescript
-export function serializeSubtree(node: MindDocNode, headingDepth: number, baseDepth = 1): string {
+export function serializeSubtree(node: MindCtxNode, headingDepth: number, baseDepth = 1): string {
   let output = '';
 
   if (baseDepth <= headingDepth) {
@@ -401,25 +401,25 @@ export function serializeSubtree(node: MindDocNode, headingDepth: number, baseDe
 
 ### 核心职责
 
-对 `MindDocTree` 执行原子编辑操作，返回操作记录（用于 undo）。
+对 `MindCtxTree` 执行原子编辑操作，返回操作记录（用于 undo）。
 
 ### 辅助函数（必须实现）
 
 ```typescript
 // 在整棵树中查找节点
-export function findNode(root: MindDocNode, id: string): MindDocNode | null;
+export function findNode(root: MindCtxNode, id: string): MindCtxNode | null;
 
 // 查找节点的父节点
-export function findParent(root: MindDocNode, id: string): MindDocNode | null;
+export function findParent(root: MindCtxNode, id: string): MindCtxNode | null;
 
 // 查找节点在父节点 children 中的索引
-export function findIndex(parent: MindDocNode, id: string): number;
+export function findIndex(parent: MindCtxNode, id: string): number;
 
 // 计算节点的绝对深度（从虚拟根开始为 0）
-export function getAbsoluteDepth(root: MindDocNode, id: string): number;
+export function getAbsoluteDepth(root: MindCtxNode, id: string): number;
 
 // 重新计算被移动节点及其子树的 nodeType/headingLevel/listDepth
-export function recalculateNodeTypes(node: MindDocNode, absoluteDepth: number, headingDepth: number): void;
+export function recalculateNodeTypes(node: MindCtxNode, absoluteDepth: number, headingDepth: number): void;
 ```
 
 ### 操作实现要求
@@ -451,10 +451,10 @@ export function recalculateNodeTypes(node: MindDocNode, absoluteDepth: number, h
 ### 接口
 
 ```typescript
-export function applyOperation(tree: MindDocTree, op: PartialOperation): Operation;
+export function applyOperation(tree: MindCtxTree, op: PartialOperation): Operation;
 ```
 
-注意：输入的 op 是 `PartialOperation`（调用者不需要知道旧值），函数执行后返回完整的 `Operation`（含旧值，供 undo 使用）。对于 `create` 操作，调用者传入 `title: string`，函数内部创建完整的 `MindDocNode` 并返回在 `Operation.node` 中。
+注意：输入的 op 是 `PartialOperation`（调用者不需要知道旧值），函数执行后返回完整的 `Operation`（含旧值，供 undo 使用）。对于 `create` 操作，调用者传入 `title: string`，函数内部创建完整的 `MindCtxNode` 并返回在 `Operation.node` 中。
 
 ---
 
@@ -474,10 +474,10 @@ export class UndoManager {
   push(ops: Operation[]): void;
 
   // 撤销：弹出 undoStack 顶部，执行逆操作，推入 redoStack
-  undo(tree: MindDocTree): Operation[] | null;
+  undo(tree: MindCtxTree): Operation[] | null;
 
   // 重做：弹出 redoStack 顶部，执行正向操作，推入 undoStack
-  redo(tree: MindDocTree): Operation[] | null;
+  redo(tree: MindCtxTree): Operation[] | null;
 
   // 清空所有历史（外部文件修改时调用）
   clear(): void;
@@ -623,7 +623,7 @@ describe('Operations', () => {
 
 ```markdown
 ---
-minddoc: true
+mindctx: true
 ---
 
 # 项目规划
@@ -643,7 +643,7 @@ minddoc: true
 
 ```markdown
 ---
-minddoc: true
+mindctx: true
 version: 1
 default-view: outline
 heading-depth: 3
@@ -714,7 +714,7 @@ Agent 工程能力体系主要包括工具调用、规划、记忆、RAG、评�
 
 ```markdown
 ---
-minddoc: true
+mindctx: true
 ---
 
 # 根节点
@@ -735,7 +735,7 @@ minddoc: true
 
 ```markdown
 ---
-minddoc: true
+mindctx: true
 ---
 
 - 没有标题的文档
@@ -749,7 +749,7 @@ minddoc: true
 
 ```markdown
 ---
-minddoc: true
+mindctx: true
 ---
 ```
 

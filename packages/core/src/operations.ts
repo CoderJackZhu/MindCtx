@@ -1,9 +1,9 @@
-import type { MindDocNode, MindDocTree, PartialOperation, Operation } from './types.js';
+import type { MindCtxNode, MindCtxTree, PartialOperation, Operation } from './types.js';
 import { generateNodeId } from './hash.js';
 
 let createdNodeCounter = 0;
 
-export function findNode(root: MindDocNode, id: string): MindDocNode | null {
+export function findNode(root: MindCtxNode, id: string): MindCtxNode | null {
   if (root.id === id) return root;
   for (const child of root.children) {
     const found = findNode(child, id);
@@ -12,7 +12,7 @@ export function findNode(root: MindDocNode, id: string): MindDocNode | null {
   return null;
 }
 
-export function findParent(root: MindDocNode, id: string): MindDocNode | null {
+export function findParent(root: MindCtxNode, id: string): MindCtxNode | null {
   for (const child of root.children) {
     if (child.id === id) return root;
     const found = findParent(child, id);
@@ -21,12 +21,12 @@ export function findParent(root: MindDocNode, id: string): MindDocNode | null {
   return null;
 }
 
-export function findIndex(parent: MindDocNode, id: string): number {
+export function findIndex(parent: MindCtxNode, id: string): number {
   return parent.children.findIndex(c => c.id === id);
 }
 
-export function getAbsoluteDepth(root: MindDocNode, id: string): number {
-  function search(node: MindDocNode, depth: number): number {
+export function getAbsoluteDepth(root: MindCtxNode, id: string): number {
+  function search(node: MindCtxNode, depth: number): number {
     if (node.id === id) return depth;
     for (const child of node.children) {
       const result = search(child, depth + 1);
@@ -37,7 +37,7 @@ export function getAbsoluteDepth(root: MindDocNode, id: string): number {
   return search(root, 0);
 }
 
-export function recalculateNodeTypes(node: MindDocNode, absoluteDepth: number, headingDepth: number): void {
+export function recalculateNodeTypes(node: MindCtxNode, absoluteDepth: number, headingDepth: number): void {
   if (absoluteDepth <= headingDepth) {
     node.nodeType = 'heading';
     node.headingLevel = absoluteDepth;
@@ -52,8 +52,8 @@ export function recalculateNodeTypes(node: MindDocNode, absoluteDepth: number, h
   }
 }
 
-function markSubtreeDirtyPath(root: MindDocNode, nodeId: string): void {
-  function walkAndMark(current: MindDocNode): boolean {
+function markSubtreeDirtyPath(root: MindCtxNode, nodeId: string): void {
+  function walkAndMark(current: MindCtxNode): boolean {
     if (current.id === nodeId) {
       current.subtreeDirty = true;
       return true;
@@ -69,13 +69,13 @@ function markSubtreeDirtyPath(root: MindDocNode, nodeId: string): void {
   walkAndMark(root);
 }
 
-function requireNode(root: MindDocNode, id: string, role = 'node'): MindDocNode {
+function requireNode(root: MindCtxNode, id: string, role = 'node'): MindCtxNode {
   const node = findNode(root, id);
   if (!node) throw new Error(`Cannot find ${role}: ${id}`);
   return node;
 }
 
-function requireParent(root: MindDocNode, id: string): MindDocNode {
+function requireParent(root: MindCtxNode, id: string): MindCtxNode {
   const parent = findParent(root, id);
   if (!parent) throw new Error(`Cannot find parent for node: ${id}`);
   return parent;
@@ -86,12 +86,12 @@ function normalizeInsertIndex(index: number, length: number): number {
   return Math.min(Math.max(index, 0), length);
 }
 
-function normalizeMoveIndex(index: number, oldParent: MindDocNode, newParent: MindDocNode, oldIndex: number): number {
+function normalizeMoveIndex(index: number, oldParent: MindCtxNode, newParent: MindCtxNode, oldIndex: number): number {
   const insertIdx = normalizeInsertIndex(index, newParent.children.length);
   return oldParent === newParent && insertIdx > oldIndex ? insertIdx - 1 : insertIdx;
 }
 
-function isDescendant(node: MindDocNode, maybeDescendantId: string): boolean {
+function isDescendant(node: MindCtxNode, maybeDescendantId: string): boolean {
   for (const child of node.children) {
     if (child.id === maybeDescendantId || isDescendant(child, maybeDescendantId)) {
       return true;
@@ -100,8 +100,8 @@ function isDescendant(node: MindDocNode, maybeDescendantId: string): boolean {
   return false;
 }
 
-function getTitlePath(root: MindDocNode, id: string): string[] {
-  function search(node: MindDocNode, path: string[]): string[] | null {
+function getTitlePath(root: MindCtxNode, id: string): string[] {
+  function search(node: MindCtxNode, path: string[]): string[] | null {
     if (node.id === id) return path;
     for (const child of node.children) {
       const result = search(child, [...path, child.title]);
@@ -122,7 +122,7 @@ function extractTagsFromTitle(title: string): string[] {
   return tags;
 }
 
-export function applyOperation(tree: MindDocTree, op: PartialOperation | Operation): Operation {
+export function applyOperation(tree: MindCtxTree, op: PartialOperation | Operation): Operation {
   const root = tree.root;
 
   switch (op.type) {
@@ -166,7 +166,7 @@ export function applyOperation(tree: MindDocTree, op: PartialOperation | Operati
       const parent = requireNode(root, op.parentId, 'parent');
       const insertIdx = normalizeInsertIndex(op.index, parent.children.length);
 
-      let node: MindDocNode;
+      let node: MindCtxNode;
       if ('node' in op && op.node) {
         node = op.node;
         node.dirty = true;

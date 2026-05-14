@@ -1,5 +1,5 @@
 ---
-minddoc: true
+mindctx: true
 ---
 
 # 项目规划

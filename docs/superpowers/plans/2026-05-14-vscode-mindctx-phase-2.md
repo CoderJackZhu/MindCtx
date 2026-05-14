@@ -1,12 +1,12 @@
-# VSCode MindDoc Phase 2: Outline View Implementation Plan
+# VSCode MindCtx Phase 2: Outline View Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Port the complete Outline View from the Obsidian plugin to the VSCode extension webview, providing full editing capability (keyboard shortcuts, drag-and-drop, inline editing, search, detail panel).
 
-**Architecture:** Replace the placeholder `App.tsx` with the full MindDoc layout (toolbar + outline view + detail panel). All components are pure Preact — they need only interface adaptation (signals from WebviewBridge instead of props). CSS uses VSCode CSS variables instead of Obsidian's.
+**Architecture:** Replace the placeholder `App.tsx` with the full MindCtx layout (toolbar + outline view + detail panel). All components are pure Preact — they need only interface adaptation (signals from WebviewBridge instead of props). CSS uses VSCode CSS variables instead of Obsidian's.
 
-**Tech Stack:** Preact, @preact/signals, @minddoc/core (findNode, findParent, findIndex), WebviewBridge (existing)
+**Tech Stack:** Preact, @preact/signals, @mindctx/core (findNode, findParent, findIndex), WebviewBridge (existing)
 
 ---
 
@@ -56,7 +56,7 @@ interface DragIndicatorProps {
 
 export function DragIndicator({ position }: DragIndicatorProps) {
   if (!position) return null;
-  return <div class={`minddoc-drop-line ${position}`} />;
+  return <div class={`mindctx-drop-line ${position}`} />;
 }
 ```
 
@@ -83,7 +83,7 @@ export function InlineEditor({ value, onConfirm, onCancel }: InlineEditorProps) 
   return (
     <input
       ref={ref}
-      class="minddoc-inline-editor"
+      class="mindctx-inline-editor"
       value={value}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
@@ -116,10 +116,10 @@ interface SearchBarProps {
 
 export function SearchBar({ value, onChange, onClose, matchCount }: SearchBarProps) {
   return (
-    <div class="minddoc-search-bar">
+    <div class="mindctx-search-bar">
       <input
         type="text"
-        class="minddoc-search-input"
+        class="mindctx-search-input"
         placeholder="Search nodes..."
         value={value}
         onInput={(e) => onChange((e.target as HTMLInputElement).value)}
@@ -127,9 +127,9 @@ export function SearchBar({ value, onChange, onClose, matchCount }: SearchBarPro
         autoFocus
       />
       {value && (
-        <span class="minddoc-search-count">{matchCount} matches</span>
+        <span class="mindctx-search-count">{matchCount} matches</span>
       )}
-      <button class="minddoc-search-close" onClick={onClose} title="Close search">×</button>
+      <button class="mindctx-search-close" onClick={onClose} title="Close search">×</button>
     </div>
   );
 }
@@ -147,16 +147,16 @@ interface ViewSwitcherProps {
 
 export function ViewSwitcher({ currentView, onSwitch }: ViewSwitcherProps) {
   return (
-    <div class="minddoc-view-switcher">
+    <div class="mindctx-view-switcher">
       <button
-        class={`minddoc-switch-btn ${currentView === 'outline' ? 'is-active' : ''}`}
+        class={`mindctx-switch-btn ${currentView === 'outline' ? 'is-active' : ''}`}
         onClick={() => onSwitch('outline')}
         title="Outline view"
       >
         Outline
       </button>
       <button
-        class={`minddoc-switch-btn ${currentView === 'mindmap' ? 'is-active' : ''}`}
+        class={`mindctx-switch-btn ${currentView === 'mindmap' ? 'is-active' : ''}`}
         onClick={() => onSwitch('mindmap')}
         title="Mind map view"
       >
@@ -182,16 +182,16 @@ interface OutlineToolbarProps {
 
 export function OutlineToolbar({ onExpandAll, onCollapseAll, currentView, onSwitchView }: OutlineToolbarProps) {
   return (
-    <div class="minddoc-toolbar">
+    <div class="mindctx-toolbar">
       <button
-        class="minddoc-toolbar-btn"
+        class="mindctx-toolbar-btn"
         onClick={onExpandAll}
         title="Expand all"
       >
         Expand All
       </button>
       <button
-        class="minddoc-toolbar-btn"
+        class="mindctx-toolbar-btn"
         onClick={onCollapseAll}
         title="Collapse all"
       >
@@ -210,12 +210,12 @@ export function OutlineToolbar({ onExpandAll, onCollapseAll, currentView, onSwit
 
 ```tsx
 import { h } from 'preact';
-import type { MindDocNode } from '@minddoc/core';
+import type { MindCtxNode } from '@mindctx/core';
 import { InlineEditor } from './InlineEditor.js';
 import { DragIndicator } from './DragIndicator.js';
 
 interface OutlineNodeProps {
-  node: MindDocNode;
+  node: MindCtxNode;
   depth: number;
   isSelected: boolean;
   isEditing: boolean;
@@ -237,16 +237,16 @@ interface OutlineNodeProps {
 }
 
 function HighlightedTitle({ title, query }: { title: string; query: string }) {
-  if (!query) return <span class="minddoc-title">{title}</span>;
+  if (!query) return <span class="mindctx-title">{title}</span>;
   const lowerTitle = title.toLowerCase();
   const lowerQuery = query.toLowerCase();
   const idx = lowerTitle.indexOf(lowerQuery);
-  if (idx === -1) return <span class="minddoc-title">{title}</span>;
+  if (idx === -1) return <span class="mindctx-title">{title}</span>;
 
   return (
-    <span class="minddoc-title">
+    <span class="mindctx-title">
       {title.slice(0, idx)}
-      <mark class="minddoc-highlight">{title.slice(idx, idx + query.length)}</mark>
+      <mark class="mindctx-highlight">{title.slice(idx, idx + query.length)}</mark>
       {title.slice(idx + query.length)}
     </span>
   );
@@ -276,7 +276,7 @@ export function OutlineNode({
   const hasChildren = node.children.length > 0;
   const paddingLeft = depth * indentSize;
 
-  let className = 'minddoc-node';
+  let className = 'mindctx-node';
   if (isSelected) className += ' is-selected';
   if (dropPosition === 'child') className += ' drop-highlight';
 
@@ -296,21 +296,21 @@ export function OutlineNode({
     >
       {dropPosition === 'before' && <DragIndicator position="before" />}
 
-      <span class="minddoc-collapse-btn" onClick={(e) => { e.stopPropagation(); onToggleCollapse(); }}>
+      <span class="mindctx-collapse-btn" onClick={(e) => { e.stopPropagation(); onToggleCollapse(); }}>
         {hasChildren ? (isCollapsed ? '▸' : '▾') : ' '}
       </span>
 
-      <span class="minddoc-drag-handle">⋮⋮</span>
+      <span class="mindctx-drag-handle">⋮⋮</span>
 
       {node.checked !== null ? (
         <input
           type="checkbox"
-          class="minddoc-checkbox"
+          class="mindctx-checkbox"
           checked={node.checked}
           onClick={(e) => e.stopPropagation()}
         />
       ) : (
-        <span class="minddoc-bullet" />
+        <span class="mindctx-bullet" />
       )}
 
       {isEditing ? (
@@ -324,7 +324,7 @@ export function OutlineNode({
       )}
 
       {!isEditing && showNotePreview && node.note && (
-        <span class="minddoc-note-preview">{node.note.slice(0, 50)}</span>
+        <span class="mindctx-note-preview">{node.note.slice(0, 50)}</span>
       )}
 
       {dropPosition === 'after' && <DragIndicator position="after" />}
@@ -338,10 +338,10 @@ export function OutlineNode({
 ```tsx
 import { h } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
-import type { MindDocNode } from '@minddoc/core';
+import type { MindCtxNode } from '@mindctx/core';
 
 interface DetailPanelProps {
-  node: MindDocNode | null;
+  node: MindCtxNode | null;
   onUpdateNote: (nodeId: string, newNote: string) => void;
 }
 
@@ -355,8 +355,8 @@ export function DetailPanel({ node, onUpdateNote }: DetailPanelProps) {
   }, [node.id, node.note]);
 
   return (
-    <div class="minddoc-detail-panel">
-      <div class="minddoc-detail-note">
+    <div class="mindctx-detail-panel">
+      <div class="mindctx-detail-note">
         <textarea
           value={localNote}
           placeholder="Add note..."
@@ -369,9 +369,9 @@ export function DetailPanel({ node, onUpdateNote }: DetailPanelProps) {
         />
       </div>
       {node.blocks.length > 0 && (
-        <div class="minddoc-detail-blocks">
+        <div class="mindctx-detail-blocks">
           {node.blocks.map((block, i) => (
-            <pre key={i} class={`minddoc-block minddoc-block-${block.type}`}>
+            <pre key={i} class={`mindctx-block mindctx-block-${block.type}`}>
               <code>{block.raw}</code>
             </pre>
           ))}
@@ -408,8 +408,8 @@ The main outline view component. Adapted from `packages/obsidian/src/views/Outli
 import { h, Fragment } from 'preact';
 import { useState, useCallback, useMemo } from 'preact/hooks';
 import { signal, type Signal } from '@preact/signals';
-import { findNode, findParent, findIndex } from '@minddoc/core';
-import type { MindDocTree, MindDocNode, PartialOperation } from '@minddoc/core';
+import { findNode, findParent, findIndex } from '@mindctx/core';
+import type { MindCtxTree, MindCtxNode, PartialOperation } from '@mindctx/core';
 import { OutlineNode } from './components/OutlineNode.js';
 import { SearchBar } from './components/SearchBar.js';
 import type { WebviewBridge } from './WebviewBridge.js';
@@ -427,9 +427,9 @@ interface DragState {
   position: 'before' | 'after' | 'child' | null;
 }
 
-function getVisibleNodes(root: MindDocNode, collapsedIds: Set<string>): MindDocNode[] {
-  const result: MindDocNode[] = [];
-  function walk(node: MindDocNode) {
+function getVisibleNodes(root: MindCtxNode, collapsedIds: Set<string>): MindCtxNode[] {
+  const result: MindCtxNode[] = [];
+  function walk(node: MindCtxNode) {
     result.push(node);
     if (!collapsedIds.has(node.id)) {
       for (const child of node.children) {
@@ -443,11 +443,11 @@ function getVisibleNodes(root: MindDocNode, collapsedIds: Set<string>): MindDocN
   return result;
 }
 
-function filterTree(root: MindDocNode, query: string): Set<string> {
+function filterTree(root: MindCtxNode, query: string): Set<string> {
   const visibleIds = new Set<string>();
   const lowerQuery = query.toLowerCase();
 
-  function walk(node: MindDocNode, ancestors: string[]): boolean {
+  function walk(node: MindCtxNode, ancestors: string[]): boolean {
     const matches = node.title.toLowerCase().includes(lowerQuery);
     let hasMatchingDescendant = false;
 
@@ -470,10 +470,10 @@ function filterTree(root: MindDocNode, query: string): Set<string> {
   return visibleIds;
 }
 
-function countMatches(root: MindDocNode, query: string): number {
+function countMatches(root: MindCtxNode, query: string): number {
   const lowerQuery = query.toLowerCase();
   let count = 0;
-  function walk(node: MindDocNode) {
+  function walk(node: MindCtxNode) {
     if (node.title.toLowerCase().includes(lowerQuery)) count++;
     node.children.forEach(walk);
   }
@@ -481,10 +481,10 @@ function countMatches(root: MindDocNode, query: string): number {
   return count;
 }
 
-function isDescendant(root: MindDocNode, ancestorId: string, nodeId: string): boolean {
+function isDescendant(root: MindCtxNode, ancestorId: string, nodeId: string): boolean {
   const ancestor = findNode(root, ancestorId);
   if (!ancestor) return false;
-  function check(node: MindDocNode): boolean {
+  function check(node: MindCtxNode): boolean {
     if (node.id === nodeId) return true;
     return node.children.some(check);
   }
@@ -511,7 +511,7 @@ export function OutlineView({
   const [showSearch, setShowSearch] = useState(false);
 
   const tree = bridge.tree.value;
-  if (!tree) return <div class="minddoc-outline">Loading...</div>;
+  if (!tree) return <div class="mindctx-outline">Loading...</div>;
 
   const filterIds = useMemo(
     () => searchQuery ? filterTree(tree.root, searchQuery) : null,
@@ -634,7 +634,7 @@ export function OutlineView({
     }
   }, [tree, bridge]);
 
-  function renderNode(node: MindDocNode, depth: number): h.JSX.Element | null {
+  function renderNode(node: MindCtxNode, depth: number): h.JSX.Element | null {
     if (filterIds && !filterIds.has(node.id)) return null;
 
     const isCollapsed = collapsedIds.value.has(node.id);
@@ -702,7 +702,7 @@ export function OutlineView({
 
   return (
     <div
-      class="minddoc-outline"
+      class="mindctx-outline"
       onKeyDown={handleKeyDown}
       onDragEnd={() => setDragState(null)}
       tabIndex={-1}
@@ -735,14 +735,14 @@ git commit -m "feat(vscode): add OutlineView with keyboard shortcuts and drag-an
 **Files:**
 - Modify: `packages/vscode/src/webview/App.tsx`
 
-Replace the placeholder with the full MindDoc layout: toolbar + conditional view + detail panel. For Phase 2, only outline view is functional; mind map shows a placeholder.
+Replace the placeholder with the full MindCtx layout: toolbar + conditional view + detail panel. For Phase 2, only outline view is functional; mind map shows a placeholder.
 
 - [ ] **Step 1: Rewrite App.tsx**
 
 ```tsx
 import { h } from 'preact';
 import { signal } from '@preact/signals';
-import { findNode } from '@minddoc/core';
+import { findNode } from '@mindctx/core';
 import { WebviewBridge } from './WebviewBridge.js';
 import { OutlineToolbar } from './components/OutlineToolbar.js';
 import { OutlineView } from './OutlineView.js';
@@ -789,13 +789,13 @@ export function App() {
   const view = bridge.activeView.value;
 
   if (!tree) {
-    return <div class="minddoc-loading">Loading...</div>;
+    return <div class="mindctx-loading">Loading...</div>;
   }
 
   const selectedNode = selectedNodeId.value ? findNode(tree.root, selectedNodeId.value) : null;
 
   return (
-    <div class="minddoc-container">
+    <div class="mindctx-container">
       <OutlineToolbar
         currentView={view}
         onSwitchView={(v) => {
@@ -807,7 +807,7 @@ export function App() {
           collapsedIds.value = new Set(getAllNodeIds(tree.root));
         }}
       />
-      <div class="minddoc-main-area">
+      <div class="mindctx-main-area">
         {view === 'outline' ? (
           <OutlineView
             bridge={bridge}
@@ -816,7 +816,7 @@ export function App() {
             editingNodeId={editingNodeId}
           />
         ) : (
-          <div class="minddoc-loading">Mind Map view coming in Phase 3.</div>
+          <div class="mindctx-loading">Mind Map view coming in Phase 3.</div>
         )}
       </div>
       {view === 'outline' && selectedNode && (
@@ -863,7 +863,7 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
 - [ ] **Step 1: Create outline.css**
 
 ```css
-.minddoc-container {
+.mindctx-container {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -872,7 +872,7 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   font-family: var(--vscode-font-family);
 }
 
-.minddoc-toolbar {
+.mindctx-toolbar {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -880,7 +880,7 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   border-bottom: 1px solid var(--vscode-panel-border);
 }
 
-.minddoc-toolbar-btn {
+.mindctx-toolbar-btn {
   padding: 4px 8px;
   border-radius: 4px;
   border: none;
@@ -890,18 +890,18 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   font-size: 12px;
 }
 
-.minddoc-toolbar-btn:hover {
+.mindctx-toolbar-btn:hover {
   background: var(--vscode-button-secondaryHoverBackground);
 }
 
-.minddoc-main-area {
+.mindctx-main-area {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.minddoc-outline {
+.mindctx-outline {
   font-family: var(--vscode-font-family);
   font-size: 14px;
   padding: 8px;
@@ -910,7 +910,7 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   outline: none;
 }
 
-.minddoc-node {
+.mindctx-node {
   display: flex;
   align-items: center;
   height: 32px;
@@ -921,16 +921,16 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   position: relative;
 }
 
-.minddoc-node:hover {
+.mindctx-node:hover {
   background: var(--vscode-list-hoverBackground);
 }
 
-.minddoc-node.is-selected {
+.mindctx-node.is-selected {
   background: var(--vscode-list-activeSelectionBackground);
   color: var(--vscode-list-activeSelectionForeground);
 }
 
-.minddoc-collapse-btn {
+.mindctx-collapse-btn {
   width: 20px;
   height: 20px;
   display: flex;
@@ -944,11 +944,11 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   padding: 0;
 }
 
-.minddoc-collapse-btn:hover {
+.mindctx-collapse-btn:hover {
   color: var(--vscode-foreground);
 }
 
-.minddoc-drag-handle {
+.mindctx-drag-handle {
   width: 16px;
   height: 16px;
   opacity: 0;
@@ -961,11 +961,11 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   font-size: 10px;
 }
 
-.minddoc-node:hover .minddoc-drag-handle {
+.mindctx-node:hover .mindctx-drag-handle {
   opacity: 1;
 }
 
-.minddoc-bullet {
+.mindctx-bullet {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -974,19 +974,19 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   flex-shrink: 0;
 }
 
-.minddoc-checkbox {
+.mindctx-checkbox {
   margin: 0 4px;
   flex-shrink: 0;
 }
 
-.minddoc-title {
+.mindctx-title {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.minddoc-note-preview {
+.mindctx-note-preview {
   color: var(--vscode-descriptionForeground);
   font-size: 12px;
   margin-left: 8px;
@@ -996,7 +996,7 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   max-width: 200px;
 }
 
-.minddoc-inline-editor {
+.mindctx-inline-editor {
   background: var(--vscode-input-background);
   border: 1px solid var(--vscode-focusBorder);
   border-radius: 2px;
@@ -1008,7 +1008,7 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   outline: none;
 }
 
-.minddoc-drop-line {
+.mindctx-drop-line {
   position: absolute;
   left: 0;
   right: 0;
@@ -1017,20 +1017,20 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   pointer-events: none;
 }
 
-.minddoc-drop-line.before {
+.mindctx-drop-line.before {
   top: 0;
 }
 
-.minddoc-drop-line.after {
+.mindctx-drop-line.after {
   bottom: 0;
 }
 
-.minddoc-node.drop-highlight {
+.mindctx-node.drop-highlight {
   background: var(--vscode-list-activeSelectionBackground) !important;
 }
 
 /* View Switcher */
-.minddoc-view-switcher {
+.mindctx-view-switcher {
   display: flex;
   gap: 2px;
   padding: 2px;
@@ -1038,7 +1038,7 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   border-radius: 6px;
 }
 
-.minddoc-switch-btn {
+.mindctx-switch-btn {
   padding: 4px 12px;
   border: none;
   border-radius: 4px;
@@ -1048,14 +1048,14 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   font-size: 12px;
 }
 
-.minddoc-switch-btn.is-active {
+.mindctx-switch-btn.is-active {
   background: var(--vscode-editor-background);
   color: var(--vscode-foreground);
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 /* Search Bar */
-.minddoc-search-bar {
+.mindctx-search-bar {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1064,7 +1064,7 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   background: var(--vscode-sideBar-background);
 }
 
-.minddoc-search-input {
+.mindctx-search-input {
   flex: 1;
   border: 1px solid var(--vscode-input-border);
   border-radius: 4px;
@@ -1075,17 +1075,17 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   outline: none;
 }
 
-.minddoc-search-input:focus {
+.mindctx-search-input:focus {
   border-color: var(--vscode-focusBorder);
 }
 
-.minddoc-search-count {
+.mindctx-search-count {
   font-size: 12px;
   color: var(--vscode-descriptionForeground);
   white-space: nowrap;
 }
 
-.minddoc-search-close {
+.mindctx-search-close {
   border: none;
   background: none;
   color: var(--vscode-descriptionForeground);
@@ -1094,20 +1094,20 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   padding: 2px 4px;
 }
 
-.minddoc-highlight {
+.mindctx-highlight {
   background: var(--vscode-editor-findMatchHighlightBackground, rgba(255, 208, 0, 0.4));
   border-radius: 2px;
 }
 
 /* Detail Panel */
-.minddoc-detail-panel {
+.mindctx-detail-panel {
   border-top: 1px solid var(--vscode-panel-border);
   padding: 12px;
   max-height: 200px;
   overflow-y: auto;
 }
 
-.minddoc-detail-note textarea {
+.mindctx-detail-note textarea {
   width: 100%;
   min-height: 60px;
   border: 1px solid var(--vscode-input-border);
@@ -1120,12 +1120,12 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   resize: vertical;
 }
 
-.minddoc-detail-note textarea:focus {
+.mindctx-detail-note textarea:focus {
   border-color: var(--vscode-focusBorder);
   outline: none;
 }
 
-.minddoc-detail-blocks pre {
+.mindctx-detail-blocks pre {
   background: var(--vscode-textBlockQuote-background);
   padding: 8px;
   border-radius: 4px;
@@ -1134,7 +1134,7 @@ Adapts the Obsidian CSS to use VSCode CSS variables. Key mappings:
   margin: 4px 0;
 }
 
-.minddoc-loading {
+.mindctx-loading {
   flex: 1;
   display: flex;
   align-items: center;
@@ -1176,7 +1176,7 @@ esbuild already bundles CSS imported in JS by default — it will output a `.css
 
 - [ ] **Step 1: Verify esbuild CSS handling**
 
-No config change needed — esbuild automatically processes CSS imports and outputs `dist/webview.css` alongside `dist/webview.js`. The HTML template in `MindDocEditorProvider.ts` already loads `${cssUri}` which points to a CSS file in dist. Verify by running:
+No config change needed — esbuild automatically processes CSS imports and outputs `dist/webview.css` alongside `dist/webview.js`. The HTML template in `MindCtxEditorProvider.ts` already loads `${cssUri}` which points to a CSS file in dist. Verify by running:
 
 ```bash
 cd packages/vscode && pnpm run build
@@ -1187,7 +1187,7 @@ Expected output: `dist/webview.js` and `dist/webview.css`
 
 - [ ] **Step 2: Verify HTML template loads CSS**
 
-Check that `MindDocEditorProvider.ts` generates a `<link>` tag for the CSS. The existing implementation should already have this from Phase 1 (it loads `webview.css` from dist). If not, update the `getWebviewHtml` method to include:
+Check that `MindCtxEditorProvider.ts` generates a `<link>` tag for the CSS. The existing implementation should already have this from Phase 1 (it loads `webview.css` from dist). If not, update the `getWebviewHtml` method to include:
 
 ```html
 <link rel="stylesheet" href="${cssUri}">
@@ -1214,8 +1214,8 @@ git commit -m "fix(vscode): ensure CSS is loaded in webview HTML template"
 
 ```bash
 pnpm install
-pnpm --filter @minddoc/core build
-pnpm --filter vscode-minddoc build
+pnpm --filter @mindctx/core build
+pnpm --filter vscode-mindctx build
 ```
 
 Expected: Both `dist/webview.js` and `dist/webview.css` generated without errors.
@@ -1235,7 +1235,7 @@ ls -la packages/vscode/dist/
 ```
 
 Expected:
-- `extension.js` ~300KB (includes @minddoc/core bundled in)
+- `extension.js` ~300KB (includes @mindctx/core bundled in)
 - `webview.js` ~25-35KB (Preact + components + core tree utilities)
 - `webview.css` ~3-5KB (all outline styles)
 

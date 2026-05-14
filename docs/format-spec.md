@@ -1,19 +1,19 @@
 # mind.md 格式规范
 
-MindDoc 使用标准 Markdown 作为数据格式。本文档定义 `.mind.md` 文件的完整规范。
+MindCtx 使用标准 Markdown 作为数据格式。本文档定义 `.mind.md` 文件的完整规范。
 
 ## 文件识别
 
-一个 Markdown 文件通过以下两种方式被识别为 MindDoc 文档：
+一个 Markdown 文件通过以下两种方式被识别为 MindCtx 文档：
 
 1. 文件扩展名为 `.mind.md`
-2. 任意 `.md` 文件的 YAML frontmatter 中包含 `minddoc: true`
+2. 任意 `.md` 文件的 YAML frontmatter 中包含 `mindctx: true`
 
 ## Frontmatter
 
 ```yaml
 ---
-minddoc: true
+mindctx: true
 default-view: outline
 heading-depth: 3
 ---
@@ -21,13 +21,13 @@ heading-depth: 3
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `minddoc` | boolean | — | 标记文件为 MindDoc 文档（非 `.mind.md` 文件必填） |
+| `mindctx` | boolean | — | 标记文件为 MindCtx 文档（非 `.mind.md` 文件必填） |
 | `default-view` | string | `"outline"` | 默认打开的视图，可选 `"outline"` 或 `"mindmap"` |
 | `heading-depth` | integer | `3` | 标题最大深度（1–6），超过此深度的节点序列化为列表项 |
 
 ## 树结构映射
 
-MindDoc 将 Markdown 解析为树形结构。映射规则如下：
+MindCtx 将 Markdown 解析为树形结构。映射规则如下：
 
 ### 标题 → 分支节点
 
@@ -161,7 +161,7 @@ MindDoc 将 Markdown 解析为树形结构。映射规则如下：
 
 ## 序列化规则
 
-MindDoc 的序列化器遵循「最小变更」原则：
+MindCtx 的序列化器遵循「最小变更」原则：
 
 1. **未修改节点**：输出原始文本（`rawText`），保持用户的原始格式
 2. **已修改节点**（`dirty: true`）：从结构化数据重新生成
@@ -205,7 +205,7 @@ ID = fnv1a64("祖先标题1/祖先标题2/当前标题:兄弟索引")
 
 ```markdown
 ---
-minddoc: true
+mindctx: true
 default-view: outline
 heading-depth: 3
 ---
@@ -281,4 +281,4 @@ heading-depth: 3
 
 ## 与标准 Markdown 的兼容性
 
-`.mind.md` 文件是合法的 Markdown，可以在任何 Markdown 编辑器中直接阅读和编辑。MindDoc 不引入任何私有语法，仅通过 frontmatter 中的 `minddoc: true` 和文件扩展名来标识。
+`.mind.md` 文件是合法的 Markdown，可以在任何 Markdown 编辑器中直接阅读和编辑。MindCtx 不引入任何私有语法，仅通过 frontmatter 中的 `mindctx: true` 和文件扩展名来标识。

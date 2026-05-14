@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { parse, serialize, serializeSubtree } from '@minddoc/core';
+import { parse, serialize, serializeSubtree } from '@mindctx/core';
 
 describe('Serializer', () => {
   test('基本标题序列化', () => {
@@ -39,7 +39,7 @@ describe('Serializer', () => {
   });
 
   test('frontmatter 正确输出', () => {
-    const md = '---\nminddoc: true\n---\n\n# Title\n\n';
+    const md = '---\nmindctx: true\n---\n\n# Title\n\n';
     const tree = parse(md);
     expect(serialize(tree)).toBe(md);
   });

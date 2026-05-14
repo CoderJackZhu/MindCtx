@@ -39,7 +39,7 @@ export function importOPML(opmlText: string, fileName: string): string {
 
   const topOutlines = Array.from(body.children).filter(c => c.tagName.toLowerCase() === 'outline');
 
-  let markdown = `---\nminddoc: true\ndefault-view: outline\nheading-depth: ${headingDepth}\n---\n\n`;
+  let markdown = `---\nmindctx: true\ndefault-view: outline\nheading-depth: ${headingDepth}\n---\n\n`;
 
   if (topOutlines.length === 1) {
     const root = topOutlines[0];

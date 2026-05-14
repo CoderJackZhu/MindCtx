@@ -1,2 +1,2 @@
-export const MINDDOC_VIEW_TYPE = 'minddoc-view';
-export const PLUGIN_ID = 'minddoc';
+export const MINDCTX_VIEW_TYPE = 'mindctx-view';
+export const PLUGIN_ID = 'mindctx';
