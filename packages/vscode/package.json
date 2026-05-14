@@ -206,5 +206,8 @@
     "html-to-image": "^1.11.13",
     "preact": "^10.19",
     "typescript": "^5.4"
+  },
+  "dependencies": {
+    "mind-elixir": "^4.6.2"
   }
 }
