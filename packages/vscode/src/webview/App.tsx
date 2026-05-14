@@ -4,6 +4,7 @@ import { findNode } from '@minddoc/core';
 import { WebviewBridge } from './WebviewBridge.js';
 import { OutlineToolbar } from './components/OutlineToolbar.js';
 import { OutlineView } from './OutlineView.js';
+import { MindMapView } from './MindMapView.js';
 import { DetailPanel } from './components/DetailPanel.js';
 
 const bridge = new WebviewBridge();
@@ -39,6 +40,8 @@ bridge.onCommand((cmd) => {
       bridge.syncState({ activeView: next });
       break;
     }
+    case 'export.png':
+      break;
   }
 });
 
@@ -74,7 +77,7 @@ export function App() {
             editingNodeId={editingNodeId}
           />
         ) : (
-          <div class="minddoc-loading">Mind Map view coming in Phase 3.</div>
+          <MindMapView bridge={bridge} collapsedIds={collapsedIds} />
         )}
       </div>
       {view === 'outline' && selectedNode && (
