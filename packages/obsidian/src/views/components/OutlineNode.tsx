@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import type { MindDocNode } from '../../core/types.js';
+import type { MindDocNode } from '@minddoc/core';
 import { InlineEditor } from './InlineEditor.js';
 import { DragIndicator } from './DragIndicator.js';
 

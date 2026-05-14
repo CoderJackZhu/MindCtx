@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { render } from 'preact';
-import { parse } from '../core/parser.js';
+import { parse } from '@minddoc/core';
 import { EmbedView } from './EmbedView.js';
 import type MindDocPlugin from '../main.js';
 

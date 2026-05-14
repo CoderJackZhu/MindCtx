@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
-import type { MindDocNode } from '../../core/types.js';
+import type { MindDocNode } from '@minddoc/core';
 
 interface DetailPanelProps {
   node: MindDocNode | null;

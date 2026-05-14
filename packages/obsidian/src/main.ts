@@ -1,17 +1,19 @@
 import { Plugin, TFile, TAbstractFile, Notice, Menu } from 'obsidian';
+import {
+  parse,
+  importOPML,
+  importFreeMind,
+  exportOPML,
+  exportJSON,
+  copyAsAIContext,
+} from '@minddoc/core';
+import type { MindDocNode } from '@minddoc/core';
 import { MINDDOC_VIEW_TYPE } from './constants.js';
 import { MindDocView } from './views/MindDocView.js';
 import { MindDocSettingTab, DEFAULT_SETTINGS } from './settings/settings.js';
 import { registerEmbedProcessor } from './views/EmbedProcessor.js';
-import { importOPML } from './importers/opml.js';
-import { importFreeMind } from './importers/freemind.js';
-import { exportOPML } from './exporters/opml.js';
-import { exportJSON } from './exporters/json.js';
 import { exportPNG } from './exporters/image.js';
-import { copyAsAIContext } from './commands/aiCommands.js';
-import { parse } from './core/parser.js';
 import type { MindDocSettings } from './settings/settings.js';
-import type { MindDocNode } from './core/types.js';
 
 export default class MindDocPlugin extends Plugin {
   settings!: MindDocSettings;

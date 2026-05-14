@@ -3,11 +3,10 @@ import { useState, useRef, useEffect } from 'preact/hooks';
 import { TFile } from 'obsidian';
 import MindElixir from 'mind-elixir';
 import type { MindElixirInstance } from 'mind-elixir';
-import { parse } from '../core/parser.js';
-import { getMindElixirDirection, treeToMindElixirData } from '../bridge/mindElixirBridge.js';
+import { parse, getMindElixirDirection, treeToMindElixirData } from '@minddoc/core';
+import type { MindDocTree, MindDocNode } from '@minddoc/core';
 import { getObsidianTheme, applyTheme } from '../bridge/mindElixirTheme.js';
 import { MINDDOC_VIEW_TYPE } from '../constants.js';
-import type { MindDocTree, MindDocNode } from '../core/types.js';
 import type { EmbedConfig } from './EmbedProcessor.js';
 import type MindDocPlugin from '../main.js';
 

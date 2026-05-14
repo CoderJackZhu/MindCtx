@@ -1,8 +1,8 @@
 import { h, Fragment } from 'preact';
 import { useState, useCallback, useMemo } from 'preact/hooks';
 import type { Signal } from '@preact/signals';
-import type { MindDocTree, MindDocNode, PartialOperation } from '../core/types.js';
-import { findNode, findParent, findIndex } from '../core/operations.js';
+import { findNode, findParent, findIndex } from '@minddoc/core';
+import type { MindDocTree, MindDocNode, PartialOperation } from '@minddoc/core';
 import { OutlineNode } from './components/OutlineNode.js';
 import { SearchBar } from './components/SearchBar.js';
 

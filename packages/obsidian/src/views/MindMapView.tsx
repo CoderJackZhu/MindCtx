@@ -7,11 +7,10 @@ import {
   treeToMindElixirData,
   setupMindElixirEvents,
   syncMindElixirAddChildButtons,
-} from '../bridge/mindElixirBridge.js';
+  findNode,
+} from '@minddoc/core';
+import type { MindDocTree, PartialOperation, MindMapDirection } from '@minddoc/core';
 import { getObsidianTheme, applyTheme } from '../bridge/mindElixirTheme.js';
-import type { MindDocTree, PartialOperation } from '../core/types.js';
-import { findNode } from '../core/operations.js';
-import type { MindMapDirection } from '../bridge/mindElixirBridge.js';
 
 interface MindMapViewProps {
   tree: MindDocTree | null;

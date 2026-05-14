@@ -2,13 +2,9 @@ import { h } from 'preact';
 import { render } from 'preact';
 import { signal } from '@preact/signals';
 import { ItemView, WorkspaceLeaf, TFile } from 'obsidian';
-import { parse } from '../core/parser.js';
-import { serialize } from '../core/serializer.js';
-import { applyOperation } from '../core/operations.js';
-import { UndoManager } from '../core/undo.js';
-import type { MindDocTree, MindDocNode, PartialOperation } from '../core/types.js';
+import { parse, serialize, applyOperation, UndoManager, debounce } from '@minddoc/core';
+import type { MindDocTree, MindDocNode, PartialOperation } from '@minddoc/core';
 import { MINDDOC_VIEW_TYPE } from '../constants.js';
-import { debounce } from '../utils/debounce.js';
 import { MindDocRoot } from './MindDocRoot.js';
 import type MindDocPlugin from '../main.js';
 

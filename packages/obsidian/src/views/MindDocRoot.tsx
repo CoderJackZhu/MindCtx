@@ -1,12 +1,11 @@
 import { h } from 'preact';
 import type { Signal } from '@preact/signals';
-import type { MindDocTree, PartialOperation } from '../core/types.js';
-import { findNode } from '../core/operations.js';
+import { findNode } from '@minddoc/core';
+import type { MindDocTree, PartialOperation, MindMapDirection } from '@minddoc/core';
 import { OutlineToolbar } from './components/OutlineToolbar.js';
 import { OutlineView } from './OutlineView.js';
 import { MindMapView } from './MindMapView.js';
 import { DetailPanel } from './components/DetailPanel.js';
-import type { MindMapDirection } from '../bridge/mindElixirBridge.js';
 
 interface MindDocRootProps {
   treeSignal: Signal<MindDocTree | null>;
