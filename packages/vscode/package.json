@@ -1,0 +1,155 @@
+{
+  "name": "vscode-minddoc",
+  "displayName": "MindDoc",
+  "description": "Markdown-first structured outline editor with mind map view",
+  "version": "0.0.1",
+  "publisher": "minddoc",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onCustomEditor:minddoc.editor"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "minddoc.editor",
+        "displayName": "MindDoc Editor",
+        "selector": [
+          { "filenamePattern": "*.mind.md" }
+        ],
+        "priority": "default"
+      }
+    ],
+    "commands": [
+      {
+        "command": "minddoc.create",
+        "title": "MindDoc: Create New File"
+      },
+      {
+        "command": "minddoc.openAs",
+        "title": "MindDoc: Open with MindDoc"
+      },
+      {
+        "command": "minddoc.toggleView",
+        "title": "MindDoc: Toggle View (Outline / Mind Map)",
+        "icon": "$(symbol-structure)",
+        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+      },
+      {
+        "command": "minddoc.expandAll",
+        "title": "MindDoc: Expand All",
+        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+      },
+      {
+        "command": "minddoc.collapseAll",
+        "title": "MindDoc: Collapse All",
+        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+      },
+      {
+        "command": "minddoc.export.opml",
+        "title": "MindDoc: Export as OPML",
+        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+      },
+      {
+        "command": "minddoc.export.json",
+        "title": "MindDoc: Export as JSON",
+        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+      },
+      {
+        "command": "minddoc.export.png",
+        "title": "MindDoc: Export as PNG",
+        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+      },
+      {
+        "command": "minddoc.import.opml",
+        "title": "MindDoc: Import OPML"
+      },
+      {
+        "command": "minddoc.import.freemind",
+        "title": "MindDoc: Import FreeMind"
+      },
+      {
+        "command": "minddoc.copyAIContext",
+        "title": "MindDoc: Copy as AI Context",
+        "enablement": "activeCustomEditorId == 'minddoc.editor'"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "minddoc.toggleView",
+          "when": "activeCustomEditorId == 'minddoc.editor'",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "minddoc.openAs",
+          "when": "resourceExtname == .md",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "MindDoc",
+      "properties": {
+        "minddoc.defaultView": {
+          "type": "string",
+          "enum": ["outline", "mindmap"],
+          "default": "outline",
+          "description": "Default view when opening a file"
+        },
+        "minddoc.headingDepth": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 6,
+          "default": 3,
+          "description": "Maximum heading depth (deeper nodes become list items)"
+        },
+        "minddoc.autoSaveDelay": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 5000,
+          "default": 300,
+          "description": "Auto-save debounce delay in milliseconds"
+        },
+        "minddoc.outlineFontSize": {
+          "type": "number",
+          "minimum": 10,
+          "maximum": 24,
+          "default": 14,
+          "description": "Outline view font size in pixels"
+        },
+        "minddoc.showNotePreview": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show note preview next to node titles"
+        },
+        "minddoc.mindmapDirection": {
+          "type": "string",
+          "enum": ["side", "right", "left"],
+          "default": "side",
+          "description": "Mind map layout direction"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.config.mjs production",
+    "dev": "node esbuild.config.mjs --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@minddoc/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4",
+    "esbuild": "^0.20",
+    "preact": "^10.19",
+    "@preact/signals": "^1.2"
+  }
+}
