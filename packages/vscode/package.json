@@ -1,15 +1,38 @@
 {
   "name": "vscode-minddoc",
   "displayName": "MindDoc",
-  "description": "Markdown-first structured outline editor with mind map view",
-  "version": "0.0.1",
+  "description": "Markdown-first structured outline editor with mind map view. Write Markdown, see outlines, switch to mind maps.",
+  "version": "0.1.0",
   "publisher": "minddoc",
+  "license": "MIT",
+  "icon": "assets/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CoderJackZhu/MindDoc"
+  },
+  "homepage": "https://github.com/CoderJackZhu/MindDoc#readme",
+  "bugs": {
+    "url": "https://github.com/CoderJackZhu/MindDoc/issues"
+  },
+  "keywords": [
+    "mindmap",
+    "outline",
+    "markdown",
+    "mind map",
+    "structured editor",
+    "tree view"
+  ],
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
-    "Other"
+    "Visualization",
+    "Notebooks"
   ],
+  "galleryBanner": {
+    "color": "#1e1e2e",
+    "theme": "dark"
+  },
   "activationEvents": [
     "onCustomEditor:minddoc.editor"
   ],
@@ -171,16 +194,16 @@
   "scripts": {
     "build": "node esbuild.config.mjs production",
     "dev": "node esbuild.config.mjs --watch",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@minddoc/core": "workspace:*",
-    "html-to-image": "^1.11.13"
+    "typecheck": "tsc --noEmit",
+    "package": "vsce package --no-dependencies",
+    "publish": "vsce publish --no-dependencies"
   },
   "devDependencies": {
+    "@minddoc/core": "workspace:*",
     "@preact/signals": "^1.2",
     "@types/vscode": "^1.85.0",
     "esbuild": "^0.20",
+    "html-to-image": "^1.11.13",
     "preact": "^10.19",
     "typescript": "^5.4"
   }

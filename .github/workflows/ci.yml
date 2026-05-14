@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter @minddoc/core typecheck
+      - run: pnpm --filter @minddoc/obsidian typecheck
+      - run: pnpm --filter vscode-minddoc typecheck
+
+      - run: pnpm --filter @minddoc/core test
+
+      - run: pnpm build

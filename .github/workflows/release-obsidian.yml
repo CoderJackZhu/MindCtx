@@ -1,0 +1,40 @@
+name: Release Obsidian Plugin
+
+on:
+  push:
+    tags:
+      - 'obsidian-v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter @minddoc/obsidian build
+
+      - name: Get version from tag
+        id: tag
+        run: echo "version=${GITHUB_REF#refs/tags/obsidian-v}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "Obsidian Plugin v${{ steps.tag.outputs.version }}"
+          files: |
+            packages/obsidian/main.js
+            packages/obsidian/manifest.json
+            packages/obsidian/styles.css
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

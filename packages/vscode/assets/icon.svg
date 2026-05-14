@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect width="128" height="128" rx="16" fill="#2d3748"/>
+  <circle cx="40" cy="64" r="8" fill="#63b3ed"/>
+  <circle cx="80" cy="40" r="6" fill="#68d391"/>
+  <circle cx="80" cy="64" r="6" fill="#68d391"/>
+  <circle cx="80" cy="88" r="6" fill="#68d391"/>
+  <line x1="48" y1="64" x2="74" y2="40" stroke="#a0aec0" stroke-width="2"/>
+  <line x1="48" y1="64" x2="74" y2="64" stroke="#a0aec0" stroke-width="2"/>
+  <line x1="48" y1="64" x2="74" y2="88" stroke="#a0aec0" stroke-width="2"/>
+  <text x="64" y="118" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="bold" fill="#e2e8f0">MindDoc</text>
+</svg>
