@@ -1,14 +1,14 @@
 # MindDoc
 
-Markdown-first structured outline editor for Obsidian with mind map view.
+Markdown-first structured outline editor with mind map view — for Obsidian and VS Code.
 
 Write standard Markdown, see interactive outlines, switch to mind maps — all backed by the same `.md` file.
 
 ## Features
 
 **Dual View**
-- Outline view with drag-and-drop, keyboard shortcuts, inline editing
-- Mind map view powered by Mind Elixir, with drag-and-drop node reorganization
+- Outline view: drag-and-drop, keyboard shortcuts, inline editing, search & filter
+- Mind map view: powered by Mind Elixir, with drag-and-drop, zoom, and focus mode
 - One-click switching between views (data stays in sync)
 
 **Round-trip Fidelity**
@@ -20,60 +20,24 @@ Write standard Markdown, see interactive outlines, switch to mind maps — all b
 - Drag-and-drop reordering (outline & mind map)
 - Inline title editing (double-click or F2)
 - Keyboard shortcuts: Tab/Shift+Tab (indent/outdent), Enter (new sibling), Delete, Ctrl+Z/Y (undo/redo)
-- Task checkbox toggle (null → unchecked → checked → null)
+- Task checkbox toggle
 - Node detail panel for editing notes and viewing content blocks
 
-**Search & Filter**
-- Ctrl+F to search nodes by title
-- Real-time filtering with match highlighting
-- Ancestor nodes stay visible for context
-
-**Embed Blocks**
-- Embed MindDoc views in any Obsidian note via code blocks
-- Configurable: view mode, height, max depth, initial collapse state
-- Read-only with view switching and refresh
-
-````markdown
-```minddoc
-file: [[my-outline.mind.md]]
-mode: switchable
-height: 450
-default: outline
-```
-````
-
 **Import & Export**
-- Import: OPML (幕布/WorkFlowy), FreeMind (.mm)
+- Import: OPML (WorkFlowy/Mubu), FreeMind (.mm)
 - Export: OPML, JSON, PNG (mind map view)
 - Copy as AI Context (structured prompt for LLMs)
 
-**Theme Adaptive**
-- Automatically follows Obsidian light/dark theme
-- Mind map colors derived from Obsidian CSS variables
+## Platforms
 
-## Installation
+| Platform | Package | Notes |
+|----------|---------|-------|
+| [Obsidian](packages/obsidian/) | `@minddoc/obsidian` | Community plugin, embed blocks, mobile support |
+| [VS Code](packages/vscode/) | `vscode-minddoc` | Custom Editor extension, native undo/redo integration |
 
-### From Obsidian Community Plugins
+Both platforms share the same core engine: [`@minddoc/core`](packages/core/).
 
-Search for "MindDoc" in Settings → Community Plugins → Browse.
-
-### Manual Installation
-
-1. Download `main.js`, `manifest.json`, and `styles.css` from the latest release
-2. Create folder `<vault>/.obsidian/plugins/minddoc/`
-3. Copy the three files into that folder
-4. Enable "MindDoc" in Settings → Community Plugins
-
-## Usage
-
-### Creating a MindDoc File
-
-Either:
-- Use command palette: "MindDoc: 创建 MindDoc 文件"
-- Create any `.mind.md` file
-- Add `minddoc: true` to any Markdown file's frontmatter
-
-### File Format
+## File Format
 
 MindDoc works with standard Markdown. Headings become tree branches, lists become leaf nodes:
 
@@ -97,9 +61,9 @@ heading-depth: 3
 - Testing
 ```
 
-The `heading-depth` setting (default 3) controls when headings become list items. Depth 1–N are headings, deeper nodes are list items.
+The `heading-depth` setting (default 3) controls when headings become list items. See [format spec](docs/format-spec.md) for details.
 
-### Keyboard Shortcuts
+## Keyboard Shortcuts
 
 | Key | Action |
 |-----|--------|
@@ -114,69 +78,57 @@ The `heading-depth` setting (default 3) controls when headings become list items
 | Ctrl+Shift+Z | Redo |
 | Ctrl+F | Search |
 
-### Commands
-
-| Command | Description |
-|---------|-------------|
-| 创建 MindDoc 文件 | Create a new .mind.md file |
-| 以 MindDoc 打开当前文件 | Open current file in MindDoc view |
-| 切换视图（大纲 ↔ 脑图） | Toggle between outline and mind map |
-| 展开全部节点 | Expand all nodes |
-| 折叠全部节点 | Collapse all nodes |
-| 导入 OPML 文件 | Import from OPML |
-| 导入 FreeMind 文件 | Import from .mm |
-| 导出为 OPML | Export to OPML |
-| 导出为 JSON | Export tree as JSON |
-| 导出为 PNG | Export mind map as PNG |
-| 复制为 AI 上下文 | Copy structured content for LLM prompts |
-
-## Settings
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| 默认视图 | outline | Default view when opening files |
-| 默认标题深度 | 3 | Heading levels before converting to list items |
-| 自动保存延迟 | 300ms | Debounce delay before writing to file |
-| 大纲字体大小 | 14px | Font size in outline view |
-| 显示备注预览 | true | Show note preview next to node title |
-| 脑图方向 | side | Mind map layout direction |
-| 虚拟滚动 | true | Enable virtual scrolling for large files |
-| 虚拟滚动阈值 | 200 | Node count threshold for virtual scrolling |
-| 嵌入块默认高度 | 400px | Default height for embed blocks |
-
 ## Development
 
 ```bash
-npm install
-npm run dev      # watch mode
-npm run build    # production build
-npm test         # run tests
-npm run typecheck # TypeScript check
+pnpm install          # install dependencies
+pnpm build            # build all packages
+pnpm test             # run core engine tests (125 tests)
+pnpm typecheck        # typecheck all packages
 ```
 
-### Architecture
+### Project Structure
 
 ```
-src/
-  core/           # Pure logic (parser, serializer, operations, undo)
-  views/          # Preact components (outline, mind map, embed)
-  bridge/         # Mind Elixir integration (data + theme)
-  importers/      # OPML, FreeMind importers
-  exporters/      # OPML, JSON, image exporters
-  commands/       # AI commands
-  settings/       # Plugin settings
-  utils/          # Debounce utility
-tests/            # Vitest test suite (75 tests)
+packages/
+  core/               # Shared engine (parser, serializer, operations, undo, import/export)
+  obsidian/           # Obsidian plugin
+  vscode/             # VS Code extension
+docs/
+  format-spec.md      # .mind.md format specification
+examples/             # Sample .mind.md files
 ```
 
 ### Tech Stack
 
-- TypeScript (strict mode, ES2022)
-- Preact + @preact/signals (UI rendering)
-- unified/remark (Markdown parsing)
-- Mind Elixir v4 (mind map rendering)
-- esbuild (bundling)
-- Vitest (testing)
+- **Tooling**: pnpm workspaces monorepo, TypeScript 5 (strict)
+- **Core**: unified/remark (Markdown parsing), tsup (library bundling)
+- **UI**: Preact + @preact/signals, Mind Elixir v4 (mind map rendering)
+- **Build**: esbuild (Obsidian plugin + VSCode extension dual-target)
+- **Testing**: Vitest
+
+### Package Development
+
+```bash
+# Develop Obsidian plugin (watch mode)
+pnpm --filter @minddoc/obsidian dev
+
+# Develop VS Code extension (watch mode)
+pnpm --filter vscode-minddoc dev
+
+# Build core only
+pnpm --filter @minddoc/core build
+
+# Run tests
+pnpm --filter @minddoc/core test
+```
+
+## Documentation
+
+- [Quick Start](docs/快速上手.md)
+- [Feature Guide](docs/功能指南.md)
+- [Advanced Tips](docs/进阶技巧.md)
+- [Format Spec](docs/format-spec.md)
 
 ## License
 
