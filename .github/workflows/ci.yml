@@ -24,6 +24,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm --filter @minddoc/core typecheck
+      - run: pnpm --filter @minddoc/core build
+
       - run: pnpm --filter @minddoc/obsidian typecheck
       - run: pnpm --filter vscode-minddoc typecheck
 
