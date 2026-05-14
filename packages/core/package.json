@@ -1,0 +1,31 @@
+{
+  "name": "@minddoc/core",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "unified": "^11",
+    "remark-parse": "^11",
+    "remark-frontmatter": "^5",
+    "remark-gfm": "^4",
+    "remark-math": "^6",
+    "yaml": "^2"
+  },
+  "devDependencies": {
+    "typescript": "^5.4",
+    "tsup": "^8"
+  }
+}
