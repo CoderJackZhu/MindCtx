@@ -24,18 +24,19 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "unified": "^11",
-    "remark-parse": "^11",
+    "mind-elixir": "^4.0",
     "remark-frontmatter": "^5",
     "remark-gfm": "^4",
     "remark-math": "^6",
-    "yaml": "^2",
-    "mind-elixir": "^4.0"
+    "remark-parse": "^11",
+    "unified": "^11",
+    "yaml": "^2"
   },
   "devDependencies": {
-    "typescript": "^5.4",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^20",
     "tsup": "^8",
-    "vitest": "^2.0",
-    "@types/node": "^20"
+    "typescript": "^5.4",
+    "vitest": "^2.0"
   }
 }
