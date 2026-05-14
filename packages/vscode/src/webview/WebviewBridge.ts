@@ -31,6 +31,7 @@ export class WebviewBridge {
     selectedBackground: '#094771',
   });
   readonly activeView: Signal<'outline' | 'mindmap'> = signal('outline');
+  readonly initialCollapsedIds: Signal<string[]> = signal([]);
 
   private _commandHandlers: Array<(cmd: WebviewCommand) => void> = [];
 
@@ -79,6 +80,9 @@ export class WebviewBridge {
         this.settings.value = msg.settings;
         if (msg.state) {
           this.activeView.value = msg.state.activeView;
+          this.initialCollapsedIds.value = msg.state.collapsedNodeIds;
+        } else {
+          this.activeView.value = msg.settings.defaultView;
         }
         break;
       case 'treeUpdated':

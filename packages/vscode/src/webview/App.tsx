@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { signal } from '@preact/signals';
+import { signal, effect } from '@preact/signals';
 import { findNode } from '@minddoc/core';
 import { toPng } from 'html-to-image';
 import { WebviewBridge } from './WebviewBridge.js';
@@ -13,6 +13,18 @@ const bridge = new WebviewBridge();
 const collapsedIds = signal<Set<string>>(new Set());
 const selectedNodeId = signal<string | null>(null);
 const editingNodeId = signal<string | null>(null);
+
+effect(() => {
+  const ids = bridge.initialCollapsedIds.value;
+  if (ids.length > 0) {
+    collapsedIds.value = new Set(ids);
+  }
+});
+
+effect(() => {
+  const ids = collapsedIds.value;
+  bridge.syncState({ collapsedNodeIds: [...ids] });
+});
 
 function getAllNodeIds(node: { id: string; children: { id: string; children: any[] }[] }): string[] {
   const ids: string[] = [];
