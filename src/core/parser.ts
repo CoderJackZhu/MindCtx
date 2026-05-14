@@ -249,7 +249,7 @@ export function parse(markdown: string, options?: ParseOptions): MindDocTree {
   // Step 3: Create virtual root
   const filePath = options?.filePath || '';
   const fileName = filePath
-    ? filePath.replace(/.*[\\/]/, '').replace(/\.[^.]+$/, '')
+    ? filePath.replace(/.*[\\/]/, '').replace(/\.mind\.md$/, '').replace(/\.md$/, '')
     : 'Untitled';
 
   const root = createNode({

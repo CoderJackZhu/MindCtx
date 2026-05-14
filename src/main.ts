@@ -198,7 +198,12 @@ export default class MindDocPlugin extends Plugin {
           menu.addItem((item) => {
             item.setTitle('以大纲打开')
               .setIcon('list-tree')
-              .onClick(() => { void this.activateMindDocView(file); });
+              .onClick(() => { void this.activateMindDocView(file, 'outline'); });
+          });
+          menu.addItem((item) => {
+            item.setTitle('以脑图打开')
+              .setIcon('git-fork')
+              .onClick(() => { void this.activateMindDocView(file, 'mindmap'); });
           });
         }
 
@@ -235,18 +240,19 @@ export default class MindDocPlugin extends Plugin {
     await this.saveData(this.settings);
   }
 
-  async activateMindDocView(file: TFile) {
+  async activateMindDocView(file: TFile, view?: 'outline' | 'mindmap') {
     const existing = this.app.workspace.getLeavesOfType(MINDDOC_VIEW_TYPE)
       .find(leaf => {
-        const view = leaf.view;
-        return view instanceof MindDocView && view.file?.path === file.path;
+        const v = leaf.view;
+        return v instanceof MindDocView && v.file?.path === file.path;
       });
     if (existing) {
       await this.app.workspace.revealLeaf(existing);
+      if (view) (existing.view as MindDocView).switchView(view);
       return;
     }
     const leaf = this.app.workspace.getLeaf(false);
-    await leaf.setViewState({ type: MINDDOC_VIEW_TYPE, state: { file: file.path } });
+    await leaf.setViewState({ type: MINDDOC_VIEW_TYPE, state: { file: file.path, view } });
   }
 
   async createNewMindDoc() {

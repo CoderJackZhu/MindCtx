@@ -166,11 +166,13 @@ export function OutlineView({
     }
     if (e.key === 'Tab' && !e.shiftKey && nodeId) {
       e.preventDefault();
+      e.stopPropagation();
       try { onOperation({ type: 'indent', nodeId }); } catch { /* operation may fail if no valid target */ }
       return;
     }
     if (e.key === 'Tab' && e.shiftKey && nodeId) {
       e.preventDefault();
+      e.stopPropagation();
       try { onOperation({ type: 'outdent', nodeId }); } catch { /* operation may fail if already at root */ }
       return;
     }

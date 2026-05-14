@@ -8,7 +8,7 @@ Markdown 优先的结构化大纲编辑器，支持思维导图视图，为 Obsi
 
 **双视图**
 - 大纲视图：拖拽排序、键盘快捷键、行内编辑
-- 思维导图视图：基于 Mind Elixir，支持拖拽重组节点
+- 思维导图视图：基于 Mind Elixir，支持拖拽重组节点、右键菜单、缩放控制
 - 一键切换，数据实时同步
 
 **往返保真**
@@ -22,6 +22,12 @@ Markdown 优先的结构化大纲编辑器，支持思维导图视图，为 Obsi
 - 快捷键：Tab/Shift+Tab（缩进/提升）、Enter（新建兄弟节点）、Delete（删除）、Ctrl+Z/Y（撤销/重做）
 - 任务复选框切换（null → 未选 → 已选 → null）
 - 节点详情面板：编辑备注，查看代码块/引用等附属内容
+
+**思维导图增强**
+- 右键菜单（添加子节点、删除、编辑等）
+- 节点 "+" 按钮快速创建子节点
+- Ctrl+滚轮缩放、百分比显示、滑块控制
+- 可配置展开方向（左右/上下/右侧/左侧）
 
 **搜索筛选**
 - Ctrl+F 按标题搜索节点
@@ -75,7 +81,9 @@ default: outline
 
 ### 文件格式
 
-MindDoc 使用标准 Markdown。标题成为树的分支，列表成为叶节点：
+MindDoc 使用标准 Markdown，详细格式规范见 [mind.md 格式规范](docs/format-spec.md)。
+
+简要示例：
 
 ```markdown
 ---
@@ -93,8 +101,8 @@ heading-depth: 3
 
 ## 第二阶段
 
-- 开发实现
-- 测试验证
+- [ ] 开发实现
+- [x] 测试验证
 ```
 
 `heading-depth`（默认 3）控制标题转列表的分界线。深度 1–N 输出为标题，更深的节点输出为列表项。
@@ -113,6 +121,7 @@ heading-depth: 3
 | Ctrl+Z | 撤销 |
 | Ctrl+Shift+Z | 重做 |
 | Ctrl+F | 搜索 |
+| Ctrl+滚轮 | 缩放脑图 |
 
 ### 命令列表
 
@@ -150,7 +159,7 @@ heading-depth: 3
 npm install
 npm run dev        # 监听模式
 npm run build      # 生产构建
-npm test           # 运行测试
+npm test           # 运行测试（125 个）
 npm run typecheck  # TypeScript 类型检查
 ```
 
@@ -158,22 +167,25 @@ npm run typecheck  # TypeScript 类型检查
 
 ```
 src/
-  core/           # 纯逻辑层（解析器、序列化器、操作、撤销）
+  core/           # 纯逻辑层（解析器、序列化器、操作、撤销、哈希）
   views/          # Preact 组件（大纲、脑图、嵌入块）
+    components/   # 子组件（OutlineNode、DetailPanel、SearchBar 等）
   bridge/         # Mind Elixir 集成（数据转换 + 主题适配）
   importers/      # OPML、FreeMind 导入器
   exporters/      # OPML、JSON、图片导出器
-  commands/       # AI 命令
+  commands/       # AI 命令（复制为 AI 上下文）
   settings/       # 插件设置
   utils/          # 工具函数
-tests/            # Vitest 测试套件（75 个测试）
+tests/            # Vitest 测试套件（9 个文件，125 个测试）
+examples/         # 示例 .mind.md 文件
+docs/             # 文档（格式规范等）
 ```
 
 ### 技术栈
 
-- TypeScript（严格模式，ES2022）
+- TypeScript 5.4（严格模式，ES2022）
 - Preact + @preact/signals（UI 渲染）
-- unified/remark（Markdown 解析）
+- unified/remark（Markdown 解析，含 GFM 和数学公式支持）
 - Mind Elixir v4（思维导图渲染）
 - esbuild（打包构建）
 - Vitest（单元测试）

@@ -40,7 +40,7 @@ export class MindDocView extends ItemView {
     return { file: this.file?.path ?? '' };
   }
 
-  async setState(state: { file?: string }, result: { history: boolean }) {
+  async setState(state: { file?: string; view?: 'outline' | 'mindmap' }, result: { history: boolean }) {
     if (state.file) {
       const file = this.app.vault.getAbstractFileByPath(state.file);
       if (file instanceof TFile) {
@@ -48,6 +48,9 @@ export class MindDocView extends ItemView {
         await this.loadFile();
         this.renderView();
       }
+    }
+    if (state.view) {
+      this.currentViewSignal.value = state.view;
     }
     return super.setState(state, result);
   }
