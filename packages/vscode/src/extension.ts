@@ -2,11 +2,13 @@ import * as vscode from 'vscode';
 import { MindDocEditorProvider } from './MindDocEditorProvider.js';
 import { exportOPML, exportJSON, copyAsAIContext } from '@minddoc/core';
 
-export function activate(context: vscode.ExtensionContext): void {
-  // Register custom editor provider
-  context.subscriptions.push(MindDocEditorProvider.register(context));
+let provider: MindDocEditorProvider;
 
-  // Commands that DON'T need an active editor
+export function activate(context: vscode.ExtensionContext): void {
+  const registration = MindDocEditorProvider.register(context);
+  provider = registration.provider;
+  context.subscriptions.push(registration.disposable);
+
   context.subscriptions.push(
     vscode.commands.registerCommand('minddoc.create', createNewFile),
     vscode.commands.registerCommand('minddoc.openAs', openWithMindDoc),
@@ -14,12 +16,10 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('minddoc.import.freemind', () => importFile('freemind')),
   );
 
-  // Commands that NEED an active MindDoc editor — these are dispatched to the webview
-  // via the provider (toggleView, expandAll, collapseAll, export.png are webview commands)
-  // export.opml, export.json, copyAIContext can be done directly from extension host
   context.subscriptions.push(
     vscode.commands.registerCommand('minddoc.export.opml', () => exportFromEditor('opml')),
     vscode.commands.registerCommand('minddoc.export.json', () => exportFromEditor('json')),
+    vscode.commands.registerCommand('minddoc.export.png', () => exportPngFromEditor()),
     vscode.commands.registerCommand('minddoc.copyAIContext', copyAIContextFromEditor),
   );
 }
@@ -47,7 +47,7 @@ async function openWithMindDoc(): Promise<void> {
 async function importFile(format: 'opml' | 'freemind'): Promise<void> {
   const { importOPML, importFreeMind } = await import('@minddoc/core');
 
-  const filters = format === 'opml'
+  const filters: Record<string, string[]> = format === 'opml'
     ? { 'OPML': ['opml', 'xml'] }
     : { 'FreeMind': ['mm'] };
 
@@ -77,13 +77,50 @@ async function importFile(format: 'opml' | 'freemind'): Promise<void> {
 }
 
 async function exportFromEditor(format: 'opml' | 'json'): Promise<void> {
-  // Get the active document's tree from the provider
-  // Since we can't easily access the provider's document here,
-  // we'll need to get it through the active custom editor
-  // For now, this requires the MindDocEditorProvider to expose the active document
-  vscode.window.showWarningMessage('Export not yet connected to editor. Coming in Phase 4.');
+  const doc = provider.getActiveDocument();
+  if (!doc) {
+    vscode.window.showWarningMessage('No active MindDoc editor.');
+    return;
+  }
+
+  const tree = doc.tree;
+  const content = format === 'opml' ? exportOPML(tree) : exportJSON(tree);
+  const ext = format === 'opml' ? 'opml' : 'json';
+  const filterLabel = format === 'opml' ? 'OPML' : 'JSON';
+
+  const docName = doc.uri.path.split('/').pop()?.replace(/\.mind\.md$/, '') ?? 'mindmap';
+  const defaultUri = vscode.Uri.joinPath(
+    vscode.Uri.file(doc.uri.fsPath).with({ path: doc.uri.path.replace(/[^/]+$/, '') }),
+    `${docName}.${ext}`
+  );
+
+  const saveUri = await vscode.window.showSaveDialog({
+    defaultUri,
+    filters: { [filterLabel]: [ext] },
+  });
+  if (!saveUri) return;
+
+  await vscode.workspace.fs.writeFile(saveUri, new TextEncoder().encode(content));
+  vscode.window.showInformationMessage(`Exported to ${saveUri.fsPath}`);
+}
+
+async function exportPngFromEditor(): Promise<void> {
+  const doc = provider.getActiveDocument();
+  if (!doc) {
+    vscode.window.showWarningMessage('No active MindDoc editor.');
+    return;
+  }
+  provider.sendCommandToActivePanel(doc, 'export.png');
 }
 
 async function copyAIContextFromEditor(): Promise<void> {
-  vscode.window.showWarningMessage('Copy AI Context not yet connected to editor. Coming in Phase 4.');
+  const doc = provider.getActiveDocument();
+  if (!doc) {
+    vscode.window.showWarningMessage('No active MindDoc editor.');
+    return;
+  }
+
+  const text = copyAsAIContext(doc.tree);
+  await vscode.env.clipboard.writeText(text);
+  vscode.window.showInformationMessage('AI context copied to clipboard.');
 }

@@ -68,7 +68,7 @@ export class MindDocEditorProvider
    * Static helper to register this provider with the extension context.
    * Returns a Disposable that can be added to the extension subscriptions.
    */
-  static register(context: vscode.ExtensionContext): vscode.Disposable {
+  static register(context: vscode.ExtensionContext): { disposable: vscode.Disposable; provider: MindDocEditorProvider } {
     const provider = new MindDocEditorProvider(context);
     const registration = vscode.window.registerCustomEditorProvider(
       MindDocEditorProvider.viewType,
@@ -78,9 +78,30 @@ export class MindDocEditorProvider
         supportsMultipleEditorsPerDocument: true,
       }
     );
-    return vscode.Disposable.from(registration, {
+    const disposable = vscode.Disposable.from(registration, {
       dispose: () => provider.dispose(),
     });
+    return { disposable, provider };
+  }
+
+  getActiveDocument(): MindDocDocument | undefined {
+    for (const [doc, panels] of this._documentPanels) {
+      for (const panel of panels) {
+        if (panel.active) return doc;
+      }
+    }
+    return undefined;
+  }
+
+  sendCommandToActivePanel(document: MindDocDocument, name: 'expandAll' | 'collapseAll' | 'toggleView' | 'export.png'): void {
+    const panels = this._documentPanels.get(document);
+    if (!panels) return;
+    for (const panel of panels) {
+      if (panel.active) {
+        this._postMessage(panel.webview, { type: 'command', command: { name } });
+        return;
+      }
+    }
   }
 
   // --- CustomEditorProvider implementation ---

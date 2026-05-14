@@ -122,7 +122,7 @@ function extractTagsFromTitle(title: string): string[] {
   return tags;
 }
 
-export function applyOperation(tree: MindDocTree, op: PartialOperation): Operation {
+export function applyOperation(tree: MindDocTree, op: PartialOperation | Operation): Operation {
   const root = tree.root;
 
   switch (op.type) {
@@ -165,27 +165,35 @@ export function applyOperation(tree: MindDocTree, op: PartialOperation): Operati
     case 'create': {
       const parent = requireNode(root, op.parentId, 'parent');
       const insertIdx = normalizeInsertIndex(op.index, parent.children.length);
-      const depth = getAbsoluteDepth(root, op.parentId) + 1;
-      const titlePathPart = op.title || `_empty_${Date.now()}_${createdNodeCounter++}`;
-      const parentPath = getTitlePath(root, op.parentId);
 
-      const node: MindDocNode = {
-        id: generateNodeId([...parentPath, titlePathPart], insertIdx),
-        title: op.title,
-        note: '',
-        blocks: [],
-        children: [],
-        nodeType: depth <= tree.headingDepth ? 'heading' : 'list-item',
-        headingLevel: depth <= tree.headingDepth ? depth : 0,
-        listDepth: depth > tree.headingDepth ? depth - tree.headingDepth : 0,
-        checked: null,
-        tags: extractTagsFromTitle(op.title),
-        ordered: false,
-        sourceRange: { startLine: 0, endLine: 0 },
-        rawText: '',
-        dirty: true,
-        subtreeDirty: false,
-      };
+      let node: MindDocNode;
+      if ('node' in op && op.node) {
+        node = op.node;
+        node.dirty = true;
+      } else {
+        const title = (op as { title: string }).title;
+        const depth = getAbsoluteDepth(root, op.parentId) + 1;
+        const titlePathPart = title || `_empty_${Date.now()}_${createdNodeCounter++}`;
+        const parentPath = getTitlePath(root, op.parentId);
+
+        node = {
+          id: generateNodeId([...parentPath, titlePathPart], insertIdx),
+          title,
+          note: '',
+          blocks: [],
+          children: [],
+          nodeType: depth <= tree.headingDepth ? 'heading' : 'list-item',
+          headingLevel: depth <= tree.headingDepth ? depth : 0,
+          listDepth: depth > tree.headingDepth ? depth - tree.headingDepth : 0,
+          checked: null,
+          tags: extractTagsFromTitle(title),
+          ordered: false,
+          sourceRange: { startLine: 0, endLine: 0 },
+          rawText: '',
+          dirty: true,
+          subtreeDirty: false,
+        };
+      }
 
       parent.children.splice(insertIdx, 0, node);
       markSubtreeDirtyPath(root, op.parentId);

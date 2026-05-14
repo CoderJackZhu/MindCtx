@@ -76,7 +76,6 @@ export class MindDocDocument implements vscode.CustomDocument {
       this._onDidChangeContent.fire({
         document: this,
         undo: () => {
-          // Apply inverse operations to undo
           for (const inv of inverseOps) {
             applyOperation(this._tree, inv);
           }
