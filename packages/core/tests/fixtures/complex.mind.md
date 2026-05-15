@@ -2,7 +2,7 @@
 mindctx: true
 version: 1
 default-view: outline
-heading-depth: 3
+heading-depth: 4
 ---
 
 # Agent 工程能力体系

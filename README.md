@@ -58,7 +58,7 @@ MindCtx 使用标准 Markdown。标题成为树的分支，列表成为叶节点
 ```markdown
 ---
 mindctx: true
-heading-depth: 3
+heading-depth: 4
 ---
 
 # 项目规划
@@ -75,7 +75,7 @@ heading-depth: 3
 - 测试验证
 ```
 
-`heading-depth`（默认 3）控制标题转列表的分界线。详见 [格式规范](docs/format-spec.md)。
+`heading-depth`（默认 4）控制标题转列表的分界线。详见 [格式规范](docs/format-spec.md)。
 
 ## 快捷键
 

@@ -133,39 +133,39 @@ describe('Parser', () => {
     expect(tree.frontmatter['mindctx']).toBe(true);
     expect(tree.frontmatter['version']).toBe(1);
     expect(tree.frontmatter['default-view']).toBe('outline');
-    expect(tree.frontmatter['heading-depth']).toBe(3);
+    expect(tree.frontmatter['heading-depth']).toBe(4);
   });
 
   test('无 frontmatter 使用默认值', () => {
     const tree = parse(fixture('no-frontmatter.mind.md'));
     expect(tree.frontmatter).toEqual({});
-    expect(tree.headingDepth).toBe(3);
+    expect(tree.headingDepth).toBe(4);
     expect(tree.rawFrontmatter).toBe('');
   });
 
   test('heading-depth 正确读取', () => {
     const tree = parse(fixture('complex.mind.md'));
-    expect(tree.headingDepth).toBe(3);
+    expect(tree.headingDepth).toBe(4);
   });
 
   test('heading-depth 优先级: frontmatter > options > default', () => {
-    // frontmatter has heading-depth: 3 in complex.mind.md
+    // frontmatter has heading-depth: 4 in complex.mind.md
     const tree1 = parse(fixture('complex.mind.md'), { defaultHeadingDepth: 6 });
-    expect(tree1.headingDepth).toBe(3); // frontmatter wins
+    expect(tree1.headingDepth).toBe(4); // frontmatter wins
 
     // no-frontmatter.mind.md has no heading-depth
     const tree2 = parse(fixture('no-frontmatter.mind.md'), { defaultHeadingDepth: 5 });
     expect(tree2.headingDepth).toBe(5); // options win
 
-    // no frontmatter, no options => default 3
+    // no frontmatter, no options => default 4
     const tree3 = parse(fixture('no-frontmatter.mind.md'));
-    expect(tree3.headingDepth).toBe(3);
+    expect(tree3.headingDepth).toBe(4);
   });
 
   test('heading-depth 会解析字符串并限制在 1 到 6', () => {
     expect(parse('---\nheading-depth: "5"\n---\n\n# Title\n').headingDepth).toBe(5);
     expect(parse('---\nheading-depth: 99\n---\n\n# Title\n').headingDepth).toBe(6);
-    expect(parse('---\nheading-depth: invalid\n---\n\n# Title\n').headingDepth).toBe(3);
+    expect(parse('---\nheading-depth: invalid\n---\n\n# Title\n').headingDepth).toBe(4);
   });
 
   test('节点 ID 不重复', () => {

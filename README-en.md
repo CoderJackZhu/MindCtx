@@ -46,7 +46,7 @@ MindCtx works with standard Markdown. Headings become tree branches, lists becom
 ```markdown
 ---
 mindctx: true
-heading-depth: 3
+heading-depth: 4
 ---
 
 # Project Plan
@@ -63,7 +63,7 @@ heading-depth: 3
 - Testing
 ```
 
-The `heading-depth` setting (default 3) controls when headings become list items. See [format spec](docs/format-spec.md) for details.
+The `heading-depth` setting (default 4) controls when headings become list items. See [format spec](docs/format-spec.md) for details.
 
 ## Keyboard Shortcuts
 

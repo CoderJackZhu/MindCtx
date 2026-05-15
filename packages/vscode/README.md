@@ -77,7 +77,7 @@ Configure in VS Code Settings (Ctrl+,) under "MindCtx":
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `mindctx.defaultView` | outline | Default view when opening files |
-| `mindctx.headingDepth` | 3 | Maximum heading depth (deeper = list items) |
+| `mindctx.headingDepth` | 4 | Maximum heading depth (deeper = list items) |
 | `mindctx.autoSaveDelay` | 300 | Auto-save debounce in milliseconds |
 | `mindctx.outlineFontSize` | 14 | Outline view font size (px) |
 | `mindctx.showNotePreview` | true | Show note preview next to titles |

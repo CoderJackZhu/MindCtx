@@ -15,7 +15,7 @@ export interface MindCtxSettings {
 
 export const DEFAULT_SETTINGS: MindCtxSettings = {
   defaultView: 'outline',
-  defaultHeadingDepth: 3,
+  defaultHeadingDepth: 4,
   mindmapDirection: 'side',
   autoSaveDelay: 300,
   enableVirtualScroll: true,

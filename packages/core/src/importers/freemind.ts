@@ -4,7 +4,7 @@ export function importFreeMind(xmlText: string, fileName: string): string {
   const rootNode = doc.querySelector('map > node');
   if (!rootNode) throw new Error('FreeMind 格式错误: 缺少根节点');
 
-  const headingDepth = 3;
+  const headingDepth = 4;
   const title = rootNode.getAttribute('TEXT') || fileName.replace(/\.mind\.md$/, '');
 
   function convert(node: Element, depth: number): string {

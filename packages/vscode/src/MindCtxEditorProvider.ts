@@ -392,7 +392,7 @@ export class MindCtxEditorProvider
     const config = vscode.workspace.getConfiguration('mindctx');
     return {
       defaultView: config.get<'outline' | 'mindmap'>('defaultView', 'outline'),
-      headingDepth: config.get<number>('headingDepth', 3),
+      headingDepth: config.get<number>('headingDepth', 4),
       autoSaveDelay: config.get<number>('autoSaveDelay', 300),
       outlineFontSize: config.get<number>('outlineFontSize', 14),
       showNotePreview: config.get<boolean>('showNotePreview', true),

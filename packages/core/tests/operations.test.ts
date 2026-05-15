@@ -4,6 +4,7 @@ import type { MindCtxTree } from '@mindctx/core';
 
 const simpleMd = `---
 mindctx: true
+heading-depth: 3
 ---
 
 # Root
@@ -239,7 +240,7 @@ describe('Operations', () => {
 
     applyOperation(tree, { type: 'toggleCheck', nodeId: h1.id });
 
-    expect(serialize(tree).startsWith('---\nmindctx: true\n---\n\n- [ ] Root\n')).toBe(true);
+    expect(serialize(tree).startsWith('---\nmindctx: true\nheading-depth: 3\n---\n\n- [ ] Root\n')).toBe(true);
   });
 
   test('操作后节点 dirty=true', () => {
@@ -348,7 +349,8 @@ describe('Operations', () => {
   });
 
   test('indent then outdent restores original state', () => {
-    const localTree = parse(simpleMd, { defaultHeadingDepth: 2 });
+    const shallowMd = `---\nmindctx: true\nheading-depth: 2\n---\n\n# Root\n\n## Child A\n\n- Item 1\n- Item 2\n- Item 3\n\n## Child B\n\n- Item B1\n`;
+    const localTree = parse(shallowMd);
     const h1 = localTree.root.children[0];
     const childA = h1.children[0];
     const item2Id = childA.children[1].id;

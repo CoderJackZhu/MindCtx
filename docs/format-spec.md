@@ -15,7 +15,7 @@ MindCtx 使用标准 Markdown 作为数据格式。本文档定义 `.mind.md` �
 ---
 mindctx: true
 default-view: outline
-heading-depth: 3
+heading-depth: 4
 ---
 ```
 
@@ -23,7 +23,7 @@ heading-depth: 3
 |------|------|--------|------|
 | `mindctx` | boolean | — | 标记文件为 MindCtx 文档（非 `.mind.md` 文件必填） |
 | `default-view` | string | `"outline"` | 默认打开的视图，可选 `"outline"` 或 `"mindmap"` |
-| `heading-depth` | integer | `3` | 标题最大深度（1–6），超过此深度的节点序列化为列表项 |
+| `heading-depth` | integer | `4` | 标题最大深度（1–6），超过此深度的节点序列化为列表项 |
 
 ## 树结构映射
 
@@ -207,7 +207,7 @@ ID = fnv1a64("祖先标题1/祖先标题2/当前标题:兄弟索引")
 ---
 mindctx: true
 default-view: outline
-heading-depth: 3
+heading-depth: 4
 ---
 
 # 产品需求文档：在线协作白板

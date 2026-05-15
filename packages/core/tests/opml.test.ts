@@ -176,7 +176,7 @@ function makeTree(root: NodeInput): MindCtxTree {
     filePath: '',
     frontmatter: {},
     rawFrontmatter: '',
-    headingDepth: 3,
+    headingDepth: 4,
     root: makeNode(root, 0),
     metadata: { parseTime: 0, nodeCount: 0, maxDepth: 0 },
   };
@@ -270,13 +270,14 @@ describe('importOPML', () => {
   });
 
   test('handles deep nesting beyond heading depth as nested lists', () => {
-    const markdown = importOPML('<opml><body><outline text="Root"><outline text="A"><outline text="B"><outline text="C"><outline text="D"/></outline></outline></outline></outline></body></opml>', 'deep.opml');
+    const markdown = importOPML('<opml><body><outline text="Root"><outline text="A"><outline text="B"><outline text="C"><outline text="D"><outline text="E"/></outline></outline></outline></outline></outline></body></opml>', 'deep.opml');
 
     expect(markdown).toContain('# Root');
     expect(markdown).toContain('## A');
     expect(markdown).toContain('### B');
-    expect(markdown).toContain('- C');
-    expect(markdown).toContain('  - D');
+    expect(markdown).toContain('#### C');
+    expect(markdown).toContain('- D');
+    expect(markdown).toContain('  - E');
   });
 
   test('handles empty text and notes', () => {

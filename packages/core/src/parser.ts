@@ -243,7 +243,7 @@ export function parse(markdown: string, options?: ParseOptions): MindCtxTree {
   // Determine headingDepth
   const headingDepth = normalizeHeadingDepth(
     frontmatter['heading-depth'],
-    normalizeHeadingDepth(options?.defaultHeadingDepth, 3)
+    normalizeHeadingDepth(options?.defaultHeadingDepth, 4)
   );
 
   // Step 3: Create virtual root

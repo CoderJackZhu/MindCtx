@@ -36,7 +36,7 @@ async function createNewFile(): Promise<void> {
   });
   if (!uri) return;
 
-  const template = `---\nmindctx: true\nheading-depth: 3\n---\n\n# New Document\n\n## Section 1\n\n- Item 1\n- Item 2\n`;
+  const template = `---\nmindctx: true\nheading-depth: 4\n---\n\n# New Document\n\n## Section 1\n\n- Item 1\n- Item 2\n`;
   await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(template));
   await vscode.commands.executeCommand('vscode.openWith', uri, 'mindctx.editor');
 }

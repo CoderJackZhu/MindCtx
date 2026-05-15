@@ -11,7 +11,7 @@ export function importOPML(opmlText: string, fileName: string): string {
   if (!body) throw new Error('OPML 格式错误: 缺少 body 元素');
 
   const title = doc.querySelector('head > title')?.textContent || fileName.replace(/\.mind\.md$/, '');
-  const headingDepth = 3;
+  const headingDepth = 4;
 
   function convertOutline(element: Element, depth: number): string {
     const text = element.getAttribute('text') || element.getAttribute('TEXT') || '';

@@ -15,7 +15,7 @@ export class WebviewBridge {
   readonly tree: Signal<MindCtxTree | null> = signal(null);
   readonly settings: Signal<MindCtxSettings> = signal({
     defaultView: 'outline',
-    headingDepth: 3,
+    headingDepth: 4,
     autoSaveDelay: 300,
     outlineFontSize: 14,
     showNotePreview: true,
