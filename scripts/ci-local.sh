@@ -22,4 +22,7 @@ pnpm --filter @mindctx/core test
 echo "==> Full build"
 pnpm build
 
+echo "==> VSCode: package (.vsix)"
+pnpm --filter vscode-mindctx package
+
 echo "==> All checks passed."
