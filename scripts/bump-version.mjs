@@ -39,8 +39,8 @@ function updateJSON(filePath, updater) {
 
 if (target === 'obsidian') {
   const pkg = resolve(root, 'packages/obsidian/package.json');
-  const manifest = resolve(root, 'packages/obsidian/manifest.json');
-  const versions = resolve(root, 'packages/obsidian/versions.json');
+  const manifest = resolve(root, 'manifest.json');
+  const versions = resolve(root, 'versions.json');
 
   updateJSON(pkg, (j) => { j.version = version; });
   updateJSON(manifest, (j) => { j.version = version; });

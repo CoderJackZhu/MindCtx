@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#16213e"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
+    </linearGradient>
+    <linearGradient id="core" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="256" height="256" rx="48" fill="url(#bg)"/>
+
+  <!-- Outer orbital ring -->
+  <ellipse cx="128" cy="120" rx="62" ry="62" fill="none" stroke="url(#ring)" stroke-width="2.5" opacity="0.6"/>
+
+  <!-- Tilted orbital ring 1 -->
+  <ellipse cx="128" cy="120" rx="62" ry="24" fill="none" stroke="url(#ring)" stroke-width="2" opacity="0.5" transform="rotate(-30 128 120)"/>
+
+  <!-- Tilted orbital ring 2 -->
+  <ellipse cx="128" cy="120" rx="62" ry="24" fill="none" stroke="url(#ring)" stroke-width="2" opacity="0.5" transform="rotate(30 128 120)"/>
+
+  <!-- Core glow -->
+  <circle cx="128" cy="120" r="18" fill="url(#core)" opacity="0.3"/>
+  <circle cx="128" cy="120" r="12" fill="url(#core)" opacity="0.6"/>
+  <circle cx="128" cy="120" r="7" fill="#e0e7ff"/>
+
+  <!-- Orbital nodes -->
+  <circle cx="172" cy="88" r="5" fill="#a78bfa" opacity="0.9"/>
+  <circle cx="88" cy="140" r="4" fill="#60a5fa" opacity="0.8"/>
+  <circle cx="152" cy="152" r="3.5" fill="#818cf8" opacity="0.7"/>
+  <circle cx="104" cy="92" r="3" fill="#c084fc" opacity="0.75"/>
+
+  <!-- Neural sparks -->
+  <circle cx="180" cy="72" r="1.5" fill="#e0e7ff" opacity="0.6"/>
+  <circle cx="76" cy="155" r="1.5" fill="#e0e7ff" opacity="0.5"/>
+  <circle cx="165" cy="160" r="1.2" fill="#e0e7ff" opacity="0.4"/>
+
+  <!-- Text -->
+  <text x="128" y="210" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="600" fill="#e2e8f0" letter-spacing="2">NEUXVERSE</text>
+</svg>

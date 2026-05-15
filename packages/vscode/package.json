@@ -3,7 +3,7 @@
   "displayName": "MindCtx",
   "description": "Markdown-first structured outline editor with mind map view. Write Markdown, see outlines, switch to mind maps.",
   "version": "0.1.0",
-  "publisher": "mindctx",
+  "publisher": "neuxverse",
   "license": "MIT",
   "icon": "assets/icon.png",
   "repository": {

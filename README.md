@@ -150,3 +150,13 @@ pnpm --filter @mindctx/core test
 ## 许可证
 
 MIT
+
+---
+
+<p align="center">
+  <a href="https://github.com/CoderJackZhu">
+    <img src="assets/neuxverse-logo.png" alt="Neuxverse" width="48">
+  </a>
+  <br>
+  Built by <strong>Neuxverse</strong>
+</p>

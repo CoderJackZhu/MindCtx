@@ -33,8 +33,8 @@ jobs:
         with:
           name: "Obsidian Plugin v${{ steps.tag.outputs.version }}"
           files: |
-            packages/obsidian/main.js
-            packages/obsidian/manifest.json
-            packages/obsidian/styles.css
+            main.js
+            manifest.json
+            styles.css
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

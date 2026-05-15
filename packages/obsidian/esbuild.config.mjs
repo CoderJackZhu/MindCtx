@@ -8,7 +8,7 @@ esbuild.build({
   external: ['obsidian', 'electron', '@codemirror/*', '@lezer/*'],
   format: 'cjs',
   target: 'es2022',
-  outfile: 'main.js',
+  outfile: '../../main.js',
   sourcemap: prod ? false : 'inline',
   minify: prod,
   jsxFactory: 'h',
