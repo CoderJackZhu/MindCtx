@@ -2,7 +2,7 @@
 set -euo pipefail
 
 echo "==> Cleaning build artifacts..."
-rm -rf packages/core/dist main.js packages/vscode/dist
+rm -rf packages/core/dist packages/obsidian/main.js packages/vscode/dist
 
 echo "==> Core: typecheck"
 pnpm --filter @mindctx/core typecheck
