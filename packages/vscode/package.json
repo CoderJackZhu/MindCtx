@@ -207,6 +207,7 @@
     "build": "node esbuild.config.mjs production",
     "dev": "node esbuild.config.mjs --watch",
     "typecheck": "tsc --noEmit",
+    "generate-icon": "node scripts/generate-icon.mjs",
     "package": "vsce package --no-dependencies",
     "publish": "vsce publish --no-dependencies"
   },
@@ -218,6 +219,7 @@
     "esbuild": "^0.20",
     "html-to-image": "^1.11.13",
     "preact": "^10.19",
+    "sharp": "^0.34.5",
     "typescript": "^5.4"
   },
   "dependencies": {
