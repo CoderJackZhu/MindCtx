@@ -112,11 +112,23 @@
           "group": "navigation"
         }
       ],
+      "editor/title/context": [
+        {
+          "command": "mindctx.copyAIContext",
+          "when": "activeCustomEditorId == 'mindctx.editor'",
+          "group": "navigation"
+        }
+      ],
       "explorer/context": [
         {
           "command": "mindctx.openAs",
           "when": "resourceExtname == .md",
           "group": "navigation"
+        },
+        {
+          "command": "mindctx.copyAIContext",
+          "when": "resourceExtname == .md",
+          "group": "2_workspace"
         }
       ]
     },

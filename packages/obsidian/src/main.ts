@@ -211,6 +211,18 @@ export default class MindCtxPlugin extends Plugin {
 
         if (file instanceof TFile && this.isMindCtxFile(file)) {
           menu.addItem((item) => {
+            item.setTitle('复制为 AI 上下文')
+              .setIcon('sparkles')
+              .onClick(() => {
+                void this.app.vault.read(file).then((content) => {
+                  const tree = parse(content, { filePath: file.path });
+                  const text = copyAsAIContext(tree);
+                  void navigator.clipboard.writeText(text);
+                  new Notice('已复制到剪贴板');
+                });
+              });
+          });
+          menu.addItem((item) => {
             item.setTitle('导出为 opml')
               .setIcon('download')
               .onClick(() => {

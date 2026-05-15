@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { MindCtxEditorProvider } from './MindCtxEditorProvider.js';
-import { exportOPML, exportJSON, copyAsAIContext } from '@mindctx/core';
+import { parse, exportOPML, exportJSON, copyAsAIContext } from '@mindctx/core';
 
 let provider: MindCtxEditorProvider;
 
@@ -116,7 +116,17 @@ async function exportPngFromEditor(): Promise<void> {
   provider.sendCommandToActivePanel(doc, 'export.png');
 }
 
-async function copyAIContextFromEditor(): Promise<void> {
+async function copyAIContextFromEditor(uri?: vscode.Uri): Promise<void> {
+  if (uri) {
+    const data = await vscode.workspace.fs.readFile(uri);
+    const content = new TextDecoder().decode(data);
+    const tree = parse(content, { filePath: uri.fsPath });
+    const text = copyAsAIContext(tree);
+    await vscode.env.clipboard.writeText(text);
+    vscode.window.showInformationMessage('AI context copied to clipboard.');
+    return;
+  }
+
   const doc = provider.getActiveDocument();
   if (!doc) {
     vscode.window.showWarningMessage('No active MindCtx editor.');
