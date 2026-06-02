@@ -261,7 +261,7 @@ export default class MindCtxPlugin extends Plugin {
         return v instanceof MindCtxView && v.file?.path === file.path;
       });
     if (existing) {
-      await this.app.workspace.revealLeaf(existing);
+      this.app.workspace.setActiveLeaf(existing, { focus: true });
       if (view) (existing.view as MindCtxView).switchView(view);
       return;
     }
