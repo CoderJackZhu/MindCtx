@@ -22,6 +22,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - run: pnpm --filter @mindctx/core build
+
       - run: pnpm --filter vscode-mindctx build
 
       - name: Get version from tag
