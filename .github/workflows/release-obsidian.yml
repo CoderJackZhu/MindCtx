@@ -3,7 +3,8 @@ name: Release Obsidian Plugin
 on:
   push:
     tags:
-      - 'obsidian-v*'
+      # Obsidian 要求 release tag 与 manifest.json 的 version 完全一致（无前缀）
+      - '[0-9]*.[0-9]*.[0-9]*'
 
 jobs:
   build:
@@ -26,14 +27,18 @@ jobs:
 
       - run: pnpm --filter @mindctx/obsidian build
 
-      - name: Get version from tag
-        id: tag
-        run: echo "version=${GITHUB_REF#refs/tags/obsidian-v}" >> $GITHUB_OUTPUT
+      - name: Verify tag matches manifest version
+        run: |
+          MANIFEST_VERSION=$(jq -r .version manifest.json)
+          if [ "$MANIFEST_VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match manifest.json version $MANIFEST_VERSION"
+            exit 1
+          fi
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: "Obsidian Plugin v${{ steps.tag.outputs.version }}"
+          name: "Obsidian Plugin v${{ github.ref_name }}"
           files: |
             packages/obsidian/main.js
             manifest.json

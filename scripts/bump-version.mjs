@@ -48,7 +48,8 @@ if (target === 'obsidian') {
   const minApp = JSON.parse(readFileSync(manifest, 'utf-8')).minAppVersion;
   updateJSON(versions, (j) => { j[version] = minApp; });
 
-  const tag = `obsidian-v${version}`;
+  // Obsidian 要求 release tag 与 manifest.json 的 version 完全一致，不加任何前缀
+  const tag = version;
   console.log(`\nReady to release. Run:`);
   console.log(`  git add -A && git commit -m "release(obsidian): v${version}"`);
   console.log(`  git tag ${tag}`);
